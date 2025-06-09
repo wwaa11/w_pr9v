@@ -23,7 +23,7 @@ class MainController extends Controller
 
     public function telemedicine_store(Request $request)
     {
-        dd($request);
+        dump($request);
 
         return redirect()->back()->with('message', 'Consent recorded successfully.');
     }
