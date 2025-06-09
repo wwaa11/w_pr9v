@@ -9,14 +9,10 @@ import Typography from "@mui/material/Typography";
 import SignaturePad from "react-signature-canvas";
 import { useRef } from "react";
 
-type PageProps = {
-    env: {
-        url: string;
-    };
-};
 
 export default function ConsentTelemedicine() {
-    const { env } = usePage<PageProps>().props;
+    const page = usePage();
+    const url = page.props.url as string;
 
     const { data, setData, post, processing, errors } = useForm({
         signature: "",
@@ -54,6 +50,7 @@ export default function ConsentTelemedicine() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
         if (!data.signature) {
             Swal.fire({
                 icon: "warning",
@@ -62,6 +59,7 @@ export default function ConsentTelemedicine() {
             });
             return;
         }
+
         const result = await Swal.fire({
             title: "Are you sure?",
             text: "Do you want to submit your telemedicine consent?",
@@ -72,7 +70,7 @@ export default function ConsentTelemedicine() {
         });
 
         if (result.isConfirmed) {
-            post(env.url + "/telemedicine", {
+            post(`${url}/telemedicine`, {
                 onSuccess: () => {
                     // Handle success, e.g., show a success message or redirect
                 },
@@ -86,6 +84,7 @@ export default function ConsentTelemedicine() {
     return (
         <AppLayout>
             <form onSubmit={handleSubmit} className="max-w-2lg mx-auto">
+                <div>UR:: {url}</div>
                 <Typography variant="h6" align="center" >
                     &emsp;ข้อกำหนดและการให้ความยินยอมรับบริการ การแพทย์ทางไกลหรือโทรเวช (telemedicine) และคลินิกออนไลน์
                 </Typography>

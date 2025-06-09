@@ -41,9 +41,7 @@ class HandleInertiaRequests extends Middleware
         return [
              ...parent::share($request),
             'name'        => config('app.name'),
-            'env'         => [
-                'url' => env('APP_URL'),
-            ],
+            'url'         => env('APP_URL'),
             'quote'       => ['message' => trim($message), 'author' => trim($author)],
             'auth'        => [
                 'user' => $request->user(),
