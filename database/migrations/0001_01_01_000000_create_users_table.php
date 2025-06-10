@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('user_id')->unique();
             $table->string('name');
-            $table->rememberToken();
+            $table->text('signature')->nullable();
+            $table->string('role')->default('user');
             $table->timestamps();
         });
 

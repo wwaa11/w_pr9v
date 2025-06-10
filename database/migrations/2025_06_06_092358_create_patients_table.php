@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::create('patients', function (Blueprint $table) {
             $table->id();
+            $table->string('hn')->unique();
+            $table->string('token')->unique();
+            $table->dateTime('expires_at', precision: 0)->default(now());
             $table->timestamps();
         });
     }
