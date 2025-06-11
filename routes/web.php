@@ -15,4 +15,7 @@ Route::post('/telemedicine', [MainController::class, 'telemedicine_store']);
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/index', [MainController::class, 'index'])->name('index');
+    Route::get('/search', [MainController::class, 'index']);
+    Route::post('/search', [MainController::class, 'search']);
+
 });

@@ -22,6 +22,7 @@ class MainController extends Controller
 
             ])
             ->json();
+
         if ($response['status'] == 1) {
             $userData = User::where('user_id', $userid)->first();
             if (! $userData) {
@@ -42,6 +43,7 @@ class MainController extends Controller
             ],
         ]);
     }
+
     public function logout(Request $request)
     {
         Auth::logout();
@@ -101,5 +103,59 @@ class MainController extends Controller
         $new->save();
 
         return redirect()->route('success');
+    }
+
+    public function search(Request $request)
+    {
+        $request->validate([
+            'hn' => ['required', 'string', 'max:255'],
+        ]);
+
+        $hn = $request->input('hn');
+
+        $patient  = Patient::where('hn', $hn)->first();
+        $response = Http::withHeaders(['token' => env('API_KEY')])
+            ->post('http://172.20.1.12/dbstaff/api/patient/consent', [
+                'hn'   => $hn,
+                'lang' => 'th',
+
+            ])
+            ->json();
+        dd($response);
+
+        if ($patient == null) {
+            $patientData = [
+                'hn'      => $hn, // Include HN here
+                'name'    => 'Patient Not Found',
+                'address' => 'N/A',
+                'phone'   => 'N/A',
+            ];
+            $generatedResult1 = "Patient with HN {$hn} not found.";
+            $generatedResult2 = "";
+
+        } else {
+            $response = Http::withHeaders(['token' => env('API_KEY')])
+                ->post('http://172.20.1.12/dbstaff/api/patient/consent', [
+                    'hn'   => $hn,
+                    'lang' => 'th',
+
+                ])
+                ->json();
+                                                                  // If patient found, prepare the data
+            $generatedResult1 = "Link for HN: {$hn} - Consent A"; // Example link
+            $generatedResult2 = "Link for HN: {$hn} - Consent B"; // Example link
+            $patientData      = [
+                'hn'      => $patient->hn, // Include HN from the found patient
+                'name'    => $patient->name ?? 'N/A',
+                'address' => $patient->address ?? 'N/A',
+                'phone'   => $patient->phone ?? 'N/A',
+            ];
+        }
+
+        return Inertia::render('index', [
+            'patient' => $patientData,
+            'result1' => $generatedResult1,
+            'result2' => $generatedResult2,
+        ]);
     }
 }
