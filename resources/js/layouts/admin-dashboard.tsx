@@ -14,15 +14,13 @@ import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import PeopleIcon from '@mui/icons-material/People';
-import DescriptionIcon from '@mui/icons-material/Description';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { router, usePage } from '@inertiajs/react';
 import Avatar from '@mui/material/Avatar';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
+import PersonSearchIcon from '@mui/icons-material/PersonSearch';
 
 const drawerWidth = 240;
 
@@ -106,8 +104,8 @@ export default function AdminDashboard({ children }: { children: React.ReactNode
     const menuItems: MenuItem[] = [
         {
             title: 'Patient Search',
-            icon: <DashboardIcon />,
-            path: url + '/search',
+            icon: <PersonSearchIcon />,
+            path: 'search',
         },
     ];
 
@@ -132,7 +130,7 @@ export default function AdminDashboard({ children }: { children: React.ReactNode
     };
 
     const handleNavigation = (path: string) => {
-        router.visit(`${url}${path}`);
+        router.visit(`${url}/${path}`);
     };
 
     return (
@@ -152,7 +150,7 @@ export default function AdminDashboard({ children }: { children: React.ReactNode
                         <MenuIcon />
                     </IconButton>
                     <img
-                        src="/images/Logo.png"
+                        src={url + "/images/Logo.png"}
                         alt="Praram9 Hospital Logo"
                         style={{ height: '40px', marginRight: '16px' }}
                     />

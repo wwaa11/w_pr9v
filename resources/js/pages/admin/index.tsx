@@ -1,6 +1,6 @@
 import AppLayout from '@/layouts/admin-dashboard';
 import React, { useState, useEffect } from 'react';
-import { useForm } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import { Box, Button, TextField, Stack, Typography, IconButton, InputAdornment } from '@mui/material';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import Swal from 'sweetalert2';
@@ -25,6 +25,9 @@ export default function Index({
     result2: initialResult2 = '',
     result3: initialResult3 = ''
 }: { patient?: PatientInfo; result1?: string; result2?: string; result3?: string }) {
+    const page = usePage();
+    const url = page.props.url as string;
+
     const { data, setData, post, processing, errors } = useForm({ hn: initialPatient.hn || '' });
     const [patientInfo, setPatientInfo] = useState<PatientInfo | null>(initialPatient.hn ? initialPatient : null);
     const [response1, setResponse1] = useState(initialResult1);
@@ -46,7 +49,7 @@ export default function Index({
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        post('/search', {
+        post(url + '/search', {
             preserveState: true,
             preserveScroll: true,
             only: ['result1', 'result2', 'result3', 'patient', 'errors'],
@@ -154,7 +157,7 @@ export default function Index({
                                 },
                             }}
                             fullWidth
-                            variant="outlined" // Consistent variant
+                            variant="outlined"
                         />
                         <TextField
                             label="Telemehealth Consent"
