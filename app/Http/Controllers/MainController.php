@@ -6,15 +6,32 @@ use App\Models\Patient;
 use App\Models\User;
 use Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Http;
 use Inertia\Inertia;
 
 class MainController extends Controller
 {
+
+    public function temp()
+    {
+        $patient = Patient::first();
+
+        return inertia::render('patient/temp', compact('patient'));
+    }
+
     public function login(Request $request)
     {
         $userid   = $request->userid;
         $password = $request->password;
+
+        if (env('APP_ENV') == 'dev') {
+            $userData = User::where('user_id', $userid)->first();
+            Auth::login($userData);
+
+            return redirect()->route('index');
+        }
+
         $response = Http::withHeaders(['token' => env('API_KEY')])
             ->post('http://172.20.1.12/dbstaff/api/auth', [
                 'userid'   => $userid,
@@ -65,7 +82,7 @@ class MainController extends Controller
             'description' => 'This is the main page of our application where you can find various features and functionalities.',
         ];
 
-        return inertia::render('index', compact('data'));
+        return inertia::render('admin/index', compact('data'));
     }
 
     public function telemedicine($token)
@@ -113,7 +130,15 @@ class MainController extends Controller
 
         $hn = $request->input('hn');
 
-        $patient  = Patient::where('hn', $hn)->first();
+        $patient = Patient::where('hn', $hn)->first();
+        if ($patient == null) {
+            $patient        = new Patient();
+            $patient->hn    = $hn;
+            $patient->token = Crypt::encryptString($hn);
+        }
+        $patient->expires_at = now()->addMinutes(60);
+        $patient->save();
+
         $response = Http::withHeaders(['token' => env('API_KEY')])
             ->post('http://172.20.1.12/dbstaff/api/patient/consent', [
                 'hn'   => $hn,
@@ -121,41 +146,35 @@ class MainController extends Controller
 
             ])
             ->json();
-        dd($response);
 
-        if ($patient == null) {
+        if ($response['status'] == 0) {
             $patientData = [
-                'hn'      => $hn, // Include HN here
-                'name'    => 'Patient Not Found',
+                'hn'      => $hn,
+                'name'    => $response['message'],
                 'address' => 'N/A',
                 'phone'   => 'N/A',
             ];
             $generatedResult1 = "Patient with HN {$hn} not found.";
             $generatedResult2 = "";
+            $generatedResult3 = "";
 
         } else {
-            $response = Http::withHeaders(['token' => env('API_KEY')])
-                ->post('http://172.20.1.12/dbstaff/api/patient/consent', [
-                    'hn'   => $hn,
-                    'lang' => 'th',
-
-                ])
-                ->json();
-                                                                  // If patient found, prepare the data
-            $generatedResult1 = "Link for HN: {$hn} - Consent A"; // Example link
-            $generatedResult2 = "Link for HN: {$hn} - Consent B"; // Example link
+            $generatedResult1 = env('APP_URL') . '/telemedicine/' . $patient->token;
+            $generatedResult2 = env('APP_URL') . '/telemehealth/' . $patient->token;
+            $generatedResult3 = env('APP_URL') . '/hiv/' . $patient->token;
             $patientData      = [
-                'hn'      => $patient->hn, // Include HN from the found patient
-                'name'    => $patient->name ?? 'N/A',
-                'address' => $patient->address ?? 'N/A',
-                'phone'   => $patient->phone ?? 'N/A',
+                'hn'      => $patient->hn,
+                'name'    => $response['patient']['nameTH'] . ' ' . $response['patient']['surnameTH'] ?? 'N/A',
+                'address' => $response['patient']['address'] ?? 'N/A',
+                'phone'   => $response['patient']['mobile'] ?? 'N/A',
             ];
         }
 
-        return Inertia::render('index', [
+        return Inertia::render('admin/index', [
             'patient' => $patientData,
             'result1' => $generatedResult1,
             'result2' => $generatedResult2,
+            'result3' => $generatedResult3,
         ]);
     }
 }

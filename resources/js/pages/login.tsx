@@ -1,19 +1,21 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
-import CssBaseline from '@mui/material/CssBaseline';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Divider from '@mui/material/Divider';
 import FormLabel from '@mui/material/FormLabel';
 import FormControl from '@mui/material/FormControl';
-import Link from '@mui/material/Link';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import MuiCard from '@mui/material/Card';
 import { styled } from '@mui/material/styles';
 import { useForm, usePage } from '@inertiajs/react';
+import IconButton from '@mui/material/IconButton';
+import InputAdornment from '@mui/material/InputAdornment';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import CircularProgress from '@mui/material/CircularProgress';
+import Alert from '@mui/material/Alert';
+import Fade from '@mui/material/Fade';
 
 const Card = styled(MuiCard)(({ theme }) => ({
     display: 'flex',
@@ -60,13 +62,13 @@ const SignInContainer = styled(Stack)(({ theme }) => ({
 export default function Login() {
     const page = usePage();
     const url = page.props.url as string;
-
     const { errors } = usePage().props as { errors: Record<string, string> };
+    const [showPassword, setShowPassword] = React.useState(false);
 
     const { data, setData, post, processing } = useForm({
         userid: '',
         password: '',
-    })
+    });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setData(e.target.name as "userid" | "password", e.target.value);
@@ -77,22 +79,48 @@ export default function Login() {
         post(`${url}/login`);
     };
 
+    const handleClickShowPassword = () => {
+        setShowPassword(!showPassword);
+    };
+
     return (
-        <SignInContainer direction="column" justifyContent="space-between">
+        <SignInContainer direction="column" justifyContent="center">
             <Card variant="outlined">
-                <img
-                    src="images/Side Logo.png"
-                    alt="Logo"
-                    style={{ cursor: 'pointer' }}
-                    className='aspect-auto w-48'
-                />
-                <Typography
-                    component="h1"
-                    variant="h4"
-                    sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}
-                >
-                    Sign in
-                </Typography>
+                <Box sx={{ textAlign: 'center', mb: 3 }}>
+                    <img
+                        src="images/Side Logo.png"
+                        alt="Logo"
+                        style={{ cursor: 'pointer' }}
+                        className='aspect-auto w-48 mx-auto'
+                    />
+                    <Typography
+                        component="h1"
+                        variant="h4"
+                        sx={{
+                            mt: 2,
+                            fontWeight: 600,
+                            fontSize: 'clamp(1.5rem, 5vw, 2rem)',
+                            color: 'text.primary'
+                        }}
+                    >
+                        Welcome Back
+                    </Typography>
+                    <Typography
+                        variant="body1"
+                        sx={{ mt: 1, color: 'text.secondary' }}
+                    >
+                        Please sign in to continue
+                    </Typography>
+                </Box>
+
+                {errors.login && (
+                    <Fade in={Boolean(errors.login)}>
+                        <Alert severity="error" sx={{ mb: 2 }}>
+                            {errors.login}
+                        </Alert>
+                    </Fade>
+                )}
+
                 <Box
                     component="form"
                     onSubmit={handleSubmit}
@@ -104,13 +132,10 @@ export default function Login() {
                         gap: 2,
                     }}
                 >
-                    {errors.login && (
-                        <Typography color="error" sx={{ textAlign: 'center' }}>
-                            {errors.login}
-                        </Typography>
-                    )}
                     <FormControl>
-                        <FormLabel htmlFor="userid">Employee ID</FormLabel>
+                        <FormLabel htmlFor="userid" sx={{ mb: 1, fontWeight: 500 }}>
+                            Employee ID
+                        </FormLabel>
                         <TextField
                             id="userid"
                             type="text"
@@ -124,14 +149,21 @@ export default function Login() {
                             onChange={handleChange}
                             error={Boolean(errors.userid)}
                             helperText={errors.userid}
+                            sx={{
+                                '& .MuiOutlinedInput-root': {
+                                    borderRadius: 2,
+                                }
+                            }}
                         />
                     </FormControl>
                     <FormControl>
-                        <FormLabel htmlFor="password">Password</FormLabel>
+                        <FormLabel htmlFor="password" sx={{ mb: 1, fontWeight: 500 }}>
+                            Password
+                        </FormLabel>
                         <TextField
                             name="password"
                             placeholder="••••••"
-                            type="password"
+                            type={showPassword ? 'text' : 'password'}
                             id="password"
                             autoComplete="current-password"
                             required
@@ -141,6 +173,24 @@ export default function Login() {
                             onChange={handleChange}
                             error={Boolean(errors.password)}
                             helperText={errors.password}
+                            InputProps={{
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <IconButton
+                                            aria-label="toggle password visibility"
+                                            onClick={handleClickShowPassword}
+                                            edge="end"
+                                        >
+                                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                                        </IconButton>
+                                    </InputAdornment>
+                                ),
+                            }}
+                            sx={{
+                                '& .MuiOutlinedInput-root': {
+                                    borderRadius: 2,
+                                }
+                            }}
                         />
                     </FormControl>
                     <Button
@@ -148,10 +198,21 @@ export default function Login() {
                         fullWidth
                         variant="contained"
                         disabled={processing}
+                        sx={{
+                            mt: 2,
+                            py: 1.5,
+                            borderRadius: 2,
+                            textTransform: 'none',
+                            fontSize: '1rem',
+                            fontWeight: 600,
+                        }}
                     >
-                        Sign in
+                        {processing ? (
+                            <CircularProgress size={24} color="inherit" />
+                        ) : (
+                            'Sign in'
+                        )}
                     </Button>
-
                 </Box>
             </Card>
         </SignInContainer>

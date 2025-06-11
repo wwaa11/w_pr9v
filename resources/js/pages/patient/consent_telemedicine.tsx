@@ -1,4 +1,4 @@
-import AppLayout from "@/layouts/app-layout";
+import AppLayout from "@/layouts/patient";
 import { useForm, usePage } from "@inertiajs/react";
 import Swal from "sweetalert2";
 import Button from '@mui/material/Button';
@@ -88,14 +88,7 @@ export default function ConsentTelemedicine({ patient }: ConsentTelemedicineProp
         });
 
         if (result.isConfirmed) {
-            post(`${url}/telemedicine`, {
-                onSuccess: () => {
-                    // Handle success, e.g., show a success message or redirect
-                },
-                onError: () => {
-                    // Handle error, e.g., show an error message
-                },
-            });
+            post(`${url}/telemedicine`);
         }
     };
 
@@ -340,6 +333,16 @@ export default function ConsentTelemedicine({ patient }: ConsentTelemedicineProp
                     <FormControlLabel control={<Checkbox checked={data.consent_4 === "yes"} onChange={() => setData((prev) => ({ ...prev, consent_4: "yes" }))} />} label="ยินยอม" />
                     <FormControlLabel control={<Checkbox checked={data.consent_4 === "no"} onChange={() => setData((prev) => ({ ...prev, consent_4: "no" }))} />} label="ไม่ยินยอม" />
                 </div>
+                <TextField
+                    label="ชื่อผู้ป่วย หรือ ผู้ลงนามแทนผู้ป่วย"
+                    variant="standard"
+                    value={data.signature_name}
+                    className="w-full"
+                    name="signature_name"
+                    onChange={e => setData((prev) => ({ ...prev, signature_name: e.target.value }))}
+                    error={Boolean(errors.signature_name)}
+                    helperText={errors.signature_name}
+                />
                 <Box sx={{
                     margin: 2,
                 }}>
@@ -356,16 +359,7 @@ export default function ConsentTelemedicine({ patient }: ConsentTelemedicineProp
                         onEnd={handleEnd}
                     />
                 </Box>
-                <TextField
-                    label="ชื่อผู้ป่วย หรือ ผู้ลงนามแทนผู้ป่วย"
-                    variant="standard"
-                    value={data.signature_name}
-                    className="w-full"
-                    name="signature_name"
-                    onChange={e => setData((prev) => ({ ...prev, signature_name: e.target.value }))}
-                    error={Boolean(errors.signature_name)}
-                    helperText={errors.signature_name}
-                />
+
                 {errors.signature && (
                     <div className="text-red-500 text-sm mt-1">{errors.signature}</div>
                 )}

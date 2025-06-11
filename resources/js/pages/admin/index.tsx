@@ -1,4 +1,4 @@
-import AppLayout from '@/layouts/admin-layout';
+import AppLayout from '@/layouts/admin-dashboard';
 import React, { useState, useEffect } from 'react';
 import { useForm } from '@inertiajs/react';
 import { Box, Button, TextField, Stack, Typography, IconButton, InputAdornment } from '@mui/material';
@@ -22,25 +22,25 @@ const defaultPatient: PatientInfo = {
 export default function Index({
     patient: initialPatient = defaultPatient,
     result1: initialResult1 = '',
-    result2: initialResult2 = ''
-}: { patient?: PatientInfo; result1?: string; result2?: string }) {
+    result2: initialResult2 = '',
+    result3: initialResult3 = ''
+}: { patient?: PatientInfo; result1?: string; result2?: string; result3?: string }) {
     const { data, setData, post, processing, errors } = useForm({ hn: initialPatient.hn || '' });
     const [patientInfo, setPatientInfo] = useState<PatientInfo | null>(initialPatient.hn ? initialPatient : null);
     const [response1, setResponse1] = useState(initialResult1);
     const [response2, setResponse2] = useState(initialResult2);
+    const [response3, setResponse3] = useState(initialResult3);
 
-    // Use useEffect to update state if initial props change (e.g., on first page load)
     useEffect(() => {
         if (initialPatient && initialPatient.hn) {
             setPatientInfo(initialPatient);
         } else {
-            setPatientInfo(null); // Clear patient info if not provided on initial load
+            setPatientInfo(null);
         }
         setResponse1(initialResult1);
         setResponse2(initialResult2);
-        // If you want the HN field to clear on initial load after a search,
-        // you might adjust setData('hn', '') here based on whether it's an initial render or a post-search render.
-    }, [initialPatient, initialResult1, initialResult2]);
+        setResponse3(initialResult3);
+    }, [initialPatient, initialResult1, initialResult2, initialResult3]);
 
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -49,12 +49,13 @@ export default function Index({
         post('/search', {
             preserveState: true,
             preserveScroll: true,
-            only: ['result1', 'result2', 'patient', 'errors'], // Make sure 'errors' is also in 'only'
+            only: ['result1', 'result2', 'result3', 'patient', 'errors'],
 
             onSuccess: (page: any) => {
                 setResponse1(page.props.result1 || '');
                 setResponse2(page.props.result2 || '');
-                setPatientInfo(page.props.patient && page.props.patient.hn ? page.props.patient : null); // Ensure patient is valid
+                setResponse3(page.props.result3 || '');
+                setPatientInfo(page.props.patient && page.props.patient.hn ? page.props.patient : null);
 
                 Swal.fire({
                     toast: true,
@@ -67,9 +68,7 @@ export default function Index({
                 });
             },
             onError: (errors) => {
-                // errors object from Inertia will be automatically handled by useForm
                 console.error("Search errors:", errors);
-                // Swal might be redundant if helperText shows error, but can be for general feedback
                 Swal.fire({
                     toast: true,
                     position: 'bottom-end',
@@ -89,7 +88,7 @@ export default function Index({
         navigator.clipboard.writeText(text);
         Swal.fire({
             toast: true,
-            position: 'top-end', // Changed to top-end as requested previously
+            position: 'top-end',
             icon: 'success',
             title: 'Copied!',
             showConfirmButton: false,
@@ -100,10 +99,10 @@ export default function Index({
 
     return (
         <AppLayout>
-            <Box maxWidth={600} mx="auto" mt={6} p={3}> {/* Added padding */}
+            <Box maxWidth={600} mx="auto" mt={6} p={3}>
                 <Typography variant="h5" mb={3} textAlign="center">Search Patient Information</Typography> {/* Added text align */}
                 <form onSubmit={handleSubmit}>
-                    <Stack spacing={3}> {/* Increased spacing */}
+                    <Stack spacing={3}>
                         <TextField
                             label="HN"
                             name="hn"
@@ -112,15 +111,14 @@ export default function Index({
                             error={Boolean(errors.hn)}
                             helperText={errors.hn}
                             fullWidth
-                            variant="outlined" // Consistent variant
+                            variant="outlined"
                         />
                         <Button type="submit" variant="contained" disabled={processing}>
                             {processing ? 'Searching...' : 'Search'}
                         </Button>
 
-                        {/* Display Patient Info if available */}
                         {patientInfo && (
-                            <Box mt={2} p={2} border={1} borderColor="divider" borderRadius={1}> {/* Added styling */}
+                            <Box mt={2} p={2} border={1} borderColor="divider" borderRadius={1}>
                                 <Typography variant="h6" gutterBottom>Patient Details</Typography>
                                 <Typography variant="body1">
                                     HN: <Typography component="span" fontWeight="bold">{patientInfo.hn}</Typography>
@@ -139,10 +137,12 @@ export default function Index({
                         )}
 
                         <TextField
-                            label="Result 1"
+                            label="Telemedcine Consent"
                             value={response1}
-                            inputProps={{ readOnly: true }}
-                            slotProps={{ // Using slotProps as discussed
+                            slotProps={{
+                                htmlInput: {
+                                    readOnly: true
+                                },
                                 input: {
                                     endAdornment: (
                                         <InputAdornment position="end">
@@ -157,10 +157,12 @@ export default function Index({
                             variant="outlined" // Consistent variant
                         />
                         <TextField
-                            label="Result 2"
+                            label="Telemehealth Consent"
                             value={response2}
-                            inputProps={{ readOnly: true }}
-                            slotProps={{ // Using slotProps as discussed
+                            slotProps={{
+                                htmlInput: {
+                                    readOnly: true
+                                },
                                 input: {
                                     endAdornment: (
                                         <InputAdornment position="end">
@@ -172,7 +174,27 @@ export default function Index({
                                 },
                             }}
                             fullWidth
-                            variant="outlined" // Consistent variant
+                            variant="outlined"
+                        />
+                        <TextField
+                            label="HIV Consent"
+                            value={response3}
+                            slotProps={{
+                                htmlInput: {
+                                    readOnly: true
+                                },
+                                input: {
+                                    endAdornment: (
+                                        <InputAdornment position="end">
+                                            <IconButton onClick={() => handleCopy(response3)} edge="end" disabled={!response3}>
+                                                <ContentCopyIcon />
+                                            </IconButton>
+                                        </InputAdornment>
+                                    ),
+                                },
+                            }}
+                            fullWidth
+                            variant="outlined"
                         />
                     </Stack>
                 </form>

@@ -22,22 +22,19 @@ const customsTheme = createTheme({
     },
 });
 
+interface NavigationItem {
+    kind?: 'header';
+    segment?: string;
+    title: string;
+    icon?: React.ReactNode;
+}
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
     const page = usePage();
     const url = page.props.url as string;
     const auth = page.props.auth as { user: { name: string, userid: string } };
 
-    const NAVIGATION: Navigation = [
-        {
-            kind: 'header',
-            title: 'Tester',
-        },
-        {
-            title: 'Telemedince Consent',
-            icon: <DescriptionIcon />,
-            segment: '123'
-        },
+    const NAVIGATION: NavigationItem[] = [
         {
             kind: 'header',
             title: 'Consents',
@@ -46,6 +43,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             segment: 'index',
             title: 'Generate Link',
             icon: <DescriptionIcon />,
+        },
+        {
+            kind: 'header',
+            title: 'Tester',
+        },
+        {
+            title: 'Telemedince Consent',
+            icon: <DescriptionIcon />,
+            segment: 'search'
         },
         ...(auth ? [
             {
@@ -56,19 +62,22 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         ] : []),
     ];
 
-    function handleMenuPages(link: string) {
-        router.visit(`${url}/${link}`);
-    }
-
+    const handleNavigation = (segment: string) => {
+        if (segment === 'logout') {
+            router.post(`${url}/logout`);
+        } else {
+            router.visit(`${url}/${segment}`);
+        }
+    };
 
     return (
         <AppProvider
             branding={{
                 logo: <img src="images/Logo.png" alt="Praram9 Hospital logo" />,
                 title: 'Praram9 Hospital',
-                homeUrl: url + '/telemedicine/eyJpdiI6IkM2RURDSHFFdWpBZW9ES0hHdVJHWlE9PSIsInZhbHVlIjoiQkNlVVVneE50VHNnbzQ3SkZITnprdz09IiwibWFjIjoiOTc1MDJhNWY3ZDQxMWI1ZGMwYTI4NTI5YWVlMzUyNGU2ZjI5ZjJkNzgwMjBhYmRjN2VjZDFhM2JlZGEyMWMzZCIsInRhZyI6IiJ9',
+                homeUrl: url
             }}
-            navigation={NAVIGATION}
+            navigation={NAVIGATION as Navigation}
             theme={customsTheme}
         >
             <DashboardLayout>
