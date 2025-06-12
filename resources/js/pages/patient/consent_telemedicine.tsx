@@ -1,5 +1,5 @@
 import AppLayout from "@/layouts/patient";
-import { useForm, usePage } from "@inertiajs/react";
+import { Head, useForm, usePage } from "@inertiajs/react";
 import Swal from "sweetalert2";
 import Button from '@mui/material/Button';
 import FormControlLabel from "@mui/material/FormControlLabel";
@@ -108,6 +108,10 @@ export default function ConsentTelemedicine({ patient }: ConsentTelemedicineProp
 
     return (
         <AppLayout>
+            <Head>
+                <title>ข้อกำหนดและการให้ความยินยอมรับบริการ</title>
+                <meta name="description" content="ข้อกำหนดและการให้ความยินยอมรับบริการ" />
+            </Head>
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

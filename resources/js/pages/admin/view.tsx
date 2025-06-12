@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { usePage } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import AdminDashboard from '@/layouts/admin-dashboard';
 import {
     Box,
@@ -17,6 +17,7 @@ import {
     TablePagination,
     Stack,
     Button,
+    Link,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -82,6 +83,10 @@ export default function View() {
 
     return (
         <AdminDashboard>
+            <Head>
+                <title>Search Consent Information</title>
+                <meta name="description" content="รายการข้อกำหนดและการให้ความยินยอมรับบริการ" />
+            </Head>
             <Box sx={{ p: 3 }}>
                 <Typography variant="h4" sx={{ mb: 3 }}>
                     Consents
@@ -145,14 +150,15 @@ export default function View() {
                                                     />
                                                 </TableCell>
                                                 <TableCell>
-                                                    <Tooltip title="View Details">
-                                                        <IconButton
-                                                            size="small"
-                                                            onClick={() => handleViewConsent(consent.id)}
-                                                        >
-                                                            <VisibilityIcon />
-                                                        </IconButton>
-                                                    </Tooltip>
+                                                    <Button
+                                                        component={Link}
+                                                        href={route('admin.telemedicine-consent', consent.id)}
+                                                        variant="contained"
+                                                        size="small"
+                                                        color="primary"
+                                                    >
+                                                        View Details
+                                                    </Button>
                                                 </TableCell>
                                             </TableRow>
                                         );

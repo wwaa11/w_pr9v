@@ -3,6 +3,8 @@
 use App\Http\Controllers\MainController;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/test', [MainController::class, 'temp']);
+
 Route::get('/', [MainController::class, 'index'])->name('home');
 
 Route::get('/error', function () {return inertia('error');})->name('error');
@@ -22,11 +24,10 @@ Route::get('/hiv/{hn_token}', [MainController::class, 'hiv'])->name('hiv');
 Route::post('/hiv', [MainController::class, 'hiv_store']);
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/search', [MainController::class, 'index'])->name('index');
-    Route::post('/search', [MainController::class, 'search']);
-
-    Route::get('/view', [MainController::class, 'viewConsent'])->name('view');
-
+    Route::get('/admin', [MainController::class, 'index'])->name('admin.index');
+    Route::post('/admin', [MainController::class, 'index_search']);
+    Route::get('/admin/view', [MainController::class, 'viewConsent'])->name('admin.view');
+    Route::get('/admin/telemedicine-consent/{id}', [MainController::class, 'viewTelemedicineConsent'])->name('admin.telemedicine-consent');
 });
 
 Route::fallback(function () {

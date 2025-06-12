@@ -22,9 +22,8 @@ import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
 import PersonSearchIcon from '@mui/icons-material/PersonSearch';
 import ContactPageIcon from '@mui/icons-material/ContactPage';
-import PersonIcon from '@mui/icons-material/Person';
 
-const drawerWidth = 240;
+const drawerWidth = 220;
 
 const openedMixin = (theme: any) => ({
     width: drawerWidth,
@@ -107,12 +106,12 @@ export default function AdminDashboard({ children }: { children: React.ReactNode
         {
             title: 'Generate Consnet',
             icon: <ContactPageIcon />,
-            path: 'search',
+            path: 'admin',
         },
         {
             title: 'Search Consent',
             icon: <PersonSearchIcon />,
-            path: 'view',
+            path: 'admin/view',
         },
     ];
 
@@ -186,6 +185,9 @@ export default function AdminDashboard({ children }: { children: React.ReactNode
                             open={Boolean(anchorElUser)}
                             onClose={handleCloseUserMenu}
                         >
+                            <MenuItem >
+                                <Typography >{auth.user.name}</Typography>
+                            </MenuItem>
                             <MenuItem onClick={handleLogout}>
                                 <ListItemIcon>
                                     <LogoutIcon fontSize="small" />

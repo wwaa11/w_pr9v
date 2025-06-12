@@ -15,21 +15,72 @@ class MainController extends Controller
 
     public function temp()
     {
-        $patient = Patient::first();
+        $consent  = Consent::first();
+        $response = Http::withHeaders(['token' => env('API_KEY')])
+            ->post('http://172.20.1.12/dbstaff/api/patient/consent', [
+                'hn'   => $consent->hn,
+                'lang' => 'th',
+            ])
+            ->json();
 
-        return inertia::render('patient/temp', compact('patient'));
+        $consentData = [
+            'hn'         => $consent->hn,
+            'patient'    => [
+                'nameTH'             => $response['patient']['nameTH'],
+                'surnameTH'          => $response['patient']['surnameTH'],
+                'nameEN'             => $response['patient']['nameEN'],
+                'surnameEN'          => $response['patient']['surnameEN'],
+                'birthDate'          => $response['patient']['DOB'],
+                'age'                => $response['patient']['age'],
+                'address'            => $response['patient']['address'],
+                'mobile'             => $response['patient']['mobile'],
+                'email'              => $response['patient']['email'],
+                'religion'           => $response['patient']['religion'],
+                'race'               => $response['patient']['race'],
+                'national'           => $response['patient']['national'],
+                'martial'            => $response['patient']['martial'],
+                'occupation'         => $response['patient']['ocupation'],
+                'education'          => $response['patient']['education'],
+                'allergy'            => $response['patient']['allergy'],
+                'allergy_name'       => $response['patient']['allergy_name'],
+                'allergy_symptom'    => $response['patient']['allergy_symptom'],
+                'represent'          => $response['patient']['represent'],
+                'represent_name'     => $response['patient']['represent_name'],
+                'represent_relation' => $response['patient']['represent_relation'],
+                'represent_phone'    => $response['patient']['represent_phone'],
+            ],
+            'created_at' => $consent->created_at,
+            'status'     => $consent->status,
+        ];
+
+        return Inertia::render('TelemedicineConsent', [
+            'consent' => $consentData,
+        ]);
+
     }
 
     public function login(Request $request)
     {
         $userid   = $request->userid;
         $password = $request->password;
-
         if (env('APP_ENV') == 'dev' || env('APP_PASSWORD') == $password) {
-            $userData = User::where('user_id', $userid)->first();
-            Auth::login($userData);
+            $response = Http::withHeaders(['token' => env('API_KEY')])
+                ->post('http://172.20.1.12/dbstaff/api/getuser', [
+                    'userid' => $userid,
+                ])
+                ->json();
+            if ($response['status'] == 1) {
+                $userData = User::firstOrCreate(['user_id' => $userid, 'name' => $response['user']['name']]);
+                Auth::login($userData);
 
-            return redirect()->route('index');
+                return redirect()->route('admin.index');
+            }
+
+            return inertia('login', [
+                'errors' => [
+                    'login' => 'Developer only : user_id not exist',
+                ],
+            ]);
         }
 
         $response = Http::withHeaders(['token' => env('API_KEY')])
@@ -51,7 +102,7 @@ class MainController extends Controller
 
             Auth::login($userData);
 
-            return redirect()->route('index');
+            return redirect()->route('admin.index');
         }
 
         return inertia('login', [
@@ -83,6 +134,66 @@ class MainController extends Controller
         ];
 
         return inertia::render('admin/index', compact('data'));
+    }
+
+    public function index_search(Request $request)
+    {
+        $request->validate([
+            'hn' => ['required', 'string', 'max:255'],
+        ]);
+
+        $hn = $request->input('hn');
+
+        $response = Http::withHeaders(['token' => env('API_KEY')])
+            ->post('http://172.20.1.12/dbstaff/api/patient/consent', [
+                'hn'   => $hn,
+                'lang' => 'th',
+            ])
+            ->json();
+
+        if ($response['status'] == 0) {
+            $patientData = [
+                'hn'      => $hn,
+                'name'    => $response['message'],
+                'address' => 'N/A',
+                'phone'   => 'N/A',
+            ];
+            $generatedResult1 = "Patient with HN {$hn} not found.";
+            $generatedResult2 = "";
+            $generatedResult3 = "";
+        } else {
+            $patient = Patient::where('hn', $hn)->first();
+            if ($patient == null) {
+                $patient        = new Patient();
+                $patient->hn    = $hn;
+                $patient->token = Crypt::encryptString($hn);
+            }
+            $patient->expires_at = now()->addMinutes(60);
+            $patient->save();
+
+            $generatedResult1 = env('APP_URL') . '/telemedicine/' . $patient->token;
+            $generatedResult2 = env('APP_URL') . '/telemehealth/' . $patient->token;
+            $generatedResult3 = env('APP_URL') . '/hiv/' . $patient->token;
+            $patientData      = [
+                'hn'      => $patient->hn,
+                'name'    => $response['patient']['nameTH'] . ' ' . $response['patient']['surnameTH'] ?? 'N/A',
+                'address' => $response['patient']['address'] ?? 'N/A',
+                'phone'   => $response['patient']['mobile'] ?? 'N/A',
+            ];
+        }
+
+        // Get consents for the HN
+        $consents = Consent::where('hn', $hn)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return Inertia::render('admin/index', [
+            'patient'  => $patientData,
+            'result1'  => $generatedResult1,
+            'result2'  => $generatedResult2,
+            'result3'  => $generatedResult3,
+            'consents' => $consents,
+        ]);
     }
 
     public function telemedicine($token)
@@ -117,65 +228,11 @@ class MainController extends Controller
         $new->consent_2      = ($request->consent_2 === 'yes') ? true : false;
         $new->consent_3      = ($request->consent_3 === 'yes') ? true : false;
         $new->consent_4      = ($request->consent_4 === 'yes') ? true : false;
+        $new->informer_name  = auth()->user()->user_id;
+        $new->witness_name   = auth()->user()->user_id;
         $new->save();
 
         return redirect()->route('success');
-    }
-
-    public function search(Request $request)
-    {
-        $request->validate([
-            'hn' => ['required', 'string', 'max:255'],
-        ]);
-
-        $hn = $request->input('hn');
-
-        $patient = Patient::where('hn', $hn)->first();
-        if ($patient == null) {
-            $patient        = new Patient();
-            $patient->hn    = $hn;
-            $patient->token = Crypt::encryptString($hn);
-        }
-        $patient->expires_at = now()->addMinutes(60);
-        $patient->save();
-
-        $response = Http::withHeaders(['token' => env('API_KEY')])
-            ->post('http://172.20.1.12/dbstaff/api/patient/consent', [
-                'hn'   => $hn,
-                'lang' => 'th',
-
-            ])
-            ->json();
-
-        if ($response['status'] == 0) {
-            $patientData = [
-                'hn'      => $hn,
-                'name'    => $response['message'],
-                'address' => 'N/A',
-                'phone'   => 'N/A',
-            ];
-            $generatedResult1 = "Patient with HN {$hn} not found.";
-            $generatedResult2 = "";
-            $generatedResult3 = "";
-
-        } else {
-            $generatedResult1 = env('APP_URL') . '/telemedicine/' . $patient->token;
-            $generatedResult2 = env('APP_URL') . '/telemehealth/' . $patient->token;
-            $generatedResult3 = env('APP_URL') . '/hiv/' . $patient->token;
-            $patientData      = [
-                'hn'      => $patient->hn,
-                'name'    => $response['patient']['nameTH'] . ' ' . $response['patient']['surnameTH'] ?? 'N/A',
-                'address' => $response['patient']['address'] ?? 'N/A',
-                'phone'   => $response['patient']['mobile'] ?? 'N/A',
-            ];
-        }
-
-        return Inertia::render('admin/index', [
-            'patient' => $patientData,
-            'result1' => $generatedResult1,
-            'result2' => $generatedResult2,
-            'result3' => $generatedResult3,
-        ]);
     }
 
     public function viewConsent(Request $request)
@@ -189,5 +246,61 @@ class MainController extends Controller
             ->get();
 
         return inertia::render('admin/view', compact('consents'));
+    }
+
+    public function viewTelemedicineConsent($id)
+    {
+        if (! auth()->check()) {
+            return redirect()->route('login');
+        }
+
+        $consent = Consent::findOrFail($id);
+
+        // Fetch patient data from API
+        $response = Http::withHeaders(['token' => env('API_KEY')])
+            ->post('http://172.20.1.12/dbstaff/api/patient/consent', [
+                'hn'   => $consent->hn,
+                'lang' => 'th',
+            ])
+            ->json();
+
+        if ($response['status'] == 0) {
+            return back()->with('error', 'ไม่พบข้อมูลผู้ป่วย');
+        }
+
+        $consentData = [
+            'hn'         => $consent->hn,
+            'patient'    => [
+                'nameTH'             => $response['patient']['nameTH'],
+                'surnameTH'          => $response['patient']['surnameTH'],
+                'nameEN'             => $response['patient']['nameEN'],
+                'surnameEN'          => $response['patient']['surnameEN'],
+                'birthDate'          => $response['patient']['DOB'],
+                'age'                => $response['patient']['age'],
+                'gender'             => $response['patient']['gender'] ?? 'N/A',
+                'address'            => $response['patient']['address'],
+                'mobile'             => $response['patient']['mobile'],
+                'email'              => $response['patient']['email'],
+                'religion'           => $response['patient']['religion'],
+                'race'               => $response['patient']['race'],
+                'national'           => $response['patient']['national'],
+                'martial'            => $response['patient']['martial'],
+                'occupation'         => $response['patient']['ocupation'],
+                'education'          => $response['patient']['education'],
+                'allergy'            => $response['patient']['allergy'],
+                'allergy_name'       => $response['patient']['allergy_name'],
+                'allergy_symptom'    => $response['patient']['allergy_symptom'],
+                'represent'          => $response['patient']['represent'],
+                'represent_name'     => $response['patient']['represent_name'],
+                'represent_relation' => $response['patient']['represent_relation'],
+                'represent_phone'    => $response['patient']['represent_phone'],
+            ],
+            'created_at' => $consent->created_at,
+            'status'     => $consent->status,
+        ];
+
+        return Inertia::render('admin/telemedicine_consent_view', [
+            'consent' => $consentData,
+        ]);
     }
 }
