@@ -3,7 +3,6 @@ import { Head, useForm, usePage } from "@inertiajs/react";
 import Swal from "sweetalert2";
 import Button from '@mui/material/Button';
 import FormControlLabel from "@mui/material/FormControlLabel";
-import Checkbox from "@mui/material/Checkbox";
 import TextField from "@mui/material/TextField";
 import SignaturePad from "react-signature-canvas";
 import { useRef, useState } from "react";

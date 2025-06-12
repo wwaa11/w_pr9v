@@ -12,9 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('consents', function (Blueprint $table) {
-            //
-            $table->string('informer_name');
-            $table->string('witness_name');
+            $table->string('informer_user_id');
+            $table->string('witness_user_id');
         });
     }
 
@@ -24,9 +23,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('consents', function (Blueprint $table) {
-            //
-            $table->dropColumn('informer_name');
-            $table->dropColumn('witness_name');
+            $table->dropColumn('informer_user_id');
+            $table->dropColumn('witness_user_id');
         });
     }
 };

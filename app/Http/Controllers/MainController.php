@@ -15,47 +15,6 @@ class MainController extends Controller
 
     public function temp()
     {
-        $consent  = Consent::first();
-        $response = Http::withHeaders(['token' => env('API_KEY')])
-            ->post('http://172.20.1.12/dbstaff/api/patient/consent', [
-                'hn'   => $consent->hn,
-                'lang' => 'th',
-            ])
-            ->json();
-
-        $consentData = [
-            'hn'         => $consent->hn,
-            'patient'    => [
-                'nameTH'             => $response['patient']['nameTH'],
-                'surnameTH'          => $response['patient']['surnameTH'],
-                'nameEN'             => $response['patient']['nameEN'],
-                'surnameEN'          => $response['patient']['surnameEN'],
-                'birthDate'          => $response['patient']['DOB'],
-                'age'                => $response['patient']['age'],
-                'address'            => $response['patient']['address'],
-                'mobile'             => $response['patient']['mobile'],
-                'email'              => $response['patient']['email'],
-                'religion'           => $response['patient']['religion'],
-                'race'               => $response['patient']['race'],
-                'national'           => $response['patient']['national'],
-                'martial'            => $response['patient']['martial'],
-                'occupation'         => $response['patient']['ocupation'],
-                'education'          => $response['patient']['education'],
-                'allergy'            => $response['patient']['allergy'],
-                'allergy_name'       => $response['patient']['allergy_name'],
-                'allergy_symptom'    => $response['patient']['allergy_symptom'],
-                'represent'          => $response['patient']['represent'],
-                'represent_name'     => $response['patient']['represent_name'],
-                'represent_relation' => $response['patient']['represent_relation'],
-                'represent_phone'    => $response['patient']['represent_phone'],
-            ],
-            'created_at' => $consent->created_at,
-            'status'     => $consent->status,
-        ];
-
-        return Inertia::render('TelemedicineConsent', [
-            'consent' => $consentData,
-        ]);
 
     }
 
@@ -219,17 +178,17 @@ class MainController extends Controller
             'consent_4'      => 'required|string',
         ]);
 
-        $new                 = new Consent;
-        $new->hn             = $request->hn;
-        $new->type           = $request->type;
-        $new->signature_name = $request->signature_name;
-        $new->signature      = $request->signature;
-        $new->consent_1      = ($request->consent_1 === 'yes') ? true : false;
-        $new->consent_2      = ($request->consent_2 === 'yes') ? true : false;
-        $new->consent_3      = ($request->consent_3 === 'yes') ? true : false;
-        $new->consent_4      = ($request->consent_4 === 'yes') ? true : false;
-        $new->informer_name  = auth()->user()->user_id;
-        $new->witness_name   = auth()->user()->user_id;
+        $new                   = new Consent;
+        $new->hn               = $request->hn;
+        $new->type             = $request->type;
+        $new->signature_name   = $request->signature_name;
+        $new->signature        = $request->signature;
+        $new->consent_1        = ($request->consent_1 === 'yes') ? true : false;
+        $new->consent_2        = ($request->consent_2 === 'yes') ? true : false;
+        $new->consent_3        = ($request->consent_3 === 'yes') ? true : false;
+        $new->consent_4        = ($request->consent_4 === 'yes') ? true : false;
+        $new->informer_user_id = auth()->user()->user_id;
+        $new->witness_user_id  = auth()->user()->user_id;
         $new->save();
 
         return redirect()->route('success');
@@ -267,36 +226,52 @@ class MainController extends Controller
         if ($response['status'] == 0) {
             return back()->with('error', 'ไม่พบข้อมูลผู้ป่วย');
         }
+        $represent_fullname = explode(' ', $response['patient']['represent_name']);
+        $represent_name     = $represent_fullname[0] ?? '';
+        $represent_surname  = isset($represent_fullname[1]) ? $represent_fullname[1] : '';
 
         $consentData = [
-            'hn'         => $consent->hn,
-            'patient'    => [
+            'hn'             => $consent->hn,
+            'patient'        => [
                 'nameTH'             => $response['patient']['nameTH'],
                 'surnameTH'          => $response['patient']['surnameTH'],
                 'nameEN'             => $response['patient']['nameEN'],
                 'surnameEN'          => $response['patient']['surnameEN'],
                 'birthDate'          => $response['patient']['DOB'],
-                'age'                => $response['patient']['age'],
-                'gender'             => $response['patient']['gender'] ?? 'N/A',
-                'address'            => $response['patient']['address'],
-                'mobile'             => $response['patient']['mobile'],
-                'email'              => $response['patient']['email'],
                 'religion'           => $response['patient']['religion'],
                 'race'               => $response['patient']['race'],
                 'national'           => $response['patient']['national'],
                 'martial'            => $response['patient']['martial'],
+                'age'                => $response['patient']['age'],
+                'phone'              => $response['patient']['phone'],
+                'mobile'             => $response['patient']['mobile'],
+                'email'              => $response['patient']['email'],
                 'occupation'         => $response['patient']['ocupation'],
                 'education'          => $response['patient']['education'],
+                'address'            => $response['patient']['address'],
+                'address_contact'    => $response['patient']['address_contact'],
                 'allergy'            => $response['patient']['allergy'],
                 'allergy_name'       => $response['patient']['allergy_name'],
                 'allergy_symptom'    => $response['patient']['allergy_symptom'],
+                'photo'              => $response['patient']['photo'],
                 'represent'          => $response['patient']['represent'],
-                'represent_name'     => $response['patient']['represent_name'],
+                'represent_name'     => $represent_name,
+                'represent_surname'  => $represent_surname,
                 'represent_relation' => $response['patient']['represent_relation'],
                 'represent_phone'    => $response['patient']['represent_phone'],
             ],
-            'created_at' => $consent->created_at,
-            'status'     => $consent->status,
+            'visit_date'     => $consent->created_at->format('d/m/Y'),
+            'visit_time'     => $consent->created_at->format('H:i'),
+            'consent_1'      => $consent->consent_1,
+            'consent_2'      => $consent->consent_2,
+            'consent_3'      => $consent->consent_3,
+            'consent_4'      => $consent->consent_4,
+            'signature'      => $consent->signature,
+            'signature_name' => $consent->signature_name,
+            'informer_name'  => $consent->informer->name,
+            'informer_sign'  => $consent->informer->signature,
+            'witness_name'   => $consent->witness->name,
+            'witness_sign'   => $consent->witness->signature,
         ];
 
         return Inertia::render('admin/telemedicine_consent_view', [
