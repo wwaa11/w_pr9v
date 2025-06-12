@@ -91,7 +91,7 @@ export default function Index({
         navigator.clipboard.writeText(text);
         Swal.fire({
             toast: true,
-            position: 'top-end',
+            position: 'bottom-end',
             icon: 'success',
             title: 'Copied!',
             showConfirmButton: false,

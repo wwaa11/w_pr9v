@@ -56,7 +56,7 @@ class MainController extends Controller
 
         return inertia('login', [
             'errors' => [
-                'login' => 'รหัสพนักงงาน หรือ รหัสผ่านผิดพลาด',
+                'login' => 'รหัสพนักงาน หรือ รหัสผ่านผิดพลาด',
             ],
         ]);
     }
@@ -176,5 +176,18 @@ class MainController extends Controller
             'result2' => $generatedResult2,
             'result3' => $generatedResult3,
         ]);
+    }
+
+    public function viewConsent(Request $request)
+    {
+        $startDate = $request->start_date ?? now()->startOfDay()->format('Y-m-d');
+        $endDate   = $request->end_date ?? now()->endOfDay()->format('Y-m-d');
+
+        $consents = Consent::whereDate('created_at', '>=', $startDate)
+            ->whereDate('created_at', '<=', $endDate)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return inertia::render('admin/view', compact('consents'));
     }
 }

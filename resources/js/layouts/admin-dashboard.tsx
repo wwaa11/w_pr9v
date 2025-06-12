@@ -21,6 +21,8 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
 import PersonSearchIcon from '@mui/icons-material/PersonSearch';
+import ContactPageIcon from '@mui/icons-material/ContactPage';
+import PersonIcon from '@mui/icons-material/Person';
 
 const drawerWidth = 240;
 
@@ -103,9 +105,14 @@ export default function AdminDashboard({ children }: { children: React.ReactNode
 
     const menuItems: MenuItem[] = [
         {
-            title: 'Patient Search',
-            icon: <PersonSearchIcon />,
+            title: 'Generate Consnet',
+            icon: <ContactPageIcon />,
             path: 'search',
+        },
+        {
+            title: 'Search Consent',
+            icon: <PersonSearchIcon />,
+            path: 'view',
         },
     ];
 
@@ -160,7 +167,7 @@ export default function AdminDashboard({ children }: { children: React.ReactNode
                     <Box sx={{ flexGrow: 0 }}>
                         <Tooltip title="Open settings">
                             <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                                <Avatar alt={auth.user.name} src="/static/images/avatar/2.jpg" />
+                                <Avatar alt={auth.user.name} src={url + "/images/user.png"} />
                             </IconButton>
                         </Tooltip>
                         <Menu

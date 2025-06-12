@@ -18,14 +18,10 @@ export default function Success({
 
     useEffect(() => {
         document.title = "Success";
-
-        // Prevent going back
         window.history.pushState(null, '', window.location.href);
         window.onpopstate = function () {
             window.history.pushState(null, '', window.location.href);
         };
-
-        // Cleanup function
         return () => {
             window.onpopstate = null;
         };
