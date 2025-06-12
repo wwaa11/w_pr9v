@@ -158,10 +158,18 @@ class MainController extends Controller
             $patient->expires_at = now()->addMinutes(60);
             $patient->save();
 
-            $generatedResult1 = env('APP_URL') . '/telemedicine/' . $patient->token;
-            $generatedResult2 = env('APP_URL') . '/telemehealth/' . $patient->token;
-            $generatedResult3 = env('APP_URL') . '/hiv/' . $patient->token;
-            $patientData      = [
+            // Create query parameters
+            $queryParams = http_build_query([
+                'witness_user_id'  => session('witness'),
+                'informer_user_id' => auth()->user()->user_id,
+            ]);
+
+            $baseUrl          = env('APP_URL');
+            $generatedResult1 = "{$baseUrl}/telemedicine/{$patient->token}?{$queryParams}";
+            $generatedResult2 = "{$baseUrl}/telemehealth/{$patient->token}?{$queryParams}";
+            $generatedResult3 = "{$baseUrl}/hiv/{$patient->token}?{$queryParams}";
+
+            $patientData = [
                 'hn'      => $patient->hn,
                 'name'    => $response['patient']['nameTH'] . ' ' . $response['patient']['surnameTH'] ?? 'N/A',
                 'address' => $response['patient']['address'] ?? 'N/A',
@@ -216,7 +224,7 @@ class MainController extends Controller
         $new->consent_2        = ($request->consent_2 === 'yes') ? true : false;
         $new->consent_3        = ($request->consent_3 === 'yes') ? true : false;
         $new->consent_4        = ($request->consent_4 === 'yes') ? true : false;
-        $new->informer_user_id = auth()->user()->user_id;
+        $new->informer_user_id = $request->informer_user_id;
         $new->witness_user_id  = $request->witness_user_id;
         $new->save();
 

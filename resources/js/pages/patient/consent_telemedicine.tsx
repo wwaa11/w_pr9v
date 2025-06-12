@@ -5,7 +5,7 @@ import Button from '@mui/material/Button';
 import FormControlLabel from "@mui/material/FormControlLabel";
 import TextField from "@mui/material/TextField";
 import SignaturePad from "react-signature-canvas";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
@@ -20,18 +20,19 @@ import { motion } from "framer-motion";
 interface ConsentTelemedicineProps {
     patient: {
         hn: string;
-        witness_user_id: string;
     }
 }
 
 export default function ConsentTelemedicine({ patient }: ConsentTelemedicineProps) {
     const page = usePage();
     const url = page.props.url as string;
+    const params = new URLSearchParams(window.location.search);
     const [activeSection, setActiveSection] = useState<string | null>(null);
 
     const { data, setData, post, processing, errors } = useForm({
         type: "Telemedicine",
-        witness_user_id: patient.witness_user_id,
+        witness_user_id: params.get('witness_user_id'),
+        informer_user_id: params.get('informer_user_id'),
         hn: patient.hn,
         signature: "",
         signature_name: "",

@@ -13,6 +13,11 @@ interface PatientInfo {
     phone: string;
 }
 
+interface UserInfo {
+    user_id: string;
+    name: string;
+}
+
 interface Consent {
     id: number;
     type: string;
@@ -37,12 +42,16 @@ export default function Index({
     result2: initialResult2 = '',
     result3: initialResult3 = '',
     consents: initialConsents = [],
+    witness,
+    informer,
 }: {
     patient?: PatientInfo;
     result1?: string;
     result2?: string;
     result3?: string;
     consents?: Consent[];
+    witness?: UserInfo;
+    informer?: UserInfo;
 }) {
     const page = usePage();
     const url = page.props.url as string;
