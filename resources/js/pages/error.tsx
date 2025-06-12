@@ -17,7 +17,7 @@ export default function Error({ status, message }: ErrorProps) {
     const auth = page.props.auth as { user: { name: string, userid: string } } | null;
 
     const handleGoHome = () => {
-        router.visit(auth ? url + "/search" : url + "/login");
+        router.visit(auth ? url + "/" : url + "/login");
     };
 
     return (
