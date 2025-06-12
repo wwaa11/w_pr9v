@@ -16,6 +16,9 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import Fade from '@mui/material/Fade';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import InputLabel from '@mui/material/InputLabel';
 
 const Card = styled(MuiCard)(({ theme }) => ({
     display: 'flex',
@@ -59,19 +62,32 @@ const SignInContainer = styled(Stack)(({ theme }) => ({
     },
 }));
 
+interface User {
+    id: number;
+    user_id: string;
+    name: string;
+    role: string;
+}
+
 export default function Login() {
     const page = usePage();
     const url = page.props.url as string;
+    const users = page.props.users as User[];
     const { errors } = usePage().props as { errors: Record<string, string> };
     const [showPassword, setShowPassword] = React.useState(false);
 
     const { data, setData, post, processing } = useForm({
         userid: '',
         password: '',
+        witness: '',
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setData(e.target.name as "userid" | "password", e.target.value);
+    };
+
+    const handleUserSelect = (event: SelectChangeEvent) => {
+        setData('witness', event.target.value);
     };
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -132,6 +148,29 @@ export default function Login() {
                         gap: 2,
                     }}
                 >
+                    <FormControl fullWidth>
+                        <InputLabel id="user-select-label">เลือกพยาน</InputLabel>
+                        <Select
+                            labelId="user-select-label"
+                            id="user-select"
+                            value={data.witness}
+                            label="Select User"
+                            onChange={handleUserSelect}
+                            error={Boolean(errors.userid)}
+                            sx={{
+                                '& .MuiOutlinedInput-root': {
+                                    borderRadius: 2,
+                                }
+                            }}
+                        >
+                            {users.map((user) => (
+                                <MenuItem key={user.id} value={user.user_id}>
+                                    {user.name} ({user.user_id})
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+
                     <FormControl>
                         <FormLabel htmlFor="userid" sx={{ mb: 1, fontWeight: 500 }}>
                             Employee ID
@@ -173,18 +212,20 @@ export default function Login() {
                             onChange={handleChange}
                             error={Boolean(errors.password)}
                             helperText={errors.password}
-                            InputProps={{
-                                endAdornment: (
-                                    <InputAdornment position="end">
-                                        <IconButton
-                                            aria-label="toggle password visibility"
-                                            onClick={handleClickShowPassword}
-                                            edge="end"
-                                        >
-                                            {showPassword ? <VisibilityOff /> : <Visibility />}
-                                        </IconButton>
-                                    </InputAdornment>
-                                ),
+                            slotProps={{
+                                input: {
+                                    endAdornment: (
+                                        <InputAdornment position="end">
+                                            <IconButton
+                                                aria-label="toggle password visibility"
+                                                onClick={handleClickShowPassword}
+                                                edge="end"
+                                            >
+                                                {showPassword ? <VisibilityOff /> : <Visibility />}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    ),
+                                }
                             }}
                             sx={{
                                 '& .MuiOutlinedInput-root': {

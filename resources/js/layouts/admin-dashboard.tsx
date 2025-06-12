@@ -22,6 +22,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
 import PersonSearchIcon from '@mui/icons-material/PersonSearch';
 import ContactPageIcon from '@mui/icons-material/ContactPage';
+import PeopleIcon from '@mui/icons-material/People';
 
 const drawerWidth = 220;
 
@@ -112,6 +113,11 @@ export default function AdminDashboard({ children }: { children: React.ReactNode
             title: 'Search Consent',
             icon: <PersonSearchIcon />,
             path: 'admin/view',
+        },
+        {
+            title: 'Manage Witness',
+            icon: <PeopleIcon />,
+            path: 'admin/users',
         },
     ];
 

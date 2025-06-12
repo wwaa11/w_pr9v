@@ -18,6 +18,8 @@ import {
     Stack,
     Button,
     Link,
+    TableSortLabel,
+    TextField,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -38,6 +40,21 @@ interface Consent {
     consent_4: boolean;
 }
 
+type Order = 'asc' | 'desc';
+
+interface HeadCell {
+    id: keyof Consent;
+    label: string;
+    numeric: boolean;
+}
+
+const headCells: HeadCell[] = [
+    { id: 'created_at', label: 'Time', numeric: false },
+    { id: 'hn', label: 'HN', numeric: false },
+    { id: 'type', label: 'Type', numeric: false },
+    { id: 'signature_name', label: 'Signature Name', numeric: false },
+];
+
 export default function View() {
     const pageProps = usePage();
     const url = pageProps.props.url as string;
@@ -46,6 +63,9 @@ export default function View() {
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
     const [startDate, setStartDate] = React.useState<Date | null>(startOfDay(new Date()));
     const [endDate, setEndDate] = React.useState<Date | null>(endOfDay(new Date()));
+    const [order, setOrder] = React.useState<Order>('asc');
+    const [orderBy, setOrderBy] = React.useState<keyof Consent>('created_at');
+    const [hnFilter, setHnFilter] = React.useState('');
 
     const getConsentStatus = (consent: Consent) => {
         const allConsents = [consent.consent_1, consent.consent_2, consent.consent_3, consent.consent_4];
@@ -54,10 +74,6 @@ export default function View() {
         if (approvedCount === 4) return { label: 'Approved', color: 'success' };
         if (approvedCount === 0) return { label: 'Rejected', color: 'error' };
         return { label: 'Partial', color: 'warning' };
-    };
-
-    const handleViewConsent = (id: number) => {
-        console.log('View consent:', id);
     };
 
     const handleChangePage = (_event: unknown, newPage: number) => {
@@ -74,12 +90,52 @@ export default function View() {
             router.get(url + '/admin/view', {
                 start_date: format(startDate, 'yyyy-MM-dd'),
                 end_date: format(endDate, 'yyyy-MM-dd'),
+                hn: hnFilter.trim(),
             }, {
                 preserveState: true,
                 preserveScroll: true,
             });
         }
     };
+
+    const handleClearFilters = () => {
+        setHnFilter('');
+        setStartDate(startOfDay(new Date()));
+        setEndDate(endOfDay(new Date()));
+        router.get(url + '/admin/view', {}, {
+            preserveState: true,
+            preserveScroll: true,
+        });
+    };
+
+    const handleHnFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setHnFilter(event.target.value);
+    };
+
+    const handleHnFilterKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === 'Enter') {
+            handleDateRangeChange();
+        }
+    };
+
+    const handleRequestSort = (_event: React.MouseEvent<unknown>, property: keyof Consent) => {
+        const isAsc = orderBy === property && order === 'asc';
+        setOrder(isAsc ? 'desc' : 'asc');
+        setOrderBy(property);
+    };
+
+    const sortedConsents = React.useMemo(() => {
+        return [...consents].sort((a, b) => {
+            if (orderBy === 'created_at') {
+                return order === 'asc'
+                    ? new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+                    : new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+            }
+            return order === 'asc'
+                ? String(a[orderBy]).localeCompare(String(b[orderBy]))
+                : String(b[orderBy]).localeCompare(String(a[orderBy]));
+        });
+    }, [consents, order, orderBy]);
 
     return (
         <AdminDashboard>
@@ -93,6 +149,14 @@ export default function View() {
                 </Typography>
                 <Paper sx={{ p: 2, mb: 3 }}>
                     <Stack direction="row" spacing={2} alignItems="center">
+                        <TextField
+                            label="HN"
+                            value={hnFilter}
+                            onChange={handleHnFilterChange}
+                            onKeyPress={handleHnFilterKeyPress}
+                            size="small"
+                            placeholder="Enter HN number"
+                        />
                         <LocalizationProvider dateAdapter={AdapterDateFns}>
                             <DatePicker
                                 label="Start Date"
@@ -114,6 +178,12 @@ export default function View() {
                         >
                             Apply Filter
                         </Button>
+                        <Button
+                            variant="outlined"
+                            onClick={handleClearFilters}
+                        >
+                            Clear Filters
+                        </Button>
                     </Stack>
                 </Paper>
                 <Paper sx={{ width: '100%', overflow: 'hidden' }}>
@@ -121,16 +191,27 @@ export default function View() {
                         <Table stickyHeader>
                             <TableHead>
                                 <TableRow>
-                                    <TableCell>Time</TableCell>
-                                    <TableCell>HN</TableCell>
-                                    <TableCell>Type</TableCell>
-                                    <TableCell>Signature Name</TableCell>
+                                    {headCells.map((headCell) => (
+                                        <TableCell
+                                            key={headCell.id}
+                                            align={headCell.numeric ? 'right' : 'left'}
+                                            sortDirection={orderBy === headCell.id ? order : false}
+                                        >
+                                            <TableSortLabel
+                                                active={orderBy === headCell.id}
+                                                direction={orderBy === headCell.id ? order : 'asc'}
+                                                onClick={(event) => handleRequestSort(event, headCell.id)}
+                                            >
+                                                {headCell.label}
+                                            </TableSortLabel>
+                                        </TableCell>
+                                    ))}
                                     <TableCell>Status</TableCell>
                                     <TableCell>Actions</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {consents
+                                {sortedConsents
                                     .slice(currentPage * rowsPerPage, currentPage * rowsPerPage + rowsPerPage)
                                     .map((consent) => {
                                         const status = getConsentStatus(consent);

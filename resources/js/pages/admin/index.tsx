@@ -1,7 +1,7 @@
 import AppLayout from '@/layouts/admin-dashboard';
 import React from 'react';
 import { Head, useForm, usePage, Link } from '@inertiajs/react';
-import { Box, Button, TextField, Stack, Typography, IconButton, InputAdornment, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip } from '@mui/material';
+import { Box, Button, TextField, Stack, Typography, IconButton, InputAdornment, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, Grid } from '@mui/material';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import Swal from 'sweetalert2';
 import { format } from 'date-fns';
@@ -79,7 +79,7 @@ export default function Index({
                 <title>Search Patient Information</title>
                 <meta name="description" content="ค้นหาผู้ป่วย และสร้างข้อกำหนดและการให้ความยินยอมรับบริการ" />
             </Head>
-            <Box maxWidth={800} mx="auto" mt={6} p={3}>
+            <Box maxWidth={1200} mx="auto" mt={6} p={3}>
                 <Typography variant="h5" mb={3} textAlign="center">Search Patient Information</Typography>
                 <Paper sx={{ p: 3, mb: 3 }}>
                     <form onSubmit={handleSubmit}>
@@ -105,54 +105,131 @@ export default function Index({
 
                 {initialPatient.hn && (
                     <>
-                        <Paper sx={{ p: 3, mb: 3 }}>
-                            <Typography variant="h6" gutterBottom>
-                                Patient Information
-                            </Typography>
-                            <Stack spacing={2}>
-                                <TextField
-                                    label="HN"
-                                    value={initialPatient.hn}
-                                    slotProps={{
-                                        input: {
-                                            readOnly: true
-                                        }
-                                    }}
-                                    fullWidth
-                                />
-                                <TextField
-                                    label="Name"
-                                    value={initialPatient.name}
-                                    slotProps={{
-                                        input: {
-                                            readOnly: true
-                                        }
-                                    }}
-                                    fullWidth
-                                />
-                                <TextField
-                                    label="Address"
-                                    value={initialPatient.address}
-                                    slotProps={{
-                                        input: {
-                                            readOnly: true
-                                        }
-                                    }}
-                                    fullWidth
-                                />
-                                <TextField
-                                    label="Phone"
-                                    value={initialPatient.phone}
-                                    slotProps={{
-                                        input: {
-                                            readOnly: true
-                                        }
-                                    }}
-                                    fullWidth
-                                />
-                            </Stack>
-                        </Paper>
+                        <Grid container spacing={2}>
+                            <Grid size={6}>
+                                <Paper sx={{ p: 3, mb: 3 }}>
+                                    <Typography variant="h6" gutterBottom>
+                                        Patient Information
+                                    </Typography>
+                                    <Stack spacing={2}>
+                                        <TextField
+                                            label="HN"
+                                            value={initialPatient.hn}
+                                            slotProps={{
+                                                input: {
+                                                    readOnly: true
+                                                }
+                                            }}
+                                            fullWidth
+                                        />
+                                        <TextField
+                                            label="Name"
+                                            value={initialPatient.name}
+                                            slotProps={{
+                                                input: {
+                                                    readOnly: true
+                                                }
+                                            }}
+                                            fullWidth
+                                        />
+                                        <TextField
+                                            label="Address"
+                                            value={initialPatient.address}
+                                            slotProps={{
+                                                input: {
+                                                    readOnly: true
+                                                }
+                                            }}
+                                            fullWidth
+                                        />
+                                        <TextField
+                                            label="Phone"
+                                            value={initialPatient.phone}
+                                            slotProps={{
+                                                input: {
+                                                    readOnly: true
+                                                }
+                                            }}
+                                            fullWidth
+                                        />
+                                    </Stack>
+                                </Paper>
 
+                            </Grid>
+                            <Grid size={6}>
+                                <Paper sx={{ p: 3 }}>
+                                    <Typography variant="h6" gutterBottom>
+                                        Consent Generated Link
+                                    </Typography>
+                                    <Stack spacing={2}>
+                                        <TextField
+                                            label="Telemedcine Consent"
+                                            value={initialResult1}
+                                            slotProps={{
+                                                htmlInput: {
+                                                    readOnly: true
+                                                },
+                                                input: {
+                                                    endAdornment: (
+                                                        <InputAdornment position="end">
+                                                            <IconButton onClick={() => handleCopy(initialResult1)} edge="end" disabled={!initialResult1}>
+                                                                <ContentCopyIcon />
+                                                            </IconButton>
+                                                        </InputAdornment>
+                                                    ),
+                                                },
+                                            }}
+                                            fullWidth
+                                            multiline
+                                            rows={2}
+                                        />
+                                        <TextField
+                                            label="Telehealth Consent"
+                                            value={initialResult2}
+                                            slotProps={{
+                                                htmlInput: {
+                                                    readOnly: true
+                                                },
+                                                input: {
+                                                    endAdornment: (
+                                                        <InputAdornment position="end">
+                                                            <IconButton onClick={() => handleCopy(initialResult2)} edge="end" disabled={!initialResult2}>
+                                                                <ContentCopyIcon />
+                                                            </IconButton>
+                                                        </InputAdornment>
+                                                    ),
+                                                },
+                                            }}
+                                            fullWidth
+                                            multiline
+                                            rows={2}
+                                        />
+                                        <TextField
+                                            label="HIV Consent"
+                                            value={initialResult3}
+                                            slotProps={{
+                                                htmlInput: {
+                                                    readOnly: true
+                                                },
+                                                input: {
+                                                    endAdornment: (
+                                                        <InputAdornment position="end">
+                                                            <IconButton onClick={() => handleCopy(initialResult3)} edge="end" disabled={!initialResult3}>
+                                                                <ContentCopyIcon />
+                                                            </IconButton>
+                                                        </InputAdornment>
+                                                    ),
+                                                },
+                                            }}
+                                            fullWidth
+                                            multiline
+                                            rows={2}
+                                        />
+                                    </Stack>
+                                </Paper>
+
+                            </Grid>
+                        </Grid>
                         {initialConsents.length > 0 && (
                             <Paper sx={{ p: 3, mb: 3 }}>
                                 <Typography variant="h6" gutterBottom>
@@ -209,77 +286,6 @@ export default function Index({
                                 </TableContainer>
                             </Paper>
                         )}
-
-                        <Paper sx={{ p: 3 }}>
-                            <Typography variant="h6" gutterBottom>
-                                Consent Results
-                            </Typography>
-                            <Stack spacing={2}>
-                                <TextField
-                                    label="Telemedcine Consent"
-                                    value={initialResult1}
-                                    slotProps={{
-                                        htmlInput: {
-                                            readOnly: true
-                                        },
-                                        input: {
-                                            endAdornment: (
-                                                <InputAdornment position="end">
-                                                    <IconButton onClick={() => handleCopy(initialResult1)} edge="end" disabled={!initialResult1}>
-                                                        <ContentCopyIcon />
-                                                    </IconButton>
-                                                </InputAdornment>
-                                            ),
-                                        },
-                                    }}
-                                    fullWidth
-                                    multiline
-                                    rows={4}
-                                />
-                                <TextField
-                                    label="Privacy Policy Consent"
-                                    value={initialResult2}
-                                    slotProps={{
-                                        htmlInput: {
-                                            readOnly: true
-                                        },
-                                        input: {
-                                            endAdornment: (
-                                                <InputAdornment position="end">
-                                                    <IconButton onClick={() => handleCopy(initialResult2)} edge="end" disabled={!initialResult2}>
-                                                        <ContentCopyIcon />
-                                                    </IconButton>
-                                                </InputAdornment>
-                                            ),
-                                        },
-                                    }}
-                                    fullWidth
-                                    multiline
-                                    rows={4}
-                                />
-                                <TextField
-                                    label="Terms and Conditions Consent"
-                                    value={initialResult3}
-                                    slotProps={{
-                                        htmlInput: {
-                                            readOnly: true
-                                        },
-                                        input: {
-                                            endAdornment: (
-                                                <InputAdornment position="end">
-                                                    <IconButton onClick={() => handleCopy(initialResult3)} edge="end" disabled={!initialResult3}>
-                                                        <ContentCopyIcon />
-                                                    </IconButton>
-                                                </InputAdornment>
-                                            ),
-                                        },
-                                    }}
-                                    fullWidth
-                                    multiline
-                                    rows={4}
-                                />
-                            </Stack>
-                        </Paper>
                     </>
                 )}
             </Box>

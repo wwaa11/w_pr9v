@@ -20,6 +20,7 @@ import { motion } from "framer-motion";
 interface ConsentTelemedicineProps {
     patient: {
         hn: string;
+        witness_user_id: string;
     }
 }
 
@@ -30,6 +31,7 @@ export default function ConsentTelemedicine({ patient }: ConsentTelemedicineProp
 
     const { data, setData, post, processing, errors } = useForm({
         type: "Telemedicine",
+        witness_user_id: patient.witness_user_id,
         hn: patient.hn,
         signature: "",
         signature_name: "",

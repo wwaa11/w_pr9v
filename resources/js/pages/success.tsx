@@ -1,5 +1,5 @@
 import AppLayout from "@/layouts/patient";
-import { usePage } from "@inertiajs/react";
+import { Head, usePage } from "@inertiajs/react";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -33,6 +33,10 @@ export default function Success({
 
     return (
         <AppLayout>
+            <Head>
+                <title>Success</title>
+                <meta name="description" content="Success! Your request has been successfully processed." />
+            </Head>
             <Box
                 sx={{
                     display: "flex",

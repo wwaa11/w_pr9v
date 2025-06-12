@@ -10,8 +10,8 @@ Route::get('/', [MainController::class, 'index'])->name('home');
 Route::get('/error', function () {return inertia('error');})->name('error');
 Route::get('/success', function () {return inertia('success');})->name('success');
 
-Route::get('/login', function () {return inertia('login');})->name('login');
-Route::post('/login', [MainController::class, 'login']);
+Route::get('/login', [MainController::class, 'login'])->name('login');
+Route::post('/login', [MainController::class, 'loginRequest']);
 Route::post('/logout', [MainController::class, 'logout']);
 
 Route::get('/telemedicine/{hn_token}', [MainController::class, 'telemedicine'])->name('telemedicine');
@@ -28,6 +28,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/admin', [MainController::class, 'index_search']);
     Route::get('/admin/view', [MainController::class, 'viewConsent'])->name('admin.view');
     Route::get('/admin/telemedicine-consent/{id}', [MainController::class, 'viewTelemedicineConsent'])->name('admin.telemedicine-consent');
+    Route::get('/admin/users', [MainController::class, 'manageUsers'])->name('admin.users');
+    Route::post('/admin/users/{user}/set-witness', [MainController::class, 'setWitness'])->name('admin.users.set-witness');
+    Route::post('/admin/users/add-witness', [MainController::class, 'addWitness'])->name('admin.users.add-witness');
 });
 
 Route::fallback(function () {

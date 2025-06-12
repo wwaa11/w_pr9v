@@ -18,19 +18,40 @@ class MainController extends Controller
 
     }
 
-    public function login(Request $request)
+    public function login()
+    {
+        $users = User::where('role', 'witness')->get();
+
+        return inertia('login', [
+            'users' => $users,
+        ]);
+    }
+
+    public function loginRequest(Request $request)
     {
         $userid   = $request->userid;
         $password = $request->password;
+        $witness  = $request->witness;
+        if ($userid === $witness || $witness == null) {
+            return inertia('login', [
+                'users'  => User::where('role', 'witness')->get(),
+                'errors' => [
+                    'login' => 'ไม่สามารถเลือกตนเองเป็นพยานได้',
+                ],
+            ]);
+        }
+
         if (env('APP_ENV') == 'dev' || env('APP_PASSWORD') == $password) {
             $response = Http::withHeaders(['token' => env('API_KEY')])
                 ->post('http://172.20.1.12/dbstaff/api/getuser', [
                     'userid' => $userid,
                 ])
                 ->json();
+
             if ($response['status'] == 1) {
                 $userData = User::firstOrCreate(['user_id' => $userid, 'name' => $response['user']['name']]);
                 Auth::login($userData);
+                session(['witness' => $witness]);
 
                 return redirect()->route('admin.index');
             }
@@ -60,11 +81,13 @@ class MainController extends Controller
             $userData->save();
 
             Auth::login($userData);
+            session(['witness' => $witness]);
 
             return redirect()->route('admin.index');
         }
 
         return inertia('login', [
+            'users'  => User::where('role', 'witness')->get(),
             'errors' => [
                 'login' => 'รหัสพนักงาน หรือ รหัสผ่านผิดพลาด',
             ],
@@ -78,7 +101,12 @@ class MainController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return inertia('login');
+        return inertia('login', [
+            'users'  => User::where('role', 'witness')->get(),
+            'errors' => [
+                'login' => 'ออกจากระบบสำเร็จ',
+            ],
+        ]);
     }
 
     public function index()
@@ -161,6 +189,7 @@ class MainController extends Controller
         if (! $patient || $patient->expires_at < now()) {
             return redirect()->route('error');
         }
+        $patient->witness_user_id = session('witness');
 
         return inertia::render('patient/consent_telemedicine', compact('patient'));
     }
@@ -188,7 +217,7 @@ class MainController extends Controller
         $new->consent_3        = ($request->consent_3 === 'yes') ? true : false;
         $new->consent_4        = ($request->consent_4 === 'yes') ? true : false;
         $new->informer_user_id = auth()->user()->user_id;
-        $new->witness_user_id  = auth()->user()->user_id;
+        $new->witness_user_id  = $request->witness_user_id;
         $new->save();
 
         return redirect()->route('success');
@@ -198,10 +227,16 @@ class MainController extends Controller
     {
         $startDate = $request->start_date ?? now()->startOfDay()->format('Y-m-d');
         $endDate   = $request->end_date ?? now()->endOfDay()->format('Y-m-d');
+        $hn        = $request->hn;
 
-        $consents = Consent::whereDate('created_at', '>=', $startDate)
-            ->whereDate('created_at', '<=', $endDate)
-            ->orderBy('created_at', 'desc')
+        $query = Consent::whereDate('created_at', '>=', $startDate)
+            ->whereDate('created_at', '<=', $endDate);
+
+        if ($hn) {
+            $query->where('hn', 'like', "%{$hn}%");
+        }
+
+        $consents = $query->orderBy('created_at', 'desc')
             ->get();
 
         return inertia::render('admin/view', compact('consents'));
@@ -277,5 +312,66 @@ class MainController extends Controller
         return Inertia::render('admin/telemedicine_consent_view', [
             'consent' => $consentData,
         ]);
+    }
+
+    public function manageUsers(Request $request)
+    {
+        if (! auth()->check()) {
+            return redirect()->route('login');
+        }
+
+        $sortField     = $request->input('sort_field', 'name');
+        $sortDirection = $request->input('sort_direction', 'asc');
+        $perPage       = $request->input('per_page', 10);
+
+        $users = User::query()
+            ->orderBy($sortField, $sortDirection)
+            ->paginate($perPage)
+            ->withQueryString();
+
+        return Inertia::render('admin/users', [
+            'users' => $users,
+        ]);
+    }
+
+    public function setWitness(User $user)
+    {
+        if (! auth()->check()) {
+            return redirect()->route('login');
+        }
+
+        $user->role = 'witness';
+        $user->save();
+
+        return back()->with('success', 'User role updated successfully');
+    }
+
+    public function addWitness(Request $request)
+    {
+        if (! auth()->check()) {
+            return redirect()->route('login');
+        }
+
+        $request->validate([
+            'userid' => 'required|string|unique:users,user_id',
+        ]);
+
+        $response = Http::withHeaders(['token' => env('API_KEY')])
+            ->post('http://172.20.1.12/dbstaff/api/getuser', [
+                'userid' => $request->userid,
+            ])
+            ->json();
+
+        if ($response['status'] == 1) {
+            $user          = new User();
+            $user->user_id = $request->userid;
+            $user->name    = $response['user']['name'];
+            $user->role    = 'witness';
+            $user->save();
+
+            return back()->with('success', 'User added successfully as witness');
+        }
+
+        return back()->with('error', 'User not found in the system');
     }
 }
