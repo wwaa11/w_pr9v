@@ -382,4 +382,13 @@ class MainController extends Controller
 
         return back()->with('error', 'User not found in the system');
     }
+
+    public function checkSession()
+    {
+        if (! Auth::check()) {
+            return response()->json(['valid' => false]);
+        }
+
+        return response()->json(['valid' => true]);
+    }
 }

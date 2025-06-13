@@ -33,6 +33,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/admin/users/add-witness', [MainController::class, 'addWitness'])->name('admin.users.add-witness');
 });
 
+Route::get('/api/check-session', [MainController::class, 'checkSession']);
+
 Route::fallback(function () {
     abort(404);
 });
