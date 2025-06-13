@@ -391,4 +391,17 @@ class MainController extends Controller
 
         return response()->json(['valid' => true]);
     }
+
+    public function updateSignature(Request $request)
+    {
+        $request->validate([
+            'signature' => 'required|string',
+        ]);
+
+        $user            = auth()->user();
+        $user->signature = $request->signature;
+        $user->save();
+
+        return response()->json(['message' => 'Signature updated successfully']);
+    }
 }

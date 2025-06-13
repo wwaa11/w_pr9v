@@ -24,6 +24,11 @@ import PersonSearchIcon from '@mui/icons-material/PersonSearch';
 import ContactPageIcon from '@mui/icons-material/ContactPage';
 import PeopleIcon from '@mui/icons-material/People';
 import SessionCheck from "@/components/SessionCheck";
+import SignatureManager from "@/components/SignatureManager";
+import { Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { Button } from '@mui/material';
+import DrawIcon from '@mui/icons-material/Draw';
+import DashboardIcon from '@mui/icons-material/Dashboard';
 
 const drawerWidth = 220;
 
@@ -92,34 +97,36 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 );
 
 interface MenuItem {
-    title: string;
+    text: string;
     icon: React.ReactNode;
-    path: string;
+    path?: string;
+    onClick?: () => void;
 }
 
 export default function AdminDashboard({ children }: { children: React.ReactNode }) {
     const page = usePage();
     const url = page.props.url as string;
-    const auth = page.props.auth as { user: { name: string, userid: string } };
+    const auth = page.props.auth as { user: { name: string, userid: string, signature: string } };
     const [open, setOpen] = React.useState(true);
     const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
+    const [showSignatureManager, setShowSignatureManager] = React.useState(false);
 
     const menuItems: MenuItem[] = [
         {
-            title: 'Generate Consnet',
-            icon: <ContactPageIcon />,
-            path: 'admin',
+            text: 'Patient Consent',
+            icon: <DashboardIcon />,
+            path: 'admin'
         },
         {
-            title: 'Search Consent',
-            icon: <PersonSearchIcon />,
-            path: 'admin/view',
-        },
-        {
-            title: 'Manage Witness',
+            text: 'Users',
             icon: <PeopleIcon />,
-            path: 'admin/users',
+            path: 'admin/users'
         },
+        {
+            text: 'My Signature',
+            icon: <DrawIcon />,
+            onClick: () => setShowSignatureManager(true)
+        }
     ];
 
     const handleDrawerOpen = () => {
@@ -142,8 +149,10 @@ export default function AdminDashboard({ children }: { children: React.ReactNode
         router.post(`${url}/logout`);
     };
 
-    const handleNavigation = (path: string) => {
-        router.visit(`${url}/${path}`);
+    const handleNavigation = (path?: string) => {
+        if (path) {
+            router.visit(`${url}/${path}`);
+        }
     };
 
     return (
@@ -216,14 +225,18 @@ export default function AdminDashboard({ children }: { children: React.ReactNode
                     <Divider />
                     <List>
                         {menuItems.map((item) => (
-                            <ListItem key={item.title} disablePadding sx={{ display: 'block' }}>
+                            <ListItem
+                                key={item.text}
+                                disablePadding
+                                sx={{ display: 'block' }}
+                            >
                                 <ListItemButton
                                     sx={{
                                         minHeight: 48,
                                         justifyContent: open ? 'initial' : 'center',
                                         px: 2.5,
                                     }}
-                                    onClick={() => handleNavigation(item.path)}
+                                    onClick={item.onClick || (item.path ? () => handleNavigation(item.path) : undefined)}
                                 >
                                     <ListItemIcon
                                         sx={{
@@ -234,10 +247,7 @@ export default function AdminDashboard({ children }: { children: React.ReactNode
                                     >
                                         {item.icon}
                                     </ListItemIcon>
-                                    <ListItemText
-                                        primary={item.title}
-                                        sx={{ opacity: open ? 1 : 0 }}
-                                    />
+                                    <ListItemText primary={item.text} sx={{ opacity: open ? 1 : 0 }} />
                                 </ListItemButton>
                             </ListItem>
                         ))}
@@ -248,6 +258,22 @@ export default function AdminDashboard({ children }: { children: React.ReactNode
                     {children}
                 </Box>
             </Box>
+            {showSignatureManager && (
+                <Dialog
+                    open={showSignatureManager}
+                    onClose={() => setShowSignatureManager(false)}
+                    maxWidth="md"
+                    fullWidth
+                >
+                    <DialogTitle>Manage Your Signature</DialogTitle>
+                    <DialogContent>
+                        <SignatureManager initialSignature={auth.user.signature} />
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setShowSignatureManager(false)}>Close</Button>
+                    </DialogActions>
+                </Dialog>
+            )}
         </div>
     );
 } 

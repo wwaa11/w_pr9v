@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/test', [MainController::class, 'temp']);
 
 Route::get('/', [MainController::class, 'index'])->name('home');
+Route::get('/api/check-session', [MainController::class, 'checkSession']);
 
 Route::get('/error', function () {return inertia('error');})->name('error');
 Route::get('/success', function () {return inertia('success');})->name('success');
@@ -24,6 +25,8 @@ Route::get('/hiv/{hn_token}', [MainController::class, 'hiv'])->name('hiv');
 Route::post('/hiv', [MainController::class, 'hiv_store']);
 
 Route::middleware(['auth'])->group(function () {
+    Route::post('/api/update-signature', [MainController::class, 'updateSignature'])->middleware('auth');
+
     Route::get('/admin', [MainController::class, 'index'])->name('admin.index');
     Route::post('/admin', [MainController::class, 'index_search']);
     Route::get('/admin/view', [MainController::class, 'viewConsent'])->name('admin.view');
@@ -32,8 +35,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/admin/users/{user}/set-witness', [MainController::class, 'setWitness'])->name('admin.users.set-witness');
     Route::post('/admin/users/add-witness', [MainController::class, 'addWitness'])->name('admin.users.add-witness');
 });
-
-Route::get('/api/check-session', [MainController::class, 'checkSession']);
 
 Route::fallback(function () {
     abort(404);
