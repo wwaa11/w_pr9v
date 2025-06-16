@@ -118,6 +118,11 @@ export default function AdminDashboard({ children }: { children: React.ReactNode
             path: 'admin'
         },
         {
+            text: 'View Consent',
+            icon: <DashboardIcon />,
+            path: 'admin/view'
+        },
+        {
             text: 'Users',
             icon: <PeopleIcon />,
             path: 'admin/users'

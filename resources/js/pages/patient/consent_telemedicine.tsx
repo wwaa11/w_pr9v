@@ -31,7 +31,8 @@ export default function ConsentTelemedicine({ patient }: ConsentTelemedicineProp
 
     const { data, setData, post, processing, errors } = useForm({
         type: "Telemedicine",
-        witness_user_id: params.get('witness_user_id'),
+        witness_user_id1: params.get('witness1_user_id'),
+        witness_user_id2: params.get('witness2_user_id'),
         informer_user_id: params.get('informer_user_id'),
         hn: patient.hn,
         signature: "",
@@ -72,7 +73,7 @@ export default function ConsentTelemedicine({ patient }: ConsentTelemedicineProp
             return;
         }
 
-        if (data.consent_1 === "no" || data.consent_4 === "no") {
+        if (data.consent_1 === "no" || data.consent_2 === "no") {
             Swal.fire({
                 icon: "warning",
                 title: "โปรดให้ความยินยอม",
@@ -133,6 +134,39 @@ export default function ConsentTelemedicine({ patient }: ConsentTelemedicineProp
                         <Alert severity="info" sx={{ mb: 4 }}>
                             กรุณาอ่านข้อกำหนดทั้งหมดและให้ความยินยอมตามที่ระบุ
                         </Alert>
+                        <Typography variant="body1" gutterBottom sx={{ color: 'text.secondary' }}>
+                            &emsp;บริการ การแพทย์ทางไกลหรือโทรเวช (Telemedicine) และคลินิกออนไลน์ นี้ เป็นการให้บริการทางการแพทย์โดยการส่งผ่านหรือการสื่อสารเนื้อหาทางการแพทย์แผนปัจจุบันโดยผู้ประกอบวิชาชีพเวชกรรมด้วยวิธีการทางอิเล็กทรอนิกส์เพื่อให้การปรึกษา คำแนะนำ แก่ผู้รับบริการหรือผู้รับบริบาล ซึ่งอยู่ต่างสถานที่กัน เพื่อการดำเนินการทางการแพทย์ในกรอบแห่งความรู้ทางวิชาชีพเวชกรรมตามภาวะ วิสัย และพฤติการณ์ที่เป็นอยู่ขณะที่ให้บริการ การแพทย์ทางไกลหรือโทรเวช (Telemedicine) และคลินิกออนไลน์
+                        </Typography>
+                        <Typography variant="body1" gutterBottom sx={{ color: 'text.secondary' }} >
+                            &emsp;<b className="font-bold">“โทรเวช”</b> หรือ <b className="font-bold">“การแพทย์ทางไกล” (telemedicine)</b> หมายความว่า
+                            เป็นการส่งผ่านหรือการสื่อสารเนื้อหาทางการแพทย์แผนปัจจุบันโดยผู้ประกอบวิชาชีพเวชกรรมทั้งจากสถานพยาบาลภาครัฐและ/หรือเอกชน
+                            จากสถานที่หนึ่งไปยังอีกสถานที่หนึ่งโดยอาศัยวิธีการทางอิเล็กทรอนิกส์เพื่อให้การปรึกษา คำแนะนำ แก่ผู้ประกอบวิชาชีพเวชกรรม
+                            หรือบุคคลอื่นใด เพื่อการดำเนินการทางการแพทย์ในกรอบแห่งความรู้ทางวิชาชีพเวชกรรม ตามภาวะวิสัย และพฤติการณ์ที่เป็นอยู่
+                            โดยความยินยอมร่วมกันของผู้ให้บริบาลและผู้รับบริบาลในขณะนั้น ทั้งนี้โดยความรับผิดชอบของผู้ส่งผ่านหรือการสื่อสารเนื้อหาทางการแพทย์นั้นๆ
+                        </Typography>
+                        <Typography variant="body1" gutterBottom sx={{ color: 'text.secondary' }} >
+                            &emsp;<b className="font-bold">“สถานพยาบาล”</b> หมายความว่า สถานพยาบาลที่เป็นของภาครัฐและ/หรือเอกชน ที่จัดตั้งขึ้นตามกฎหมายที่เกี่ยวข้อง
+                        </Typography>
+                        <Typography variant="body1" gutterBottom sx={{ color: 'text.secondary' }} >
+                            &emsp;<b className="font-bold">“การให้บริบาลผ่านระบบบริบาลโทรเวช หรือ บริบาลการแพทย์ทางไกล”</b> หมายความว่า
+                            การดำเนินการโดย “โทรเวช” หรือ “การแพทย์ทางไกล”
+                        </Typography>
+                        <Typography variant="body1" gutterBottom sx={{ color: 'text.secondary' }} >
+                            &emsp;<b className="font-bold">“ผู้ให้บริบาล”</b> หมายความว่า ผู้ประกอบวิชาชีพเวชกรรมที่ให้บริบาลโดยโทรเวช หรือ การแพทย์ทางไกล (telemedicine)
+                        </Typography>
+                        <Typography variant="body1" gutterBottom sx={{ color: 'text.secondary' }} >
+                            &emsp;<b className="font-bold">“ผู้รับบริบาล”</b> หมายความว่า บุคคลที่ได้รับ “โทรเวช” หรือ “การแพทย์ทางไกล” (telemedicine)
+                        </Typography>
+                        <Typography variant="body1" gutterBottom sx={{ color: 'text.secondary' }} >
+                            &emsp;<b className="font-bold">“คลินิกออนไลน์”</b> หมายถึง สถานพยาบาลตามที่กฎหมายกำหนด
+                        </Typography>
+                        <Typography variant="body1" gutterBottom sx={{ color: 'text.secondary' }} >
+                            &emsp;<b className="font-bold">“การบริบาล”</b> หมายความว่า กระบวนการเพื่อผลแห่ง “โทรเวช” หรือ การแพทย์ทางไกล" (telemedicine)
+                        </Typography>
+                        <Typography variant="body1" gutterBottom sx={{ color: 'text.secondary' }} >
+                            &emsp;การตกลงใช้บริการ ทางการแพทย์ทางไกลหรือโทรเวช (telemedicine) และคลินิกออนไลน์นี้ ถือว่าผู้รับบริบาลได้อ่านข้อกำหนดเข้าใจดีแล้ว
+                            และยินยอมปฏิบัติตามข้อกำหนด รวมถึงข้อควรปฏิบัติต่างๆที่เกี่ยวข้องกับข้อกำหนดนี้
+                        </Typography>
                         {/* Consent Sections */}
                         <Box sx={{ mb: 4 }}>
                             {[
@@ -221,8 +255,8 @@ export default function ConsentTelemedicine({ patient }: ConsentTelemedicineProp
                             <FormControl component="fieldset" sx={{ width: '100%' }}>
                                 <FormLabel component="legend">&emsp;10.1 การให้ความยินยอมรับการรักษาข้าพเจ้าได้รับทราบคำประกาศสิทธิและข้อพึงปฏิบัติของผู้ป่วย และทราบว่าข้าพเจ้า มีสิทธิที่ซักถามข้อสงสัยเกี่ยวกับการรักษาและสิทธิที่จะรับรู้วิธีการตรวจการรักษาทางเลือกอื่นๆรวมทั้งอาการไม่พึง ประสงค์หรือภาวะแทรกซ้อนซึ่งอาจเกิดขึ้นได้ ข้าพเจ้า ...... ให้คณะแพทย์ ทันตแพทย์ และบุคลากรทางการแพทย์ของโรงพยาบาลพระรามเก้า ทำการตรวจวินิจฉัยและให้การรักษาแบบผู้ป่วยนอก ตามหลักวิชาการแพทย์ที่เหมาะสม</FormLabel>
                                 <RadioGroup
-                                    value={data.consent_1}
-                                    onChange={(e) => setData('consent_1', e.target.value)}
+                                    value={data.consent_2}
+                                    onChange={(e) => setData('consent_2', e.target.value)}
                                 >
                                     <FormControlLabel value="yes" control={<Radio />} label="ยินยอมโดยสมัครใจ" />
                                     <FormControlLabel value="no" control={<Radio />} label="ไม่ยินยอม" />
@@ -244,19 +278,6 @@ export default function ConsentTelemedicine({ patient }: ConsentTelemedicineProp
                             <FormControl component="fieldset" sx={{ width: '100%' }}>
                                 <FormLabel component="legend">&emsp;10.3 การเก็บรวมรวมข้อมูลส่วนบุคคลเพื่อนำส่งบริษัทประกันภัย บริษัทคู่สัญญา หรือบริษัทต้นสังกัดเพื่อประโยชน์ผู้ป่วย(หากมี) ข้าพเจ้า ...... ให้โรงพยาบาลพระรามเก้ารวบรวม ใช้ เปิดเผยข้อมูลส่วน บุคคล ในการเข้ารับการตรวจ การวินิจฉัย การรักษาพยาบาลหรือการให้บริการสุขภาพ รวมถึงรายละเอียดค่า รักษาพยาบาล ค่าใช้จ่ายที่เกิดขึ้น ของข้าพเจ้าทั้งหมดได้ตามความเป็นจริง เพื่อการพิจารณาการจ่ายค่าสินไหม ทดแทน ค่าชดเชย ค่าตรวจวินิจฉัยและรักษาพยาบาล ค่าใช้จ่ายใด ๆ ที่เกิดขึ้นจากการเข้ารับการรักษาพยาบาลของ ข้าพเจ้าทั้งหมด (รวมเรียกว่า "ค่ารักษาพยาบาล") ให้แก่ บริษัทประกันภัย/บริษัทคู่สัญญา/บริษัทต้นสังกัด/บุคคลหรือ นิติบุคคลที่ต้องชำระค่ารักษาพยาบาลของข้าพเจ้า และในกรณีที่บริษัทประกันภัย/บริษัทคู่สัญญา/บริษัทต้นสังกัด/ บุคคลหรือนิติบุคคลที่ต้องชำระค่ารักษาพยาบาลฯ ปฏิเสธการจ่ายชดเชยค่ารักษาพยาบาลของข้าพเจ้า ข้าพเจ้าเป็น ผู้รับผิดชอบชำระค่าใช้จ่ายที่เกิดขึ้นให้กับโรงพยาบาลพระรามเก้า โดยไม่มีเงื่อนไข</FormLabel>
                                 <RadioGroup
-                                    value={data.consent_2}
-                                    onChange={(e) => setData('consent_2', e.target.value)}
-                                >
-                                    <FormControlLabel value="yes" control={<Radio />} label="ยินยอมโดยสมัครใจ" />
-                                    <FormControlLabel value="no" control={<Radio />} label="ไม่ยินยอม" />
-                                </RadioGroup>
-                            </FormControl>
-
-                            <Divider sx={{ my: 2 }} />
-
-                            <FormControl component="fieldset" sx={{ width: '100%' }}>
-                                <FormLabel component="legend">&emsp;10.4 การเก็บรวมรวมข้อมูลส่วนบุคคลเพื่อการแจ้งสิทธิประโยชน์ทางการแพทย์ ข้าพเจ้า ...... ให้โรงพยาบาลพระรามเก้าใช้ข้อมูลส่วนบุคคล เพื่อแจ้งสิทธิ ประโยชน์ทางการแพทย์และส่งเสริม การขายการตลาด รายการผลิตภัณฑ์และบริการ รวมถึงสามารถส่งข้อมูล ข่าวสารดังกล่าว หรือส่งแบบสอบถามเพื่อการประเมินผลการให้บริการของบริษัท ให้กับข้าพเจ้าได้ ซึ่งข้าพเจ้า สามารถยกเลิกความยินยอมในการรับแจ้งข้อมูลข่าวสารได้ตามช่องทางที่โรงพยาบาลพระรามเก้ากำหนด</FormLabel>
-                                <RadioGroup
                                     value={data.consent_3}
                                     onChange={(e) => setData('consent_3', e.target.value)}
                                 >
@@ -268,10 +289,23 @@ export default function ConsentTelemedicine({ patient }: ConsentTelemedicineProp
                             <Divider sx={{ my: 2 }} />
 
                             <FormControl component="fieldset" sx={{ width: '100%' }}>
-                                <FormLabel component="legend" sx={{ fontWeight: 600, color: 'black' }}>ข้าพเจ้าได้อ่านข้อกำหนด การให้บริการการแพทย์ทางไกลหรือโทรเวช (Telemedicine) และคลินิกออนไลน์ เข้าใจและยอมรับเงื่อนไขตาม ข้อกำหนดนี้</FormLabel>
+                                <FormLabel component="legend">&emsp;10.4 การเก็บรวมรวมข้อมูลส่วนบุคคลเพื่อการแจ้งสิทธิประโยชน์ทางการแพทย์ ข้าพเจ้า ...... ให้โรงพยาบาลพระรามเก้าใช้ข้อมูลส่วนบุคคล เพื่อแจ้งสิทธิ ประโยชน์ทางการแพทย์และส่งเสริม การขายการตลาด รายการผลิตภัณฑ์และบริการ รวมถึงสามารถส่งข้อมูล ข่าวสารดังกล่าว หรือส่งแบบสอบถามเพื่อการประเมินผลการให้บริการของบริษัท ให้กับข้าพเจ้าได้ ซึ่งข้าพเจ้า สามารถยกเลิกความยินยอมในการรับแจ้งข้อมูลข่าวสารได้ตามช่องทางที่โรงพยาบาลพระรามเก้ากำหนด</FormLabel>
                                 <RadioGroup
                                     value={data.consent_4}
                                     onChange={(e) => setData('consent_4', e.target.value)}
+                                >
+                                    <FormControlLabel value="yes" control={<Radio />} label="ยินยอมโดยสมัครใจ" />
+                                    <FormControlLabel value="no" control={<Radio />} label="ไม่ยินยอม" />
+                                </RadioGroup>
+                            </FormControl>
+
+                            <Divider sx={{ my: 2 }} />
+
+                            <FormControl component="fieldset" sx={{ width: '100%' }}>
+                                <FormLabel component="legend" sx={{ fontWeight: 600, color: 'black' }}>ข้าพเจ้าได้อ่านข้อกำหนด การให้บริการการแพทย์ทางไกลหรือโทรเวช (Telemedicine) และคลินิกออนไลน์ เข้าใจและยอมรับเงื่อนไขตาม ข้อกำหนดนี้</FormLabel>
+                                <RadioGroup
+                                    value={data.consent_1}
+                                    onChange={(e) => setData('consent_1', e.target.value)}
                                 >
                                     <FormControlLabel value="yes" control={<Radio />} label="ยินยอม" />
                                     <FormControlLabel value="no" control={<Radio />} label="ไม่ยินยอม" />

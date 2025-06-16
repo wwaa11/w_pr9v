@@ -31,8 +31,10 @@ class MainController extends Controller
     {
         $userid   = $request->userid;
         $password = $request->password;
-        $witness  = $request->witness;
-        if ($userid === $witness || $witness == null) {
+        $witness1 = $request->witness1;
+        $witness2 = $request->witness2;
+
+        if ($userid === $witness1 || $userid === $witness2 || $witness1 == null || $witness2 == null) {
             return inertia('login', [
                 'users'  => User::where('role', 'witness')->get(),
                 'errors' => [
@@ -42,7 +44,7 @@ class MainController extends Controller
         }
 
         if (env('APP_ENV') == 'dev' || env('APP_PASSWORD') == $password) {
-            $response = Http::withHeaders(['token' => env('API_KEY')])
+            $response = Http::withHeaders(['token' => env('API_AUTH_KEY')])
                 ->post('http://172.20.1.12/dbstaff/api/getuser', [
                     'userid' => $userid,
                 ])
@@ -51,19 +53,20 @@ class MainController extends Controller
             if ($response['status'] == 1) {
                 $userData = User::firstOrCreate(['user_id' => $userid, 'name' => $response['user']['name']]);
                 Auth::login($userData);
-                session(['witness' => $witness]);
+                session(['witness1' => $witness1, 'witness2' => $witness2]);
 
                 return redirect()->route('admin.index');
             }
 
             return inertia('login', [
+                'users'  => User::where('role', 'witness')->get(),
                 'errors' => [
                     'login' => 'Developer only : user_id not exist',
                 ],
             ]);
         }
 
-        $response = Http::withHeaders(['token' => env('API_KEY')])
+        $response = Http::withHeaders(['token' => env('API_AUTH_KEY')])
             ->post('http://172.20.1.12/dbstaff/api/auth', [
                 'userid'   => $userid,
                 'password' => $password,
@@ -81,7 +84,7 @@ class MainController extends Controller
             $userData->save();
 
             Auth::login($userData);
-            session(['witness' => $witness]);
+            session(['witness1' => $witness1, 'witness2' => $witness2]);
 
             return redirect()->route('admin.index');
         }
@@ -115,12 +118,7 @@ class MainController extends Controller
             return redirect()->route('login');
         }
 
-        $data = [
-            'title'       => 'Welcome to Our Application',
-            'description' => 'This is the main page of our application where you can find various features and functionalities.',
-        ];
-
-        return inertia::render('admin/index', compact('data'));
+        return inertia::render('admin/index');
     }
 
     public function index_search(Request $request)
@@ -131,24 +129,13 @@ class MainController extends Controller
 
         $hn = $request->input('hn');
 
-        $response = Http::withHeaders(['token' => env('API_KEY')])
-            ->post('http://172.20.1.12/dbstaff/api/patient/consent', [
-                'hn'   => $hn,
-                'lang' => 'th',
+        $response = Http::withHeaders(['key' => env('API_PATIENT_KEY')])
+            ->post('http://172.20.1.22/w_phr/api/patient/info', [
+                'hn' => $hn,
             ])
             ->json();
 
-        if ($response['status'] == 0) {
-            $patientData = [
-                'hn'      => $hn,
-                'name'    => $response['message'],
-                'address' => 'N/A',
-                'phone'   => 'N/A',
-            ];
-            $generatedResult1 = "Patient with HN {$hn} not found.";
-            $generatedResult2 = "";
-            $generatedResult3 = "";
-        } else {
+        if ($response['status'] == 'success') {
             $patient = Patient::where('hn', $hn)->first();
             if ($patient == null) {
                 $patient        = new Patient();
@@ -158,9 +145,9 @@ class MainController extends Controller
             $patient->expires_at = now()->addMinutes(60);
             $patient->save();
 
-            // Create query parameters
             $queryParams = http_build_query([
-                'witness_user_id'  => session('witness'),
+                'witness1_user_id' => session('witness1'),
+                'witness2_user_id' => session('witness2'),
                 'informer_user_id' => auth()->user()->user_id,
             ]);
 
@@ -170,23 +157,31 @@ class MainController extends Controller
             $generatedResult3 = "{$baseUrl}/hiv/{$patient->token}?{$queryParams}";
 
             $patientData = [
-                'hn'      => $patient->hn,
-                'name'    => $response['patient']['nameTH'] . ' ' . $response['patient']['surnameTH'] ?? 'N/A',
-                'address' => $response['patient']['address'] ?? 'N/A',
-                'phone'   => $response['patient']['mobile'] ?? 'N/A',
+                'hn'    => $patient->hn,
+                'name'  => $response['patient']['name']['first_th'] . ' ' . $response['patient']['name']['last_th'] ?? 'N/A',
+                'phone' => $response['patient']['phone'] ?? 'N/A',
             ];
-        }
 
-        // Get consents for the HN
-        $consents = Consent::where('hn', $hn)
-            ->orderBy('created_at', 'desc')
-            ->get();
+            $consents = Consent::where('hn', $hn)->get();
+        } else {
+            $patientData = [
+                'hn'    => $hn,
+                'name'  => $response['message'],
+                'phone' => 'N/A',
+            ];
+            $generatedResult1 = "Patient with HN {$hn} not found.";
+            $generatedResult2 = "";
+            $generatedResult3 = "";
+        }
 
         return Inertia::render('admin/index', [
             'patient'  => $patientData,
             'result1'  => $generatedResult1,
             'result2'  => $generatedResult2,
             'result3'  => $generatedResult3,
+            'informer' => auth()->user(),
+            'witness1' => User::where('user_id', session('witness1'))->first(),
+            'witness2' => User::where('user_id', session('witness2'))->first(),
             'consents' => $consents,
         ]);
     }
@@ -225,7 +220,7 @@ class MainController extends Controller
         $new->consent_3        = ($request->consent_3 === 'yes') ? true : false;
         $new->consent_4        = ($request->consent_4 === 'yes') ? true : false;
         $new->informer_user_id = $request->informer_user_id;
-        $new->witness_user_id  = $request->witness_user_id;
+        $new->witness_user_id  = $request->witness_user_id1;
         $new->save();
 
         return redirect()->route('success');
@@ -259,49 +254,53 @@ class MainController extends Controller
         $consent = Consent::findOrFail($id);
 
         // Fetch patient data from API
-        $response = Http::withHeaders(['token' => env('API_KEY')])
-            ->post('http://172.20.1.12/dbstaff/api/patient/consent', [
-                'hn'   => $consent->hn,
-                'lang' => 'th',
+        $response = Http::withHeaders(['key' => env('API_PATIENT_KEY')])
+            ->post('http://172.20.1.22/w_phr/api/patient/info', [
+                'hn' => $consent->hn,
             ])
             ->json();
 
         if ($response['status'] == 0) {
             return back()->with('error', 'ไม่พบข้อมูลผู้ป่วย');
         }
-        $represent_fullname = explode(' ', $response['patient']['represent_name']);
-        $represent_name     = $represent_fullname[0] ?? '';
-        $represent_surname  = isset($represent_fullname[1]) ? $represent_fullname[1] : '';
+
+        $allergyName    = '';
+        $allergySymptom = '';
+        if ($response['patient']['allergy']) {
+            foreach ($response['patient']['allergy_list'] as $allergy) {
+                $allergyName .= $allergy['name'] . ', ';
+                $allergySymptom .= $allergy['remark'] . ', ';
+            }
+        }
 
         $consentData = [
             'hn'             => $consent->hn,
             'patient'        => [
-                'nameTH'             => $response['patient']['nameTH'],
-                'surnameTH'          => $response['patient']['surnameTH'],
-                'nameEN'             => $response['patient']['nameEN'],
-                'surnameEN'          => $response['patient']['surnameEN'],
-                'birthDate'          => $response['patient']['DOB'],
+                'nameTH'             => $response['patient']['name']['first_th'],
+                'surnameTH'          => $response['patient']['name']['last_th'],
+                'nameEN'             => $response['patient']['name']['first_en'],
+                'surnameEN'          => $response['patient']['name']['last_en'],
+                'birthDate'          => $response['patient']['brithdate_text'],
                 'religion'           => $response['patient']['religion'],
                 'race'               => $response['patient']['race'],
                 'national'           => $response['patient']['national'],
                 'martial'            => $response['patient']['martial'],
                 'age'                => $response['patient']['age'],
-                'phone'              => $response['patient']['phone'],
-                'mobile'             => $response['patient']['mobile'],
+                'phone'              => $response['patient']['telephone'],
+                'mobile'             => $response['patient']['phone'],
                 'email'              => $response['patient']['email'],
                 'occupation'         => $response['patient']['ocupation'],
                 'education'          => $response['patient']['education'],
-                'address'            => $response['patient']['address'],
-                'address_contact'    => $response['patient']['address_contact'],
+                'address'            => $response['patient']['address']['home']['full_address'],
+                'address_contact'    => $response['patient']['address']['contact']['full_address'],
                 'allergy'            => $response['patient']['allergy'],
-                'allergy_name'       => $response['patient']['allergy_name'],
-                'allergy_symptom'    => $response['patient']['allergy_symptom'],
-                'photo'              => $response['patient']['photo'],
-                'represent'          => $response['patient']['represent'],
-                'represent_name'     => $represent_name,
-                'represent_surname'  => $represent_surname,
-                'represent_relation' => $response['patient']['represent_relation'],
-                'represent_phone'    => $response['patient']['represent_phone'],
+                'allergy_name'       => ($response['patient']['allergy']) ? $allergyText : '',
+                'allergy_symptom'    => ($response['patient']['allergy']) ? $response['patient']['allergy_symptom'] : '',
+                'represent'          => isset($response['patient']['notify']) ? true : false,
+                'represent_name'     => $response['patient']['notify']['first_name'],
+                'represent_surname'  => $response['patient']['notify']['last_name'],
+                'represent_relation' => $response['patient']['notify']['relation'],
+                'represent_phone'    => $response['patient']['notify']['phone'],
             ],
             'visit_date'     => $consent->created_at->format('d/m/Y'),
             'visit_time'     => $consent->created_at->format('H:i'),
@@ -320,6 +319,20 @@ class MainController extends Controller
         return Inertia::render('admin/telemedicine_consent_view', [
             'consent' => $consentData,
         ]);
+    }
+
+    public function viewHivConsent($id)
+    {
+        $consent = Consent::findOrFail($id);
+
+        return inertia::render('admin/hiv_consent_view', compact('consent'));
+    }
+
+    public function viewTelehealthConsent($id)
+    {
+        $consent = Consent::findOrFail($id);
+
+        return inertia::render('admin/telehealth_consent_view', compact('consent'));
     }
 
     public function manageUsers(Request $request)
@@ -364,7 +377,7 @@ class MainController extends Controller
             'userid' => 'required|string|unique:users,user_id',
         ]);
 
-        $response = Http::withHeaders(['token' => env('API_KEY')])
+        $response = Http::withHeaders(['token' => env('API_AUTH_KEY')])
             ->post('http://172.20.1.12/dbstaff/api/getuser', [
                 'userid' => $request->userid,
             ])

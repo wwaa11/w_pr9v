@@ -79,15 +79,20 @@ export default function Login() {
     const { data, setData, post, processing } = useForm({
         userid: '',
         password: '',
-        witness: '',
+        witness1: '',
+        witness2: '',
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setData(e.target.name as "userid" | "password", e.target.value);
     };
 
-    const handleUserSelect = (event: SelectChangeEvent) => {
-        setData('witness', event.target.value);
+    const handleWitness1Select = (event: SelectChangeEvent) => {
+        setData('witness1', event.target.value);
+    };
+
+    const handleWitness2Select = (event: SelectChangeEvent) => {
+        setData('witness2', event.target.value);
     };
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -149,14 +154,14 @@ export default function Login() {
                     }}
                 >
                     <FormControl fullWidth>
-                        <InputLabel id="user-select-label">เลือกพยาน</InputLabel>
+                        <InputLabel id="witness1-select-label">พยานคนที่ 1</InputLabel>
                         <Select
-                            labelId="user-select-label"
-                            id="user-select"
-                            value={data.witness}
-                            label="Select User"
-                            onChange={handleUserSelect}
-                            error={Boolean(errors.userid)}
+                            labelId="witness1-select-label"
+                            id="witness1-select"
+                            value={data.witness1}
+                            label="พยานคนที่ 1"
+                            onChange={handleWitness1Select}
+                            error={Boolean(errors.witness1)}
                             sx={{
                                 '& .MuiOutlinedInput-root': {
                                     borderRadius: 2,
@@ -164,7 +169,38 @@ export default function Login() {
                             }}
                         >
                             {users.map((user) => (
-                                <MenuItem key={user.id} value={user.user_id}>
+                                <MenuItem
+                                    key={user.id}
+                                    value={user.user_id}
+                                    disabled={user.user_id === data.witness2 || user.user_id === data.userid}
+                                >
+                                    {user.name} ({user.user_id})
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+
+                    <FormControl fullWidth>
+                        <InputLabel id="witness2-select-label">พยานคนที่ 2</InputLabel>
+                        <Select
+                            labelId="witness2-select-label"
+                            id="witness2-select"
+                            value={data.witness2}
+                            label="พยานคนที่ 2"
+                            onChange={handleWitness2Select}
+                            error={Boolean(errors.witness2)}
+                            sx={{
+                                '& .MuiOutlinedInput-root': {
+                                    borderRadius: 2,
+                                }
+                            }}
+                        >
+                            {users.map((user) => (
+                                <MenuItem
+                                    key={user.id}
+                                    value={user.user_id}
+                                    disabled={user.user_id === data.witness1 || user.user_id === data.userid}
+                                >
                                     {user.name} ({user.user_id})
                                 </MenuItem>
                             ))}

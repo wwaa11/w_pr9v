@@ -49,7 +49,7 @@ interface HeadCell {
 }
 
 const headCells: HeadCell[] = [
-    { id: 'created_at', label: 'Time', numeric: false },
+    { id: 'created_at', label: 'Date & Time', numeric: false },
     { id: 'hn', label: 'HN', numeric: false },
     { id: 'type', label: 'Type', numeric: false },
     { id: 'signature_name', label: 'Signature Name', numeric: false },
@@ -68,12 +68,10 @@ export default function View() {
     const [hnFilter, setHnFilter] = React.useState('');
 
     const getConsentStatus = (consent: Consent) => {
-        const allConsents = [consent.consent_1, consent.consent_2, consent.consent_3, consent.consent_4];
-        const approvedCount = allConsents.filter(Boolean).length;
-
-        if (approvedCount === 4) return { label: 'Approved', color: 'success' };
-        if (approvedCount === 0) return { label: 'Rejected', color: 'error' };
-        return { label: 'Partial', color: 'warning' };
+        if (consent.consent_1 == true) {
+            return { label: 'Approved', color: 'success' };
+        }
+        return { label: 'Rejected', color: 'error' };
     };
 
     const handleChangePage = (_event: unknown, newPage: number) => {
@@ -153,7 +151,7 @@ export default function View() {
                             label="HN"
                             value={hnFilter}
                             onChange={handleHnFilterChange}
-                            onKeyPress={handleHnFilterKeyPress}
+                            onKeyUp={handleHnFilterKeyPress}
                             size="small"
                             placeholder="Enter HN number"
                         />
@@ -218,7 +216,7 @@ export default function View() {
                                         return (
                                             <TableRow key={consent.id} hover>
                                                 <TableCell>
-                                                    {format(new Date(consent.created_at), 'HH:mm:ss')}
+                                                    {format(new Date(consent.created_at), 'd/M/Y HH:mm:ss')}
                                                 </TableCell>
                                                 <TableCell>{consent.hn}</TableCell>
                                                 <TableCell>{consent.type}</TableCell>
@@ -233,7 +231,7 @@ export default function View() {
                                                 <TableCell>
                                                     <Button
                                                         component={Link}
-                                                        href={route('admin.telemedicine-consent', consent.id)}
+                                                        href={url + '/admin/telemedicine-consent/' + consent.id}
                                                         variant="contained"
                                                         size="small"
                                                         color="primary"

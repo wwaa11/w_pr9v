@@ -15,6 +15,10 @@ return new class extends Migration
             $table->id();
             $table->string('hn')->unique();
             $table->string('token')->unique();
+            $table->boolean('photo_consent')->nullable();
+            $table->boolean('insurance_consent')->nullable();
+            $table->boolean('treatment_consent')->nullable();
+            $table->boolean('benefit_consent')->nullable();
             $table->dateTime('expires_at', precision: 0)->default(now());
             $table->timestamps();
         });

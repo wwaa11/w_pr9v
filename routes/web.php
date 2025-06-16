@@ -29,8 +29,12 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/admin', [MainController::class, 'index'])->name('admin.index');
     Route::post('/admin', [MainController::class, 'index_search']);
+
     Route::get('/admin/view', [MainController::class, 'viewConsent'])->name('admin.view');
     Route::get('/admin/telemedicine-consent/{id}', [MainController::class, 'viewTelemedicineConsent'])->name('admin.telemedicine-consent');
+    Route::get('/admin/hiv-consent/{id}', [MainController::class, 'viewHivConsent'])->name('admin.hiv-consent');
+    Route::get('/admin/telehealth-consent/{id}', [MainController::class, 'viewTelehealthConsent'])->name('admin.telehealth-consent');
+
     Route::get('/admin/users', [MainController::class, 'manageUsers'])->name('admin.users');
     Route::post('/admin/users/{user}/set-witness', [MainController::class, 'setWitness'])->name('admin.users.set-witness');
     Route::post('/admin/users/add-witness', [MainController::class, 'addWitness'])->name('admin.users.add-witness');

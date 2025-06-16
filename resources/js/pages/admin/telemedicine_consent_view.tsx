@@ -23,7 +23,7 @@ interface Patient {
     national: string;
     martial: string;
     occupation: string;
-    education: number;
+    education: string;
     allergy: boolean;
     allergy_name: string;
     allergy_symptom: string;
@@ -101,7 +101,7 @@ export default function TelemedicineConsent() {
             case 1:
                 return (
                     <>
-                        <Typography sx={{ color: 'red', position: 'absolute', top: '103px', left: '250px', fontSize: '10px' }}>
+                        <Typography sx={{ color: 'red', position: 'absolute', top: '105px', left: '250px', fontSize: '10px' }}>
                             {consent.patient.nameTH}
                         </Typography>
                         <Typography sx={{ color: 'red', position: 'absolute', top: '105px', left: '520px', fontSize: '10px' }}>
@@ -134,17 +134,17 @@ export default function TelemedicineConsent() {
                         <Typography sx={{ color: 'red', position: 'absolute', top: '170px', left: '270px', fontSize: '10px' }}>
                             {consent.patient.occupation}
                         </Typography>
-                        {consent.patient.education == 1 && (
+                        {consent.patient.education == 'ต่ำกว่าปริญญาตรี' && (
                             <Typography sx={{ color: 'red', position: 'absolute', top: '170px', left: '483px', fontSize: '12px' }}>
                                 &#10003;
                             </Typography>
                         )}
-                        {consent.patient.education == 2 && (
+                        {consent.patient.education == 'ปริญญาตรี' && (
                             <Typography sx={{ color: 'red', position: 'absolute', top: '170px', left: '581px', fontSize: '12px' }}>
                                 &#10003;
                             </Typography>
                         )}
-                        {consent.patient.education == 3 && (
+                        {consent.patient.education == 'ปริญญาโท' || consent.patient.education == 'ปริญญาเอก' && (
                             <Typography sx={{ color: 'red', position: 'absolute', top: '170px', left: '650px', fontSize: '12px' }}>
                                 &#10003;
                             </Typography>
@@ -221,7 +221,7 @@ export default function TelemedicineConsent() {
                         <Typography sx={{ color: 'red', position: 'absolute', top: '26px', left: '65px', fontSize: '10px' }}>
                             {consent.patient.nameTH} {consent.patient.surnameTH}
                         </Typography>
-                        <Typography sx={{ color: 'red', position: 'absolute', top: '26px', left: '280px', fontSize: '10px' }}>
+                        <Typography sx={{ color: 'red', position: 'absolute', top: '26px', left: '275px', fontSize: '10px' }}>
                             {consent.patient.birthDate}
                         </Typography>
                         <Typography sx={{ color: 'red', position: 'absolute', top: '26px', left: '380px', fontSize: '10px' }}>
@@ -258,7 +258,7 @@ export default function TelemedicineConsent() {
                         <Typography sx={{ color: 'red', position: 'absolute', top: '26px', left: '65px', fontSize: '10px' }}>
                             {consent.patient.nameTH} {consent.patient.surnameTH}
                         </Typography>
-                        <Typography sx={{ color: 'red', position: 'absolute', top: '26px', left: '280px', fontSize: '10px' }}>
+                        <Typography sx={{ color: 'red', position: 'absolute', top: '26px', left: '275px', fontSize: '10px' }}>
                             {consent.patient.birthDate}
                         </Typography>
                         <Typography sx={{ color: 'red', position: 'absolute', top: '26px', left: '380px', fontSize: '10px' }}>

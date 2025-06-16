@@ -9,7 +9,6 @@ import { format } from 'date-fns';
 interface PatientInfo {
     hn: string;
     name: string;
-    address: string;
     phone: string;
 }
 
@@ -32,7 +31,6 @@ interface Consent {
 const defaultPatient: PatientInfo = {
     hn: '',
     name: '',
-    address: '',
     phone: '',
 };
 
@@ -42,7 +40,8 @@ export default function Index({
     result2: initialResult2 = '',
     result3: initialResult3 = '',
     consents: initialConsents = [],
-    witness,
+    witness1,
+    witness2,
     informer,
 }: {
     patient?: PatientInfo;
@@ -50,7 +49,8 @@ export default function Index({
     result2?: string;
     result3?: string;
     consents?: Consent[];
-    witness?: UserInfo;
+    witness1?: UserInfo;
+    witness2?: UserInfo;
     informer?: UserInfo;
 }) {
     const page = usePage();
@@ -74,12 +74,10 @@ export default function Index({
     };
 
     const getConsentStatus = (consent: Consent) => {
-        const allConsents = [consent.consent_1, consent.consent_2, consent.consent_3, consent.consent_4];
-        const approvedCount = allConsents.filter(Boolean).length;
-
-        if (approvedCount === 4) return { label: 'Approved', color: 'success' };
-        if (approvedCount === 0) return { label: 'Rejected', color: 'error' };
-        return { label: 'Partial', color: 'warning' };
+        if (consent.consent_1) {
+            return { label: 'Approved', color: 'success' };
+        }
+        return { label: 'Rejected', color: 'error' };
     };
 
     return (
@@ -142,16 +140,6 @@ export default function Index({
                                             fullWidth
                                         />
                                         <TextField
-                                            label="Address"
-                                            value={initialPatient.address}
-                                            slotProps={{
-                                                input: {
-                                                    readOnly: true
-                                                }
-                                            }}
-                                            fullWidth
-                                        />
-                                        <TextField
                                             label="Phone"
                                             value={initialPatient.phone}
                                             slotProps={{
@@ -169,6 +157,13 @@ export default function Index({
                                 <Paper sx={{ p: 3 }}>
                                     <Typography variant="h6" gutterBottom>
                                         Consent Generated Link
+                                    </Typography>
+                                    <Typography variant="body1" mb={3} >
+                                        Informer : {informer?.name} ({informer?.user_id})
+                                        <br />
+                                        Witness 1 : {witness1?.name} ({witness1?.user_id})
+                                        <br />
+                                        Witness 2 : {witness2?.name} ({witness2?.user_id})
                                     </Typography>
                                     <Stack spacing={2}>
                                         <TextField
