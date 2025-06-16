@@ -1,8 +1,8 @@
 <?php
 namespace App\Http\Controllers;
 
-use App\Models\Consent;
 use App\Models\Patient;
+use App\Models\Telemedicine;
 use App\Models\User;
 use Auth;
 use Illuminate\Http\Request;
@@ -138,9 +138,13 @@ class MainController extends Controller
         if ($response['status'] == 'success') {
             $patient = Patient::where('hn', $hn)->first();
             if ($patient == null) {
-                $patient        = new Patient();
-                $patient->hn    = $hn;
-                $patient->token = Crypt::encryptString($hn);
+                $patient                    = new Patient();
+                $patient->hn                = $hn;
+                $patient->token             = Crypt::encryptString($hn);
+                $patient->photo_consent     = $response['patient']['photo_consent'];
+                $patient->treatment_consent = $response['patient']['treatment_consent'];
+                $patient->insurance_consent = $response['patient']['insurance_consent'];
+                $patient->benefit_consent   = $response['patient']['benefit_consent'];
             }
             $patient->expires_at = now()->addMinutes(60);
             $patient->save();
@@ -162,7 +166,6 @@ class MainController extends Controller
                 'phone' => $response['patient']['phone'] ?? 'N/A',
             ];
 
-            $consents = Consent::where('hn', $hn)->get();
         } else {
             $patientData = [
                 'hn'    => $hn,
@@ -175,14 +178,14 @@ class MainController extends Controller
         }
 
         return Inertia::render('admin/index', [
-            'patient'  => $patientData,
-            'result1'  => $generatedResult1,
-            'result2'  => $generatedResult2,
-            'result3'  => $generatedResult3,
-            'informer' => auth()->user(),
-            'witness1' => User::where('user_id', session('witness1'))->first(),
-            'witness2' => User::where('user_id', session('witness2'))->first(),
-            'consents' => $consents,
+            'patient'           => $patientData,
+            'telemedicines'     => $patient->telemedicines->take(1),
+            'telemedicine_link' => $generatedResult1,
+            'telehealth_link'   => $generatedResult2,
+            'hiv_link'          => $generatedResult3,
+            'informer'          => auth()->user(),
+            'witness1'          => User::where('user_id', session('witness1'))->first(),
+            'witness2'          => User::where('user_id', session('witness2'))->first(),
         ]);
     }
 
@@ -194,45 +197,47 @@ class MainController extends Controller
         }
         $patient->witness_user_id = session('witness');
 
-        return inertia::render('patient/consent_telemedicine', compact('patient'));
+        return inertia::render('consents/telemedicine', compact('patient'));
     }
 
     public function telemedicine_store(Request $request)
     {
         $validated = $request->validate([
-            'hn'             => 'required|string|exists:patients,hn',
-            'type'           => 'required|string',
-            'signature_name' => 'required|string',
-            'signature'      => 'required|string',
-            'consent_1'      => 'required|string',
-            'consent_2'      => 'required|string',
-            'consent_3'      => 'required|string',
-            'consent_4'      => 'required|string',
+            'hn'                   => 'required|string|exists:patients,hn',
+            'type'                 => 'required|string',
+            'signature_name'       => 'required|string',
+            'signature_type'       => 'required|string',
+            'signature'            => 'required|string',
+            'telemedicine_consent' => 'required|string',
+            'treatment_consent'    => 'required|string',
+            'insurance_consent'    => 'required|string',
+            'benefit_consent'      => 'required|string',
         ]);
 
-        $new                   = new Consent;
-        $new->hn               = $request->hn;
-        $new->type             = $request->type;
-        $new->signature_name   = $request->signature_name;
-        $new->signature        = $request->signature;
-        $new->consent_1        = ($request->consent_1 === 'yes') ? true : false;
-        $new->consent_2        = ($request->consent_2 === 'yes') ? true : false;
-        $new->consent_3        = ($request->consent_3 === 'yes') ? true : false;
-        $new->consent_4        = ($request->consent_4 === 'yes') ? true : false;
-        $new->informer_user_id = $request->informer_user_id;
-        $new->witness_user_id  = $request->witness_user_id1;
+        $new                       = new Telemedicine;
+        $new->hn                   = $request->hn;
+        $new->type                 = $request->type;
+        $new->signature_type       = $request->signature_type;
+        $new->signature_name       = $request->signature_name;
+        $new->signature            = $request->signature;
+        $new->telemedicine_consent = ($request->telemedicine_consent === 'yes') ? true : false;
+        $new->treatment_consent    = ($request->treatment_consent === 'yes') ? true : false;
+        $new->insurance_consent    = ($request->insurance_consent === 'yes') ? true : false;
+        $new->benefit_consent      = ($request->benefit_consent === 'yes') ? true : false;
+        $new->informer_user_id     = $request->informer_user_id;
+        $new->witness_user_id      = $request->witness_user_id1;
         $new->save();
 
         return redirect()->route('success');
     }
 
-    public function viewConsent(Request $request)
+    public function allTelemedicineConsent(Request $request)
     {
         $startDate = $request->start_date ?? now()->startOfDay()->format('Y-m-d');
         $endDate   = $request->end_date ?? now()->endOfDay()->format('Y-m-d');
         $hn        = $request->hn;
 
-        $query = Consent::whereDate('created_at', '>=', $startDate)
+        $query = Telemedicine::whereDate('created_at', '>=', $startDate)
             ->whereDate('created_at', '<=', $endDate);
 
         if ($hn) {
@@ -251,7 +256,7 @@ class MainController extends Controller
             return redirect()->route('login');
         }
 
-        $consent = Consent::findOrFail($id);
+        $consent = Telemedicine::findOrFail($id);
 
         // Fetch patient data from API
         $response = Http::withHeaders(['key' => env('API_PATIENT_KEY')])
@@ -274,8 +279,8 @@ class MainController extends Controller
         }
 
         $consentData = [
-            'hn'             => $consent->hn,
-            'patient'        => [
+            'hn'                   => $consent->hn,
+            'patient'              => [
                 'nameTH'             => $response['patient']['name']['first_th'],
                 'surnameTH'          => $response['patient']['name']['last_th'],
                 'nameEN'             => $response['patient']['name']['first_en'],
@@ -302,21 +307,22 @@ class MainController extends Controller
                 'represent_relation' => $response['patient']['notify']['relation'],
                 'represent_phone'    => $response['patient']['notify']['phone'],
             ],
-            'visit_date'     => $consent->created_at->format('d/m/Y'),
-            'visit_time'     => $consent->created_at->format('H:i'),
-            'consent_1'      => $consent->consent_1,
-            'consent_2'      => $consent->consent_2,
-            'consent_3'      => $consent->consent_3,
-            'consent_4'      => $consent->consent_4,
-            'signature'      => $consent->signature,
-            'signature_name' => $consent->signature_name,
-            'informer_name'  => $consent->informer->name,
-            'informer_sign'  => $consent->informer->signature,
-            'witness_name'   => $consent->witness->name,
-            'witness_sign'   => $consent->witness->signature,
+            'visit_date'           => $consent->created_at->format('d/m/Y'),
+            'visit_time'           => $consent->created_at->format('H:i'),
+            'telemedicine_consent' => $consent->telemedicine_consent,
+            'treatment_consent'    => $consent->treatment_consent,
+            'insurance_consent'    => $consent->insurance_consent,
+            'benefit_consent'      => $consent->benefit_consent,
+            'signature'            => $consent->signature,
+            'signature_type'       => $consent->signature_type,
+            'signature_name'       => $consent->signature_name,
+            'informer_name'        => $consent->informer->name,
+            'informer_sign'        => $consent->informer->signature,
+            'witness_name'         => $consent->witness->name,
+            'witness_sign'         => $consent->witness->signature,
         ];
 
-        return Inertia::render('admin/telemedicine_consent_view', [
+        return Inertia::render('admin/pdf/telemedicine', [
             'consent' => $consentData,
         ]);
     }

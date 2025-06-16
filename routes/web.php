@@ -30,7 +30,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin', [MainController::class, 'index'])->name('admin.index');
     Route::post('/admin', [MainController::class, 'index_search']);
 
-    Route::get('/admin/view', [MainController::class, 'viewConsent'])->name('admin.view');
+    Route::get('/admin/all-telemedicine-consent', [MainController::class, 'allTelemedicineConsent'])->name('admin.all-telemedicine-consent');
     Route::get('/admin/telemedicine-consent/{id}', [MainController::class, 'viewTelemedicineConsent'])->name('admin.telemedicine-consent');
     Route::get('/admin/hiv-consent/{id}', [MainController::class, 'viewHivConsent'])->name('admin.hiv-consent');
     Route::get('/admin/telehealth-consent/{id}', [MainController::class, 'viewTelehealthConsent'])->name('admin.telehealth-consent');

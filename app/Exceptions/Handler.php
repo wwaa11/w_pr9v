@@ -46,7 +46,7 @@ class Handler extends ExceptionHandler
             }
 
             if (auth()->check()) {
-                return redirect()->route('index');
+                return redirect()->route('home');
             }
 
             return redirect()->route('login');

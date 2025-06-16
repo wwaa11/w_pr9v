@@ -34,10 +34,7 @@ interface Consent {
     type: string;
     signature_name: string;
     created_at: string;
-    consent_1: boolean;
-    consent_2: boolean;
-    consent_3: boolean;
-    consent_4: boolean;
+    telemedicine_consent: boolean;
 }
 
 type Order = 'asc' | 'desc';
@@ -68,7 +65,7 @@ export default function View() {
     const [hnFilter, setHnFilter] = React.useState('');
 
     const getConsentStatus = (consent: Consent) => {
-        if (consent.consent_1 == true) {
+        if (consent.telemedicine_consent == true) {
             return { label: 'Approved', color: 'success' };
         }
         return { label: 'Rejected', color: 'error' };

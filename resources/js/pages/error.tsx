@@ -1,10 +1,9 @@
 import AppLayout from "@/layouts/patient";
-import { usePage } from "@inertiajs/react";
+import { usePage, Link } from "@inertiajs/react";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import { router } from "@inertiajs/react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface ErrorProps {
     status: number;
@@ -15,9 +14,16 @@ export default function Error({ status, message }: ErrorProps) {
     const page = usePage();
     const url = page.props.url as string;
     const auth = page.props.auth as { user: { name: string, userid: string } } | null;
+    const [isLoading, setIsLoading] = useState(false);
 
-    const handleGoHome = () => {
-        router.visit(auth ? url + "/" : url + "/login");
+    const handleNavigation = (e: React.MouseEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
+
+        // Add a delay before navigation
+        setTimeout(() => {
+            window.location.href = auth ? url + "/" : url + "/login";
+        }, 1000);
     };
 
     return (
@@ -66,13 +72,14 @@ export default function Error({ status, message }: ErrorProps) {
                 <Button
                     variant="contained"
                     size="large"
-                    onClick={handleGoHome}
+                    onClick={handleNavigation}
+                    disabled={isLoading}
                     sx={{
                         px: 4,
                         py: 1.5,
                     }}
                 >
-                    {auth ? "Go to Home" : "Go to Login"}
+                    {isLoading ? "Redirecting..." : (auth ? "Go to Home" : "Go to Login")}
                 </Button>
             </Box>
         </AppLayout>

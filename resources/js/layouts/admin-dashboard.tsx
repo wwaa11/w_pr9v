@@ -30,7 +30,7 @@ import { Button } from '@mui/material';
 import DrawIcon from '@mui/icons-material/Draw';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 
-const drawerWidth = 220;
+const drawerWidth = 240;
 
 const openedMixin = (theme: any) => ({
     width: drawerWidth,
@@ -118,9 +118,9 @@ export default function AdminDashboard({ children }: { children: React.ReactNode
             path: 'admin'
         },
         {
-            text: 'View Consent',
+            text: 'Telemedicine Consent',
             icon: <DashboardIcon />,
-            path: 'admin/view'
+            path: 'admin/all-telemedicine-consent'
         },
         {
             text: 'Users',

@@ -20,6 +20,9 @@ import { motion } from "framer-motion";
 interface ConsentTelemedicineProps {
     patient: {
         hn: string;
+        treatment_consent: string;
+        insurance_consent: string;
+        benefit_consent: string;
     }
 }
 
@@ -37,10 +40,11 @@ export default function ConsentTelemedicine({ patient }: ConsentTelemedicineProp
         hn: patient.hn,
         signature: "",
         signature_name: "",
-        consent_1: "",
-        consent_2: "",
-        consent_3: "",
-        consent_4: "",
+        signature_type: "patient",
+        telemedicine_consent: "",
+        treatment_consent: patient.treatment_consent,
+        insurance_consent: patient.insurance_consent,
+        benefit_consent: patient.benefit_consent,
     });
 
     const sigPadRef = useRef<any>(null);
@@ -65,7 +69,7 @@ export default function ConsentTelemedicine({ patient }: ConsentTelemedicineProp
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (data.consent_1 === "" || data.consent_2 === "" || data.consent_3 === "" || data.consent_4 === "") {
+        if (data.telemedicine_consent === "" || data.treatment_consent === "" || data.insurance_consent === "" || data.benefit_consent === "") {
             Swal.fire({
                 icon: "warning",
                 title: "โปรดระบุความยินยอมให้ครบ",
@@ -73,7 +77,7 @@ export default function ConsentTelemedicine({ patient }: ConsentTelemedicineProp
             return;
         }
 
-        if (data.consent_1 === "no" || data.consent_2 === "no") {
+        if (data.telemedicine_consent === "no" || data.treatment_consent === "no") {
             Swal.fire({
                 icon: "warning",
                 title: "โปรดให้ความยินยอม",
@@ -233,86 +237,91 @@ export default function ConsentTelemedicine({ patient }: ConsentTelemedicineProp
                                     <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
                                         {section.id}. {section.title}
                                     </Typography>
-                                    {activeSection === section.id && (
-                                        <Typography variant="body1" sx={{ mt: 1, color: 'text.secondary' }}>
-                                            {Array.isArray(section.content) ? (
-                                                section.content.map((content: string) => (
-                                                    <p key={content}>&emsp;{content}</p>
-                                                ))
-                                            ) : (
-                                                <p>&emsp;{section.content}</p>
-                                            )}
-                                        </Typography>
-                                    )}
+                                    <Typography variant="body1" sx={{ mt: 1, color: 'text.secondary' }}>
+                                        {Array.isArray(section.content) ? (
+                                            section.content.map((content: string) => (
+                                                <span key={content}>&emsp;{content}</span>
+                                            ))
+                                        ) : (
+                                            <span>&emsp;{section.content}</span>
+                                        )}
+                                    </Typography>
                                 </Paper>
                             ))}
                         </Box>
                         {/* Consent Checkboxes */}
-                        <Box sx={{ mb: 4 }}>
-                            <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
-                                10. การคุ้มครองข้อมูลส่วนบุคคล
-                            </Typography>
-                            <FormControl component="fieldset" sx={{ width: '100%' }}>
-                                <FormLabel component="legend">&emsp;10.1 การให้ความยินยอมรับการรักษาข้าพเจ้าได้รับทราบคำประกาศสิทธิและข้อพึงปฏิบัติของผู้ป่วย และทราบว่าข้าพเจ้า มีสิทธิที่ซักถามข้อสงสัยเกี่ยวกับการรักษาและสิทธิที่จะรับรู้วิธีการตรวจการรักษาทางเลือกอื่นๆรวมทั้งอาการไม่พึง ประสงค์หรือภาวะแทรกซ้อนซึ่งอาจเกิดขึ้นได้ ข้าพเจ้า ...... ให้คณะแพทย์ ทันตแพทย์ และบุคลากรทางการแพทย์ของโรงพยาบาลพระรามเก้า ทำการตรวจวินิจฉัยและให้การรักษาแบบผู้ป่วยนอก ตามหลักวิชาการแพทย์ที่เหมาะสม</FormLabel>
-                                <RadioGroup
-                                    value={data.consent_2}
-                                    onChange={(e) => setData('consent_2', e.target.value)}
-                                >
-                                    <FormControlLabel value="yes" control={<Radio />} label="ยินยอมโดยสมัครใจ" />
-                                    <FormControlLabel value="no" control={<Radio />} label="ไม่ยินยอม" />
-                                </RadioGroup>
-                            </FormControl>
+                        <Paper
+                            elevation={1}
+                            sx={{
+                                p: 2,
+                                mb: 2,
+                                cursor: 'pointer',
+                                '&:hover': { bgcolor: 'action.hover' }
+                            }}
+                        >
 
-                            <Divider sx={{ my: 2 }} />
+                            <Box sx={{ mb: 4 }}>
+                                <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
+                                    10. การคุ้มครองข้อมูลส่วนบุคคล
+                                </Typography>
+                                <FormControl component="fieldset" sx={{ width: '100%' }}>
+                                    <FormLabel component="legend">&emsp;10.1 การให้ความยินยอมรับการรักษาข้าพเจ้าได้รับทราบคำประกาศสิทธิและข้อพึงปฏิบัติของผู้ป่วย และทราบว่าข้าพเจ้า มีสิทธิที่ซักถามข้อสงสัยเกี่ยวกับการรักษาและสิทธิที่จะรับรู้วิธีการตรวจการรักษาทางเลือกอื่นๆรวมทั้งอาการไม่พึง ประสงค์หรือภาวะแทรกซ้อนซึ่งอาจเกิดขึ้นได้ ข้าพเจ้า ...... ให้คณะแพทย์ ทันตแพทย์ และบุคลากรทางการแพทย์ของโรงพยาบาลพระรามเก้า ทำการตรวจวินิจฉัยและให้การรักษาแบบผู้ป่วยนอก ตามหลักวิชาการแพทย์ที่เหมาะสม</FormLabel>
+                                    <RadioGroup
+                                        value={data.treatment_consent}
+                                        onChange={(e) => setData('treatment_consent', e.target.value)}
+                                    >
+                                        <FormControlLabel value="yes" control={<Radio />} label="ยินยอมโดยสมัครใจ" disabled={!!patient.treatment_consent} />
+                                        <FormControlLabel value="no" control={<Radio />} label="ไม่ยินยอม" disabled={!!patient.treatment_consent} />
+                                    </RadioGroup>
+                                </FormControl>
 
-                            <FormControl component="fieldset" sx={{ width: '100%' }}>
-                                <FormLabel component="legend">
-                                    <p>&emsp;10.2 การเก็บรวมรวมข้อมูลส่วนบุคคลเมื่อข้าพเจ้าลงนามในเอกสารฉบับนี้ ข้าพเจ้ายืนยันว่าได้อ่านและรับทราบนโยบายคุ้มครองข้อมูลส่วนบุคคลของ โรงพยาบาลพระรามเก้า รายละเอียดปรากฏตามเอกสารแนบครบถ้วนแล้ว ซึ่งนโยบายคุ้มครองข้อมูลส่วนบุคคล ดังกล่าว อธิบายถึงวิธีการที่โรงพยาบาลพระรามเก้าจะทำการเก็บ รวบรวม ใช้ เปิดเผย และส่งหรือโอนข้อมูลส่วน บุคคลใด ๆ ของข้าพเจ้า ข้าพเจ้ารับทราบและยืนยันว่าโรงพยาบาลพระรามเก้าสามารถอาศัยฐานทางกฎหมายอื่นใน การทำการเก็บ รวบรวม ใช้ เปิดเผย และส่งหรือโอนข้อมูลส่วนบุคคลใด ๆ ของข้าพเจ้าได้ โดยไม่ต้องอาศัยความ ยินยอมอย่างชัดแจ้ง ทั้งนี้ เป็นไปตามที่กฎหมายกำหนด เพื่อ</p>
-                                    <p>&emsp;&emsp;(1) วัตถุประสงค์ใดซึ่งระบุไว้ในนโยบายคุ้มครองข้อมูลส่วนบุคคลของโรงพยาบาลพระรามเก้า และ/หรือเพื่อ ประโยชน์ของข้าพเจ้า</p>
-                                    <p>&emsp;&emsp;(2) ปฏิบัติให้เป็นไปตามบทบัญญัติของกฎหมายที่เกี่ยวข้อง รวมถึงเพื่อเวชศาสตร์ป้องกันหรืออาชีวเวชศาสตร์ การประเมินความสามารถในการทำงาน ของลูกจ้าง การวินิจฉัยโรคทางการแพทย์ การให้บริการด้านสุขภาพ หรือด้านสังคม การรักษาทางการแพทย์การจัดการด้านสุขภาพ หรือระบบและการให้บริการด้านสังคม สงเคราะห์ ประโยชน์สาธารณะด้านการสาธารณสุข เช่น การป้องกันด้านสุขภาพจากโรคติดต่ออันตรายหรือ การควบคุมมาตรฐานหรือคุณภาพของยา เวชภัณฑ์ หรือเครื่องมือแพทย์ การคุ้มครองแรงงาน การ ประกันสังคม หลักประกันสุขภาพแห่งชาติ สวัสดิการเกี่ยวกับการรักษาพยาบาลของผู้มีสิทธิตามกฎหมาย การคุ้มครองผู้ประสบภัยจากรถ หรือการคุ้มครองทางสังคม การศึกษาวิจัยทางวิทยาศาสตร์ประวัติศาสตร์ หรือสถิติ ประโยชน์สาธารณะที่สำคัญอื่น ๆ</p>
-                                </FormLabel>
-                            </FormControl>
+                                <Divider sx={{ my: 2 }} />
 
-                            <Divider sx={{ my: 2 }} />
+                                <FormControl component="fieldset" sx={{ width: '100%' }}>
+                                    <FormLabel component="legend">
+                                        <p>&emsp;10.2 การเก็บรวมรวมข้อมูลส่วนบุคคลเมื่อข้าพเจ้าลงนามในเอกสารฉบับนี้ ข้าพเจ้ายืนยันว่าได้อ่านและรับทราบนโยบายคุ้มครองข้อมูลส่วนบุคคลของ โรงพยาบาลพระรามเก้า รายละเอียดปรากฏตามเอกสารแนบครบถ้วนแล้ว ซึ่งนโยบายคุ้มครองข้อมูลส่วนบุคคล ดังกล่าว อธิบายถึงวิธีการที่โรงพยาบาลพระรามเก้าจะทำการเก็บ รวบรวม ใช้ เปิดเผย และส่งหรือโอนข้อมูลส่วน บุคคลใด ๆ ของข้าพเจ้า ข้าพเจ้ารับทราบและยืนยันว่าโรงพยาบาลพระรามเก้าสามารถอาศัยฐานทางกฎหมายอื่นใน การทำการเก็บ รวบรวม ใช้ เปิดเผย และส่งหรือโอนข้อมูลส่วนบุคคลใด ๆ ของข้าพเจ้าได้ โดยไม่ต้องอาศัยความ ยินยอมอย่างชัดแจ้ง ทั้งนี้ เป็นไปตามที่กฎหมายกำหนด เพื่อ</p>
+                                        <p>&emsp;&emsp;(1) วัตถุประสงค์ใดซึ่งระบุไว้ในนโยบายคุ้มครองข้อมูลส่วนบุคคลของโรงพยาบาลพระรามเก้า และ/หรือเพื่อ ประโยชน์ของข้าพเจ้า</p>
+                                        <p>&emsp;&emsp;(2) ปฏิบัติให้เป็นไปตามบทบัญญัติของกฎหมายที่เกี่ยวข้อง รวมถึงเพื่อเวชศาสตร์ป้องกันหรืออาชีวเวชศาสตร์ การประเมินความสามารถในการทำงาน ของลูกจ้าง การวินิจฉัยโรคทางการแพทย์ การให้บริการด้านสุขภาพ หรือด้านสังคม การรักษาทางการแพทย์การจัดการด้านสุขภาพ หรือระบบและการให้บริการด้านสังคม สงเคราะห์ ประโยชน์สาธารณะด้านการสาธารณสุข เช่น การป้องกันด้านสุขภาพจากโรคติดต่ออันตรายหรือ การควบคุมมาตรฐานหรือคุณภาพของยา เวชภัณฑ์ หรือเครื่องมือแพทย์ การคุ้มครองแรงงาน การ ประกันสังคม หลักประกันสุขภาพแห่งชาติ สวัสดิการเกี่ยวกับการรักษาพยาบาลของผู้มีสิทธิตามกฎหมาย การคุ้มครองผู้ประสบภัยจากรถ หรือการคุ้มครองทางสังคม การศึกษาวิจัยทางวิทยาศาสตร์ประวัติศาสตร์ หรือสถิติ ประโยชน์สาธารณะที่สำคัญอื่น ๆ</p>
+                                    </FormLabel>
+                                </FormControl>
 
-                            <FormControl component="fieldset" sx={{ width: '100%' }}>
-                                <FormLabel component="legend">&emsp;10.3 การเก็บรวมรวมข้อมูลส่วนบุคคลเพื่อนำส่งบริษัทประกันภัย บริษัทคู่สัญญา หรือบริษัทต้นสังกัดเพื่อประโยชน์ผู้ป่วย(หากมี) ข้าพเจ้า ...... ให้โรงพยาบาลพระรามเก้ารวบรวม ใช้ เปิดเผยข้อมูลส่วน บุคคล ในการเข้ารับการตรวจ การวินิจฉัย การรักษาพยาบาลหรือการให้บริการสุขภาพ รวมถึงรายละเอียดค่า รักษาพยาบาล ค่าใช้จ่ายที่เกิดขึ้น ของข้าพเจ้าทั้งหมดได้ตามความเป็นจริง เพื่อการพิจารณาการจ่ายค่าสินไหม ทดแทน ค่าชดเชย ค่าตรวจวินิจฉัยและรักษาพยาบาล ค่าใช้จ่ายใด ๆ ที่เกิดขึ้นจากการเข้ารับการรักษาพยาบาลของ ข้าพเจ้าทั้งหมด (รวมเรียกว่า "ค่ารักษาพยาบาล") ให้แก่ บริษัทประกันภัย/บริษัทคู่สัญญา/บริษัทต้นสังกัด/บุคคลหรือ นิติบุคคลที่ต้องชำระค่ารักษาพยาบาลของข้าพเจ้า และในกรณีที่บริษัทประกันภัย/บริษัทคู่สัญญา/บริษัทต้นสังกัด/ บุคคลหรือนิติบุคคลที่ต้องชำระค่ารักษาพยาบาลฯ ปฏิเสธการจ่ายชดเชยค่ารักษาพยาบาลของข้าพเจ้า ข้าพเจ้าเป็น ผู้รับผิดชอบชำระค่าใช้จ่ายที่เกิดขึ้นให้กับโรงพยาบาลพระรามเก้า โดยไม่มีเงื่อนไข</FormLabel>
-                                <RadioGroup
-                                    value={data.consent_3}
-                                    onChange={(e) => setData('consent_3', e.target.value)}
-                                >
-                                    <FormControlLabel value="yes" control={<Radio />} label="ยินยอมโดยสมัครใจ" />
-                                    <FormControlLabel value="no" control={<Radio />} label="ไม่ยินยอม" />
-                                </RadioGroup>
-                            </FormControl>
+                                <Divider sx={{ my: 2 }} />
 
-                            <Divider sx={{ my: 2 }} />
+                                <FormControl component="fieldset" sx={{ width: '100%' }}>
+                                    <FormLabel component="legend">&emsp;10.3 การเก็บรวมรวมข้อมูลส่วนบุคคลเพื่อนำส่งบริษัทประกันภัย บริษัทคู่สัญญา หรือบริษัทต้นสังกัดเพื่อประโยชน์ผู้ป่วย(หากมี) ข้าพเจ้า ...... ให้โรงพยาบาลพระรามเก้ารวบรวม ใช้ เปิดเผยข้อมูลส่วน บุคคล ในการเข้ารับการตรวจ การวินิจฉัย การรักษาพยาบาลหรือการให้บริการสุขภาพ รวมถึงรายละเอียดค่า รักษาพยาบาล ค่าใช้จ่ายที่เกิดขึ้น ของข้าพเจ้าทั้งหมดได้ตามความเป็นจริง เพื่อการพิจารณาการจ่ายค่าสินไหม ทดแทน ค่าชดเชย ค่าตรวจวินิจฉัยและรักษาพยาบาล ค่าใช้จ่ายใด ๆ ที่เกิดขึ้นจากการเข้ารับการรักษาพยาบาลของ ข้าพเจ้าทั้งหมด (รวมเรียกว่า "ค่ารักษาพยาบาล") ให้แก่ บริษัทประกันภัย/บริษัทคู่สัญญา/บริษัทต้นสังกัด/บุคคลหรือ นิติบุคคลที่ต้องชำระค่ารักษาพยาบาลของข้าพเจ้า และในกรณีที่บริษัทประกันภัย/บริษัทคู่สัญญา/บริษัทต้นสังกัด/ บุคคลหรือนิติบุคคลที่ต้องชำระค่ารักษาพยาบาลฯ ปฏิเสธการจ่ายชดเชยค่ารักษาพยาบาลของข้าพเจ้า ข้าพเจ้าเป็น ผู้รับผิดชอบชำระค่าใช้จ่ายที่เกิดขึ้นให้กับโรงพยาบาลพระรามเก้า โดยไม่มีเงื่อนไข</FormLabel>
+                                    <RadioGroup
+                                        value={data.insurance_consent}
+                                        onChange={(e) => setData('insurance_consent', e.target.value)}
+                                    >
+                                        <FormControlLabel value="yes" control={<Radio />} label="ยินยอมโดยสมัครใจ" disabled={!!patient.insurance_consent} />
+                                        <FormControlLabel value="no" control={<Radio />} label="ไม่ยินยอม" disabled={!!patient.insurance_consent} />
+                                    </RadioGroup>
+                                </FormControl>
 
-                            <FormControl component="fieldset" sx={{ width: '100%' }}>
-                                <FormLabel component="legend">&emsp;10.4 การเก็บรวมรวมข้อมูลส่วนบุคคลเพื่อการแจ้งสิทธิประโยชน์ทางการแพทย์ ข้าพเจ้า ...... ให้โรงพยาบาลพระรามเก้าใช้ข้อมูลส่วนบุคคล เพื่อแจ้งสิทธิ ประโยชน์ทางการแพทย์และส่งเสริม การขายการตลาด รายการผลิตภัณฑ์และบริการ รวมถึงสามารถส่งข้อมูล ข่าวสารดังกล่าว หรือส่งแบบสอบถามเพื่อการประเมินผลการให้บริการของบริษัท ให้กับข้าพเจ้าได้ ซึ่งข้าพเจ้า สามารถยกเลิกความยินยอมในการรับแจ้งข้อมูลข่าวสารได้ตามช่องทางที่โรงพยาบาลพระรามเก้ากำหนด</FormLabel>
-                                <RadioGroup
-                                    value={data.consent_4}
-                                    onChange={(e) => setData('consent_4', e.target.value)}
-                                >
-                                    <FormControlLabel value="yes" control={<Radio />} label="ยินยอมโดยสมัครใจ" />
-                                    <FormControlLabel value="no" control={<Radio />} label="ไม่ยินยอม" />
-                                </RadioGroup>
-                            </FormControl>
+                                <Divider sx={{ my: 2 }} />
 
-                            <Divider sx={{ my: 2 }} />
-
-                            <FormControl component="fieldset" sx={{ width: '100%' }}>
-                                <FormLabel component="legend" sx={{ fontWeight: 600, color: 'black' }}>ข้าพเจ้าได้อ่านข้อกำหนด การให้บริการการแพทย์ทางไกลหรือโทรเวช (Telemedicine) และคลินิกออนไลน์ เข้าใจและยอมรับเงื่อนไขตาม ข้อกำหนดนี้</FormLabel>
-                                <RadioGroup
-                                    value={data.consent_1}
-                                    onChange={(e) => setData('consent_1', e.target.value)}
-                                >
-                                    <FormControlLabel value="yes" control={<Radio />} label="ยินยอม" />
-                                    <FormControlLabel value="no" control={<Radio />} label="ไม่ยินยอม" />
-                                </RadioGroup>
-                            </FormControl>
-                        </Box>
-
+                                <FormControl component="fieldset" sx={{ width: '100%' }}>
+                                    <FormLabel component="legend">&emsp;10.4 การเก็บรวมรวมข้อมูลส่วนบุคคลเพื่อการแจ้งสิทธิประโยชน์ทางการแพทย์ ข้าพเจ้า ...... ให้โรงพยาบาลพระรามเก้าใช้ข้อมูลส่วนบุคคล เพื่อแจ้งสิทธิ ประโยชน์ทางการแพทย์และส่งเสริม การขายการตลาด รายการผลิตภัณฑ์และบริการ รวมถึงสามารถส่งข้อมูล ข่าวสารดังกล่าว หรือส่งแบบสอบถามเพื่อการประเมินผลการให้บริการของบริษัท ให้กับข้าพเจ้าได้ ซึ่งข้าพเจ้า สามารถยกเลิกความยินยอมในการรับแจ้งข้อมูลข่าวสารได้ตามช่องทางที่โรงพยาบาลพระรามเก้ากำหนด</FormLabel>
+                                    <RadioGroup
+                                        value={data.benefit_consent}
+                                        onChange={(e) => setData('benefit_consent', e.target.value)}
+                                    >
+                                        <FormControlLabel value="yes" control={<Radio />} label="ยินยอมโดยสมัครใจ" disabled={!!patient.benefit_consent} />
+                                        <FormControlLabel value="no" control={<Radio />} label="ไม่ยินยอม" disabled={!!patient.benefit_consent} />
+                                    </RadioGroup>
+                                </FormControl>
+                            </Box>
+                        </Paper>
+                        <FormControl component="fieldset" sx={{ width: '100%' }}>
+                            <FormLabel component="legend" sx={{ fontWeight: 600, color: 'black' }}>ข้าพเจ้าได้อ่านข้อกำหนด การให้บริการการแพทย์ทางไกลหรือโทรเวช (Telemedicine) และคลินิกออนไลน์ เข้าใจและยอมรับเงื่อนไขตาม ข้อกำหนดนี้</FormLabel>
+                            <RadioGroup
+                                value={data.telemedicine_consent}
+                                onChange={(e) => setData('telemedicine_consent', e.target.value)}
+                            >
+                                <FormControlLabel value="yes" control={<Radio />} label="ยินยอม" />
+                                <FormControlLabel value="no" control={<Radio />} label="ไม่ยินยอม" />
+                            </RadioGroup>
+                        </FormControl>
                         {/* Signature Section */}
                         <Box sx={{ mt: 4 }}>
                             <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
@@ -325,10 +334,25 @@ export default function ConsentTelemedicine({ patient }: ConsentTelemedicineProp
                                 onChange={(e) => setData('signature_name', e.target.value)}
                                 sx={{ mb: 2 }}
                             />
-                            <Paper
+                            <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
+                                ประเภทผู้ลงนาม
+                            </Typography>
+                            <FormControl component="fieldset" sx={{ width: '100%' }}>
+                                <FormLabel component="legend">กรุณาระบุประเภทผู้ลงนาม</FormLabel>
+                                <RadioGroup
+                                    value={data.signature_type}
+                                    onChange={(e) => setData('signature_type', e.target.value)}
+                                >
+                                    <FormControlLabel value="patient" control={<Radio />} label="ผู้ป่วย" />
+                                    <FormControlLabel value="representative" control={<Radio />} label="ผู้แทนผู้ป่วย" />
+                                </RadioGroup>
+                            </FormControl>
+                            <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
+                                ลายมือชื่อผู้ลงนาม
+                            </Typography>
+                            <Box
                                 sx={{
                                     p: 2,
-                                    width: '100%',
                                     maxWidth: '600px',
                                     mx: 'auto',
                                 }}
@@ -363,9 +387,12 @@ export default function ConsentTelemedicine({ patient }: ConsentTelemedicineProp
                                         ล้างลายมือชื่อ
                                     </Button>
                                 </Box>
-                            </Paper>
+                            </Box>
                         </Box>
+                        {/* Sign Type Section */}
+                        <Box sx={{ mt: 4 }}>
 
+                        </Box>
                         {/* Submit Button */}
                         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
                             <Button

@@ -1,19 +1,13 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
-import { router, usePage } from '@inertiajs/react';
-import SessionCheck from "@/components/SessionCheck";
 
 
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-    const page = usePage();
-    const url = page.props.url as string;
-    const auth = page.props.auth as { user: { name: string, userid: string } };
 
     return (
         <div>
-            <SessionCheck />
             <Box>
                 <Container maxWidth="md">
                     <main className="min-h-screen">

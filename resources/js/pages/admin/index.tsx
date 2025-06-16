@@ -17,15 +17,13 @@ interface UserInfo {
     name: string;
 }
 
-interface Consent {
+interface Telemedicine {
     id: number;
     type: string;
+    signature_type: string;
     signature_name: string;
+    telemedicine_consent: boolean;
     created_at: string;
-    consent_1: boolean;
-    consent_2: boolean;
-    consent_3: boolean;
-    consent_4: boolean;
 }
 
 const defaultPatient: PatientInfo = {
@@ -36,22 +34,22 @@ const defaultPatient: PatientInfo = {
 
 export default function Index({
     patient: initialPatient = defaultPatient,
-    result1: initialResult1 = '',
-    result2: initialResult2 = '',
-    result3: initialResult3 = '',
-    consents: initialConsents = [],
+    telemedicine_link: initialTelemedicineLink = '',
+    telehealth_link: initialTelehealthLink = '',
+    hiv_link: initialHivLink = '',
+    telemedicines = [],
     witness1,
     witness2,
     informer,
 }: {
     patient?: PatientInfo;
-    result1?: string;
-    result2?: string;
-    result3?: string;
-    consents?: Consent[];
+    telemedicine_link?: string;
+    telehealth_link?: string;
+    hiv_link?: string;
     witness1?: UserInfo;
     witness2?: UserInfo;
     informer?: UserInfo;
+    telemedicines?: Telemedicine[];
 }) {
     const page = usePage();
     const url = page.props.url as string;
@@ -73,8 +71,8 @@ export default function Index({
         });
     };
 
-    const getConsentStatus = (consent: Consent) => {
-        if (consent.consent_1) {
+    const getTelemedicineStatus = (telemedicine: Telemedicine) => {
+        if (telemedicine.telemedicine_consent) {
             return { label: 'Approved', color: 'success' };
         }
         return { label: 'Rejected', color: 'error' };
@@ -168,7 +166,7 @@ export default function Index({
                                     <Stack spacing={2}>
                                         <TextField
                                             label="Telemedcine Consent"
-                                            value={initialResult1}
+                                            value={initialTelemedicineLink}
                                             slotProps={{
                                                 htmlInput: {
                                                     readOnly: true
@@ -176,7 +174,7 @@ export default function Index({
                                                 input: {
                                                     endAdornment: (
                                                         <InputAdornment position="end">
-                                                            <IconButton onClick={() => handleCopy(initialResult1)} edge="end" disabled={!initialResult1}>
+                                                            <IconButton onClick={() => handleCopy(initialTelemedicineLink)} edge="end" disabled={!initialTelemedicineLink}>
                                                                 <ContentCopyIcon />
                                                             </IconButton>
                                                         </InputAdornment>
@@ -189,7 +187,7 @@ export default function Index({
                                         />
                                         <TextField
                                             label="Telehealth Consent"
-                                            value={initialResult2}
+                                            value={initialTelehealthLink}
                                             slotProps={{
                                                 htmlInput: {
                                                     readOnly: true
@@ -197,7 +195,7 @@ export default function Index({
                                                 input: {
                                                     endAdornment: (
                                                         <InputAdornment position="end">
-                                                            <IconButton onClick={() => handleCopy(initialResult2)} edge="end" disabled={!initialResult2}>
+                                                            <IconButton onClick={() => handleCopy(initialTelehealthLink)} edge="end" disabled={!initialTelehealthLink}>
                                                                 <ContentCopyIcon />
                                                             </IconButton>
                                                         </InputAdornment>
@@ -210,7 +208,7 @@ export default function Index({
                                         />
                                         <TextField
                                             label="HIV Consent"
-                                            value={initialResult3}
+                                            value={initialHivLink}
                                             slotProps={{
                                                 htmlInput: {
                                                     readOnly: true
@@ -218,7 +216,7 @@ export default function Index({
                                                 input: {
                                                     endAdornment: (
                                                         <InputAdornment position="end">
-                                                            <IconButton onClick={() => handleCopy(initialResult3)} edge="end" disabled={!initialResult3}>
+                                                            <IconButton onClick={() => handleCopy(initialHivLink)} edge="end" disabled={!initialHivLink}>
                                                                 <ContentCopyIcon />
                                                             </IconButton>
                                                         </InputAdornment>
@@ -234,7 +232,7 @@ export default function Index({
 
                             </Grid>
                         </Grid>
-                        {initialConsents.length > 0 && (
+                        {telemedicines.length > 0 && (
                             <Paper sx={{ p: 3, mb: 3 }}>
                                 <Typography variant="h6" gutterBottom>
                                     Existing Consents
@@ -252,18 +250,18 @@ export default function Index({
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
-                                            {initialConsents.map((consent) => {
-                                                const status = getConsentStatus(consent);
+                                            {telemedicines.map((telemedicine) => {
+                                                const status = getTelemedicineStatus(telemedicine);
                                                 return (
-                                                    <TableRow key={consent.id} hover>
+                                                    <TableRow key={telemedicine.id} hover>
                                                         <TableCell>
-                                                            {format(new Date(consent.created_at), 'dd/MM/yyyy')}
+                                                            {format(new Date(telemedicine.created_at), 'dd/MM/yyyy')}
                                                         </TableCell>
                                                         <TableCell>
-                                                            {format(new Date(consent.created_at), 'HH:mm:ss')}
+                                                            {format(new Date(telemedicine.created_at), 'HH:mm:ss')}
                                                         </TableCell>
-                                                        <TableCell>{consent.type}</TableCell>
-                                                        <TableCell>{consent.signature_name}</TableCell>
+                                                        <TableCell>{telemedicine.type}</TableCell>
+                                                        <TableCell>{telemedicine.signature_name}</TableCell>
                                                         <TableCell>
                                                             <Chip
                                                                 label={status.label}
@@ -274,7 +272,7 @@ export default function Index({
                                                         <TableCell>
                                                             <Button
                                                                 component={Link}
-                                                                href={route('admin.telemedicine-consent', consent.id)}
+                                                                href={route('admin.telemedicine-consent', telemedicine.id)}
                                                                 variant="contained"
                                                                 size="small"
                                                                 color="primary"

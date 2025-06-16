@@ -11,8 +11,8 @@ class Patient extends Model
         'token',
     ];
 
-    public function consents(): HasMany
+    public function telemedicines(): HasMany
     {
-        return $this->hasMany(Consent::class)->orderBy('created_at', 'desc');
+        return $this->hasMany(Telemedicine::class, 'hn', 'hn')->orderBy('created_at', 'desc');
     }
 }
