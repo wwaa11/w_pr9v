@@ -39,6 +39,7 @@ interface Consent {
     name: string;
     name_type: string;
     telehealth_consent: boolean;
+    hiv_consent: string;
 }
 
 type Order = 'asc' | 'desc';
@@ -74,6 +75,14 @@ export default function View() {
             return { label: 'Approved', color: 'success' };
         } else if (consent.type == 'Telehealth' && consent.telehealth_consent == true) {
             return { label: 'Approved', color: 'success' };
+        } else if (consent.type == 'HIV') {
+            if (consent.hiv_consent == 'self') {
+                return { label: 'Self', color: 'success' };
+            } else if (consent.hiv_consent == 'other') {
+                return { label: 'Other', color: 'warning' };
+            } else if (consent.hiv_consent == 'none') {
+                return { label: 'None', color: 'error' };
+            }
         }
 
         return { label: 'Rejected', color: 'error' };
@@ -82,7 +91,7 @@ export default function View() {
     const getConsentName = (consent: Consent) => {
         if (consent.type == 'Telemedicine') {
             return consent.signature_name + ' (' + consent.signature_type + ')';
-        } else if (consent.type == 'Telehealth') {
+        } else if (consent.type == 'Telehealth' || consent.type == 'HIV') {
             return consent.name + ' (' + consent.name_type + ')';
         }
     };
@@ -92,6 +101,8 @@ export default function View() {
             return url + '/admin/telemedicine-consent/' + consent.pdf_id;
         } else if (consent.type == 'Telehealth') {
             return url + '/admin/telehealth-consent/' + consent.pdf_id;
+        } else if (consent.type == 'HIV') {
+            return url + '/admin/hiv-consent/' + consent.pdf_id;
         }
     };
 

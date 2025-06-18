@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Models\Hiv;
 use App\Models\Patient;
 use App\Models\Telehealth;
 use App\Models\Telemedicine;
@@ -201,6 +202,7 @@ class MainController extends Controller
             'patient'           => $patientData,
             'telemedicines'     => $patient->telemedicines->take(1),
             'telehealths'       => $patient->telehealths->take(1),
+            'hivs'              => $patient->hivs->take(1),
             'telemedicine_link' => $generatedResult1,
             'telehealth_link'   => $generatedResult2,
             'hiv_link'          => $generatedResult3,
@@ -295,6 +297,50 @@ class MainController extends Controller
         return redirect()->route('success');
     }
 
+    public function hiv($token)
+    {
+        $patient = Patient::where('token', $token)->first();
+        if (! $patient || $patient->expires_at < now()) {
+            return redirect()->route('error');
+        }
+
+        return inertia::render('consents/hiv', compact('patient'));
+    }
+
+    public function hiv_store(Request $request)
+    {
+        $validated = $request->validate([
+            'hn'           => 'required|string|exists:patients,hn',
+            'type'         => 'required|string',
+            'patient_name' => 'required|string',
+            'patient_type' => 'required|string',
+            'hiv_consent'  => 'required|string',
+            'signature'    => 'required|string',
+        ]);
+
+        $new                   = new Hiv;
+        $new->hn               = $request->hn;
+        $new->type             = $request->type;
+        $new->vn               = $request->vn;
+        $new->visit_date       = date('Y-m-d', strtotime($request->visit_date));
+        $new->visit_time       = date('H:i:s', strtotime($request->visit_date));
+        $new->doctor_name      = $request->doctor_name;
+        $new->name             = $request->patient_name;
+        $new->name_type        = $request->patient_type;
+        $new->name_relation    = $request->patient_relation;
+        $new->name_phone       = $request->patient_phone;
+        $new->name_address     = $request->patient_address;
+        $new->signature        = $request->signature;
+        $new->hiv_consent      = $request->hiv_consent;
+        $new->hiv_name         = $request->hiv_name;
+        $new->informer_user_id = $request->informer_user_id;
+        $new->witness1_user_id = $request->witness_user_id1;
+        $new->witness2_user_id = $request->witness_user_id2;
+        $new->save();
+
+        return redirect()->route('success');
+    }
+
     public function allConsents(Request $request)
     {
         $startDate = $request->start_date ?? now()->startOfDay()->format('Y-m-d');
@@ -309,15 +355,21 @@ class MainController extends Controller
             ->whereDate('created_at', '<=', $endDate)
             ->orderBy('created_at', 'desc');
 
+        $hivs = Hiv::whereDate('created_at', '>=', $startDate)
+            ->whereDate('created_at', '<=', $endDate)
+            ->orderBy('created_at', 'desc');
+
         if ($hn) {
             $telemedicines->where('hn', 'like', "%{$hn}%");
             $telehealths->where('hn', 'like', "%{$hn}%");
+            $hivs->where('hn', 'like', "%{$hn}%");
         }
 
         $telemedicines = $telemedicines->get();
         $telehealths   = $telehealths->get();
+        $hivs          = $hivs->get();
+        $consents      = array_merge($telemedicines->toArray(), $telehealths->toArray(), $hivs->toArray());
 
-        $consents = array_merge($telemedicines->toArray(), $telehealths->toArray());
         foreach ($consents as $index => $consent) {
             $consents[$index]['pdf_id'] = $consent['id'];
             $consents[$index]['id']     = $index + 1;
@@ -437,6 +489,7 @@ class MainController extends Controller
                 'surnameTH'          => $response['patient']['name']['last_th'],
                 'nameEN'             => $response['patient']['name']['first_en'],
                 'surnameEN'          => $response['patient']['name']['last_en'],
+                'gender'             => $response['patient']['gender'],
                 'birthDate'          => $response['patient']['brithdate_text'],
                 'religion'           => $response['patient']['religion'],
                 'race'               => $response['patient']['race'],
@@ -485,9 +538,79 @@ class MainController extends Controller
 
     public function viewHivConsent($id)
     {
-        $consent = Consent::findOrFail($id);
+        $consent = Hiv::findOrFail($id);
 
-        return inertia::render('admin/hiv_consent_view', compact('consent'));
+        $response = Http::withHeaders(['key' => env('API_PATIENT_KEY')])
+            ->post('http://172.20.1.22/w_phr/api/patient/info', [
+                'hn' => $consent->hn,
+            ])
+            ->json();
+
+        if ($response['status'] == 0) {
+            return back()->with('error', 'ไม่พบข้อมูลผู้ป่วย');
+        }
+
+        $allergyName    = '';
+        $allergySymptom = '';
+        if ($response['patient']['allergy']) {
+            foreach ($response['patient']['allergy_list'] as $allergy) {
+                $allergyName .= $allergy['name'] . ', ';
+                $allergySymptom .= $allergy['remark'] . ', ';
+            }
+        }
+
+        $consentData = [
+            'hn'            => $consent->hn,
+            'patient'       => [
+                'nameTH'             => $response['patient']['name']['first_th'],
+                'surnameTH'          => $response['patient']['name']['last_th'],
+                'nameEN'             => $response['patient']['name']['first_en'],
+                'surnameEN'          => $response['patient']['name']['last_en'],
+                'gender'             => $response['patient']['gender'],
+                'birthDate'          => $response['patient']['brithdate_text'],
+                'religion'           => $response['patient']['religion'],
+                'race'               => $response['patient']['race'],
+                'national'           => $response['patient']['national'],
+                'martial'            => $response['patient']['martial'],
+                'age'                => $response['patient']['age'],
+                'phone'              => $response['patient']['telephone'],
+                'mobile'             => $response['patient']['phone'],
+                'email'              => $response['patient']['email'],
+                'occupation'         => $response['patient']['ocupation'],
+                'education'          => $response['patient']['education'],
+                'address'            => $response['patient']['address']['home']['full_address'],
+                'address_contact'    => $response['patient']['address']['contact']['full_address'],
+                'allergy'            => $response['patient']['allergy'],
+                'allergy_name'       => ($response['patient']['allergy']) ? $allergyName : '',
+                'allergy_symptom'    => ($response['patient']['allergy']) ? $allergySymptom : '',
+                'represent'          => isset($response['patient']['notify']) ? true : false,
+                'represent_name'     => $response['patient']['notify']['first_name'],
+                'represent_surname'  => $response['patient']['notify']['last_name'],
+                'represent_relation' => $response['patient']['notify']['relation'],
+                'represent_phone'    => $response['patient']['notify']['phone'],
+            ],
+            'vn'            => $consent->vn,
+            'name'          => $consent->name,
+            'name_type'     => $consent->name_type,
+            'name_relation' => $consent->name_relation,
+            'name_phone'    => $consent->name_phone,
+            'name_address'  => $consent->name_address,
+            'visit_date'    => date('d/m/Y', strtotime($consent->visit_date)),
+            'visit_time'    => date('H:i', strtotime($consent->visit_time)),
+            'doctor_name'   => $consent->doctor_name,
+            'hiv_consent'   => $consent->hiv_consent,
+            'hiv_name'      => $consent->hiv_name,
+            'signature'     => $consent->signature,
+            'informer_name' => $consent->informer->name,
+            'informer_sign' => $consent->informer->signature,
+            'witness1_name' => $consent->witness1->name,
+            'witness1_sign' => $consent->witness1->signature,
+            'witness2_name' => $consent->witness2->name,
+            'witness2_sign' => $consent->witness2->signature,
+        ];
+        return inertia::render('admin/pdf/hiv', [
+            'consent' => $consentData,
+        ]);
     }
 
     public function manageUsers(Request $request)

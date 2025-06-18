@@ -4,7 +4,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Telehealth extends Model
+class HIV extends Model
 {
     public function informer(): BelongsTo
     {

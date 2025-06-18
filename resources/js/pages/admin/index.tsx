@@ -36,6 +36,14 @@ interface Telehealth {
     created_at: string;
 }
 
+interface Hiv {
+    id: number;
+    type: string;
+    name: string;
+    hiv_consent: boolean;
+    created_at: string;
+}
+
 const defaultPatient: PatientInfo = {
     hn: '',
     name: '',
@@ -52,6 +60,7 @@ export default function Index({
     informer,
     telemedicines = [],
     telehealths = [],
+    hivs = [],
 }: {
     patient?: PatientInfo;
     telemedicine_link?: string;
@@ -62,6 +71,7 @@ export default function Index({
     informer?: UserInfo;
     telemedicines?: Telemedicine[];
     telehealths?: Telehealth[];
+    hivs?: Hiv[];
 }) {
     const page = usePage();
     const url = page.props.url as string;
@@ -308,6 +318,38 @@ export default function Index({
                                                         <Button
                                                             component={Link}
                                                             href={route('admin.telehealth-consent', telehealth.id)}
+                                                            variant="contained"
+                                                            size="small"
+                                                            color="primary"
+                                                        >
+                                                            View Details
+                                                        </Button>
+                                                    </TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
+                                        {hivs.map((hiv) => {
+                                            return (
+                                                <TableRow key={hiv.id} hover>
+                                                    <TableCell>
+                                                        {format(new Date(hiv.created_at), 'dd/MM/yyyy')}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {format(new Date(hiv.created_at), 'HH:mm:ss')}
+                                                    </TableCell>
+                                                    <TableCell>{hiv.type}</TableCell>
+                                                    <TableCell>{hiv.name}</TableCell>
+                                                    <TableCell>
+                                                        <Chip
+                                                            label={hiv.hiv_consent ? 'Approved' : 'Rejected'}
+                                                            color={hiv.hiv_consent ? 'success' : 'error'}
+                                                            size="small"
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Button
+                                                            component={Link}
+                                                            href={route('admin.hiv-consent', hiv.id)}
                                                             variant="contained"
                                                             size="small"
                                                             color="primary"

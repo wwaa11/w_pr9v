@@ -34,7 +34,6 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/admin/telemedicine-consent/{id}', [MainController::class, 'viewTelemedicineConsent'])->name('admin.telemedicine-consent');
     Route::get('/admin/telehealth-consent/{id}', [MainController::class, 'viewTelehealthConsent'])->name('admin.telehealth-consent');
-
     Route::get('/admin/hiv-consent/{id}', [MainController::class, 'viewHivConsent'])->name('admin.hiv-consent');
 
     Route::get('/admin/users', [MainController::class, 'manageUsers'])->name('admin.users');

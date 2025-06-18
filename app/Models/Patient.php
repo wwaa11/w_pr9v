@@ -20,4 +20,9 @@ class Patient extends Model
     {
         return $this->hasMany(Telehealth::class, 'hn', 'hn')->orderBy('created_at', 'desc');
     }
+
+    public function hivs(): HasMany
+    {
+        return $this->hasMany(Hiv::class, 'hn', 'hn')->orderBy('created_at', 'desc');
+    }
 }
