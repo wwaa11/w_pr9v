@@ -126,15 +126,20 @@ export default function ConsentTelemedicine({ patient }: ConsentTelemedicineProp
             >
                 <form onSubmit={handleSubmit} className="max-w-4xl mx-auto px-4 py-8">
                     <Paper elevation={3} sx={{ p: 4, mb: 4 }}>
-                        <Typography variant="h4" component="h1" align="center" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
-                            ข้อกำหนดและการให้ความยินยอมรับบริการ
-                        </Typography>
-                        <Typography variant="h5" align="center" gutterBottom sx={{ color: 'text.secondary' }}>
-                            การแพทย์ทางไกลหรือโทรเวช (telemedicine) และคลินิกออนไลน์
-                        </Typography>
-                        <Typography variant="subtitle1" align="center" sx={{ color: 'text.secondary', mb: 4 }}>
-                            Praram 9 Hospital Public Company Limited
-                        </Typography>
+                        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 2, gap: 2 }}>
+                            <img src="/images/logo.png" alt="logo" width={100} />
+                            <Box >
+                                <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                                    ข้อกำหนดและการให้ความยินยอมรับบริการ
+                                </Typography>
+                                <Typography variant="h5" gutterBottom sx={{ color: 'text.secondary' }}>
+                                    การแพทย์ทางไกลหรือโทรเวช (telemedicine) และคลินิกออนไลน์
+                                </Typography>
+                                <Typography variant="subtitle1" sx={{ color: 'text.secondary', mb: 4 }}>
+                                    Praram 9 Hospital Public Company Limited
+                                </Typography>
+                            </Box>
+                        </Box>
                         <Alert severity="info" sx={{ mb: 4 }}>
                             กรุณาอ่านข้อกำหนดทั้งหมดและให้ความยินยอมตามที่ระบุ
                         </Alert>
@@ -388,10 +393,6 @@ export default function ConsentTelemedicine({ patient }: ConsentTelemedicineProp
                                     </Button>
                                 </Box>
                             </Box>
-                        </Box>
-                        {/* Sign Type Section */}
-                        <Box sx={{ mt: 4 }}>
-
                         </Box>
                         {/* Submit Button */}
                         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>

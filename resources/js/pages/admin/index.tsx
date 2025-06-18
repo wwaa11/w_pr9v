@@ -26,6 +26,16 @@ interface Telemedicine {
     created_at: string;
 }
 
+interface Telehealth {
+    id: number;
+    type: string;
+    name: string;
+    name_type: string;
+    name_relation: string;
+    telehealth_consent: boolean;
+    created_at: string;
+}
+
 const defaultPatient: PatientInfo = {
     hn: '',
     name: '',
@@ -37,10 +47,11 @@ export default function Index({
     telemedicine_link: initialTelemedicineLink = '',
     telehealth_link: initialTelehealthLink = '',
     hiv_link: initialHivLink = '',
-    telemedicines = [],
     witness1,
     witness2,
     informer,
+    telemedicines = [],
+    telehealths = [],
 }: {
     patient?: PatientInfo;
     telemedicine_link?: string;
@@ -50,6 +61,7 @@ export default function Index({
     witness2?: UserInfo;
     informer?: UserInfo;
     telemedicines?: Telemedicine[];
+    telehealths?: Telehealth[];
 }) {
     const page = usePage();
     const url = page.props.url as string;
@@ -69,13 +81,6 @@ export default function Index({
             showConfirmButton: false,
             timer: 1500
         });
-    };
-
-    const getTelemedicineStatus = (telemedicine: Telemedicine) => {
-        if (telemedicine.telemedicine_consent) {
-            return { label: 'Approved', color: 'success' };
-        }
-        return { label: 'Rejected', color: 'error' };
     };
 
     return (
@@ -232,62 +237,91 @@ export default function Index({
 
                             </Grid>
                         </Grid>
-                        {telemedicines.length > 0 && (
-                            <Paper sx={{ p: 3, mb: 3 }}>
-                                <Typography variant="h6" gutterBottom>
-                                    Existing Consents
-                                </Typography>
-                                <TableContainer>
-                                    <Table>
-                                        <TableHead>
-                                            <TableRow>
-                                                <TableCell>Date</TableCell>
-                                                <TableCell>Time</TableCell>
-                                                <TableCell>Type</TableCell>
-                                                <TableCell>Signature Name</TableCell>
-                                                <TableCell>Status</TableCell>
-                                                <TableCell>Action</TableCell>
-                                            </TableRow>
-                                        </TableHead>
-                                        <TableBody>
-                                            {telemedicines.map((telemedicine) => {
-                                                const status = getTelemedicineStatus(telemedicine);
-                                                return (
-                                                    <TableRow key={telemedicine.id} hover>
-                                                        <TableCell>
-                                                            {format(new Date(telemedicine.created_at), 'dd/MM/yyyy')}
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            {format(new Date(telemedicine.created_at), 'HH:mm:ss')}
-                                                        </TableCell>
-                                                        <TableCell>{telemedicine.type}</TableCell>
-                                                        <TableCell>{telemedicine.signature_name}</TableCell>
-                                                        <TableCell>
-                                                            <Chip
-                                                                label={status.label}
-                                                                color={status.color as any}
-                                                                size="small"
-                                                            />
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <Button
-                                                                component={Link}
-                                                                href={route('admin.telemedicine-consent', telemedicine.id)}
-                                                                variant="contained"
-                                                                size="small"
-                                                                color="primary"
-                                                            >
-                                                                View Details
-                                                            </Button>
-                                                        </TableCell>
-                                                    </TableRow>
-                                                );
-                                            })}
-                                        </TableBody>
-                                    </Table>
-                                </TableContainer>
-                            </Paper>
-                        )}
+                        <Paper sx={{ p: 3, mb: 3, mt: 3 }}>
+                            <Typography variant="h6" gutterBottom>
+                                Existing Consents
+                            </Typography>
+                            <TableContainer>
+                                <Table>
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell>Date</TableCell>
+                                            <TableCell>Time</TableCell>
+                                            <TableCell>Type</TableCell>
+                                            <TableCell>Signature Name</TableCell>
+                                            <TableCell>Status</TableCell>
+                                            <TableCell>Action</TableCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {telemedicines.map((telemedicine) => {
+                                            return (
+                                                <TableRow key={telemedicine.id} hover>
+                                                    <TableCell>
+                                                        {format(new Date(telemedicine.created_at), 'dd/MM/yyyy')}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {format(new Date(telemedicine.created_at), 'HH:mm:ss')}
+                                                    </TableCell>
+                                                    <TableCell>{telemedicine.type}</TableCell>
+                                                    <TableCell>{telemedicine.signature_name}</TableCell>
+                                                    <TableCell>
+                                                        <Chip
+                                                            label={telemedicine.telemedicine_consent ? 'Approved' : 'Rejected'}
+                                                            color={telemedicine.telemedicine_consent ? 'success' : 'error'}
+                                                            size="small"
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Button
+                                                            component={Link}
+                                                            href={route('admin.telemedicine-consent', telemedicine.id)}
+                                                            variant="contained"
+                                                            size="small"
+                                                            color="primary"
+                                                        >
+                                                            View Details
+                                                        </Button>
+                                                    </TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
+                                        {telehealths.map((telehealth) => {
+                                            return (
+                                                <TableRow key={telehealth.id} hover>
+                                                    <TableCell>
+                                                        {format(new Date(telehealth.created_at), 'dd/MM/yyyy')}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {format(new Date(telehealth.created_at), 'HH:mm:ss')}
+                                                    </TableCell>
+                                                    <TableCell>{telehealth.type}</TableCell>
+                                                    <TableCell>{telehealth.name}</TableCell>
+                                                    <TableCell>
+                                                        <Chip
+                                                            label={telehealth.telehealth_consent ? 'Approved' : 'Rejected'}
+                                                            color={telehealth.telehealth_consent ? 'success' : 'error'}
+                                                            size="small"
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Button
+                                                            component={Link}
+                                                            href={route('admin.telehealth-consent', telehealth.id)}
+                                                            variant="contained"
+                                                            size="small"
+                                                            color="primary"
+                                                        >
+                                                            View Details
+                                                        </Button>
+                                                    </TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                        </Paper>
                     </>
                 )}
             </Box>

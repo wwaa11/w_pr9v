@@ -118,12 +118,12 @@ export default function AdminDashboard({ children }: { children: React.ReactNode
             path: 'admin'
         },
         {
-            text: 'Telemedicine Consent',
+            text: 'Today Consents',
             icon: <DashboardIcon />,
-            path: 'admin/all-telemedicine-consent'
+            path: 'admin/all-consents'
         },
         {
-            text: 'Users',
+            text: 'Witnesses',
             icon: <PeopleIcon />,
             path: 'admin/users'
         },

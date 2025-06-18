@@ -24,17 +24,21 @@ import {
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import VisibilityIcon from '@mui/icons-material/Visibility';
 import { format, startOfDay, endOfDay } from 'date-fns';
 import { router } from '@inertiajs/react';
 
 interface Consent {
     id: number;
+    pdf_id: number;
+    created_at: string;
     hn: string;
     type: string;
     signature_name: string;
-    created_at: string;
+    signature_type: string;
     telemedicine_consent: boolean;
+    name: string;
+    name_type: string;
+    telehealth_consent: boolean;
 }
 
 type Order = 'asc' | 'desc';
@@ -46,6 +50,7 @@ interface HeadCell {
 }
 
 const headCells: HeadCell[] = [
+    { id: 'id', label: '#', numeric: true },
     { id: 'created_at', label: 'Date & Time', numeric: false },
     { id: 'hn', label: 'HN', numeric: false },
     { id: 'type', label: 'Type', numeric: false },
@@ -60,15 +65,34 @@ export default function View() {
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
     const [startDate, setStartDate] = React.useState<Date | null>(startOfDay(new Date()));
     const [endDate, setEndDate] = React.useState<Date | null>(endOfDay(new Date()));
-    const [order, setOrder] = React.useState<Order>('asc');
-    const [orderBy, setOrderBy] = React.useState<keyof Consent>('created_at');
+    const [order, setOrder] = React.useState<Order>('desc');
+    const [orderBy, setOrderBy] = React.useState<keyof Consent>('id');
     const [hnFilter, setHnFilter] = React.useState('');
 
     const getConsentStatus = (consent: Consent) => {
-        if (consent.telemedicine_consent == true) {
+        if (consent.type == 'Telemedicine' && consent.telemedicine_consent == true) {
+            return { label: 'Approved', color: 'success' };
+        } else if (consent.type == 'Telehealth' && consent.telehealth_consent == true) {
             return { label: 'Approved', color: 'success' };
         }
+
         return { label: 'Rejected', color: 'error' };
+    };
+
+    const getConsentName = (consent: Consent) => {
+        if (consent.type == 'Telemedicine') {
+            return consent.signature_name + ' (' + consent.signature_type + ')';
+        } else if (consent.type == 'Telehealth') {
+            return consent.name + ' (' + consent.name_type + ')';
+        }
+    };
+
+    const getConsentLink = (consent: Consent) => {
+        if (consent.type == 'Telemedicine') {
+            return url + '/admin/telemedicine-consent/' + consent.pdf_id;
+        } else if (consent.type == 'Telehealth') {
+            return url + '/admin/telehealth-consent/' + consent.pdf_id;
+        }
     };
 
     const handleChangePage = (_event: unknown, newPage: number) => {
@@ -82,7 +106,7 @@ export default function View() {
 
     const handleDateRangeChange = () => {
         if (startDate && endDate) {
-            router.get(url + '/admin/view', {
+            router.get(url + '/admin/all-consents', {
                 start_date: format(startDate, 'yyyy-MM-dd'),
                 end_date: format(endDate, 'yyyy-MM-dd'),
                 hn: hnFilter.trim(),
@@ -121,14 +145,24 @@ export default function View() {
 
     const sortedConsents = React.useMemo(() => {
         return [...consents].sort((a, b) => {
+            // Primary sort by the selected column
+            let comparison = 0;
             if (orderBy === 'created_at') {
-                return order === 'asc'
+                comparison = order === 'asc'
                     ? new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
                     : new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+            } else {
+                comparison = order === 'asc'
+                    ? String(a[orderBy]).localeCompare(String(b[orderBy]))
+                    : String(b[orderBy]).localeCompare(String(a[orderBy]));
             }
-            return order === 'asc'
-                ? String(a[orderBy]).localeCompare(String(b[orderBy]))
-                : String(b[orderBy]).localeCompare(String(a[orderBy]));
+
+            // If values are equal, use ID as secondary sort
+            if (comparison === 0) {
+                return order === 'asc' ? a.id - b.id : b.id - a.id;
+            }
+
+            return comparison;
         });
     }, [consents, order, orderBy]);
 
@@ -182,7 +216,7 @@ export default function View() {
                     </Stack>
                 </Paper>
                 <Paper sx={{ width: '100%', overflow: 'hidden' }}>
-                    <TableContainer sx={{ maxHeight: 440 }}>
+                    <TableContainer sx={{ maxHeight: 600 }}>
                         <Table stickyHeader>
                             <TableHead>
                                 <TableRow>
@@ -210,14 +244,16 @@ export default function View() {
                                     .slice(currentPage * rowsPerPage, currentPage * rowsPerPage + rowsPerPage)
                                     .map((consent) => {
                                         const status = getConsentStatus(consent);
+                                        const name = getConsentName(consent);
                                         return (
                                             <TableRow key={consent.id} hover>
+                                                <TableCell>{consent.id}</TableCell>
                                                 <TableCell>
                                                     {format(new Date(consent.created_at), 'd/M/Y HH:mm:ss')}
                                                 </TableCell>
                                                 <TableCell>{consent.hn}</TableCell>
                                                 <TableCell>{consent.type}</TableCell>
-                                                <TableCell>{consent.signature_name}</TableCell>
+                                                <TableCell>{name}</TableCell>
                                                 <TableCell>
                                                     <Chip
                                                         label={status.label}
@@ -228,7 +264,7 @@ export default function View() {
                                                 <TableCell>
                                                     <Button
                                                         component={Link}
-                                                        href={url + '/admin/telemedicine-consent/' + consent.id}
+                                                        href={getConsentLink(consent)}
                                                         variant="contained"
                                                         size="small"
                                                         color="primary"

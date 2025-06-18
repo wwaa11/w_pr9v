@@ -15,4 +15,9 @@ class Patient extends Model
     {
         return $this->hasMany(Telemedicine::class, 'hn', 'hn')->orderBy('created_at', 'desc');
     }
+
+    public function telehealths(): HasMany
+    {
+        return $this->hasMany(Telehealth::class, 'hn', 'hn')->orderBy('created_at', 'desc');
+    }
 }
