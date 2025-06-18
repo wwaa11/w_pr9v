@@ -127,7 +127,7 @@ export default function ConsentTelemedicine({ patient }: ConsentTelemedicineProp
                 <form onSubmit={handleSubmit} className="max-w-4xl mx-auto px-4 py-8">
                     <Paper elevation={3} sx={{ p: 4, mb: 4 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 2, gap: 2 }}>
-                            <img src="/images/logo.png" alt="logo" width={100} />
+                            <img src={url + "/images/logo.png"} alt="logo" width={100} />
                             <Box >
                                 <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
                                     ข้อกำหนดและการให้ความยินยอมรับบริการ

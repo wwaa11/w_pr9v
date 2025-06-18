@@ -132,7 +132,7 @@ export default function View() {
         setHnFilter('');
         setStartDate(startOfDay(new Date()));
         setEndDate(endOfDay(new Date()));
-        router.get(url + '/admin/view', {}, {
+        router.get(url + '/admin/all-consents', {}, {
             preserveState: true,
             preserveScroll: true,
         });

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import SignaturePad from 'react-signature-canvas';
 import { Box, Button, Typography, Paper } from '@mui/material';
 import axios from 'axios';
+import { usePage } from '@inertiajs/react';
 
 interface SignatureManagerProps {
     initialSignature?: string;
@@ -9,6 +10,9 @@ interface SignatureManagerProps {
 }
 
 export default function SignatureManager({ initialSignature, onSignatureUpdate }: SignatureManagerProps) {
+    const page = usePage();
+    const url = page.props.url as string;
+
     const [signature, setSignature] = useState<string | null>(initialSignature || null);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
@@ -42,7 +46,7 @@ export default function SignatureManager({ initialSignature, onSignatureUpdate }
         setSignature(signatureData);
 
         try {
-            const response = await axios.post('/api/update-signature', {
+            const response = await axios.post(`${url}/api/update-signature`, {
                 signature: signatureData
             });
 

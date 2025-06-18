@@ -121,7 +121,7 @@ export default function ConsentTelehealth({ patient }: ConsentTelehealthProps) {
                 <form onSubmit={handleSubmit} className="max-w-4xl mx-auto px-4 py-8">
                     <Paper elevation={3} sx={{ p: 4, mb: 4 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 2, gap: 2 }}>
-                            <img src="/images/logo.png" alt="logo" width={100} />
+                            <img src={url + "/images/logo.png"} alt="logo" width={100} />
                             <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
                                 หนังสือแสดงเจตจำนง ปฏิเสธกํารบันทึกภําพ วีดีโอ และเสียงในกํารรับบริการการแพทย์ทางไกล (Telehealth Service)
                             </Typography>

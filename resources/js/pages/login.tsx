@@ -97,7 +97,7 @@ export default function Login() {
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        post(`${url}/login`);
+        post(`login-request`);
     };
 
     const handleClickShowPassword = () => {
@@ -231,6 +231,7 @@ export default function Login() {
                             }}
                         />
                     </FormControl>
+
                     <FormControl>
                         <FormLabel htmlFor="password" sx={{ mb: 1, fontWeight: 500 }}>
                             Password
@@ -270,6 +271,7 @@ export default function Login() {
                             }}
                         />
                     </FormControl>
+
                     <Button
                         type="submit"
                         fullWidth

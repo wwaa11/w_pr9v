@@ -14,12 +14,6 @@ use Inertia\Inertia;
 
 class MainController extends Controller
 {
-
-    public function temp()
-    {
-
-    }
-
     public function login()
     {
         $users = User::where('role', 'witness')->get();
@@ -114,16 +108,17 @@ class MainController extends Controller
         ]);
     }
 
-    public function index()
+    public function admin()
     {
         if (! Auth::check()) {
+
             return redirect()->route('login');
         }
 
         return inertia::render('admin/index');
     }
 
-    public function index_search(Request $request)
+    public function admin_search(Request $request)
     {
         $request->validate([
             'hn' => ['required', 'string', 'max:255'],

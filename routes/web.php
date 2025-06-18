@@ -3,16 +3,18 @@
 use App\Http\Controllers\MainController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/test', [MainController::class, 'temp']);
+Route::fallback(function () {
+    abort(404);
+});
 
-Route::get('/', [MainController::class, 'index'])->name('home');
+Route::get('/', function () {return inertia('index');})->name('home');
 Route::get('/api/check-session', [MainController::class, 'checkSession']);
 
 Route::get('/error', function () {return inertia('error');})->name('error');
 Route::get('/success', function () {return inertia('success');})->name('success');
 
 Route::get('/login', [MainController::class, 'login'])->name('login');
-Route::post('/login', [MainController::class, 'loginRequest']);
+Route::post('/login-request', [MainController::class, 'loginRequest']);
 Route::post('/logout', [MainController::class, 'logout']);
 
 Route::get('/telemedicine/{hn_token}', [MainController::class, 'telemedicine'])->name('telemedicine');
@@ -27,8 +29,8 @@ Route::post('/hiv', [MainController::class, 'hiv_store']);
 Route::middleware(['auth'])->group(function () {
     Route::post('/api/update-signature', [MainController::class, 'updateSignature'])->middleware('auth');
 
-    Route::get('/admin', [MainController::class, 'index'])->name('admin.index');
-    Route::post('/admin', [MainController::class, 'index_search']);
+    Route::get('/admin', [MainController::class, 'admin'])->name('admin.index');
+    Route::post('/admin', [MainController::class, 'admin_search']);
 
     Route::get('/admin/all-consents', [MainController::class, 'allConsents'])->name('admin.all-consents');
 
@@ -39,8 +41,4 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin/users', [MainController::class, 'manageUsers'])->name('admin.users');
     Route::post('/admin/users/{user}/set-witness', [MainController::class, 'setWitness'])->name('admin.users.set-witness');
     Route::post('/admin/users/add-witness', [MainController::class, 'addWitness'])->name('admin.users.add-witness');
-});
-
-Route::fallback(function () {
-    abort(404);
 });
