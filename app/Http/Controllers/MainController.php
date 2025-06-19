@@ -47,7 +47,15 @@ class MainController extends Controller
                 ->json();
 
             if ($response['status'] == 1) {
-                $userData = User::firstOrCreate(['user_id' => $userid, 'name' => $response['user']['name']]);
+                $userData = User::where('user_id', $userid)->first();
+                if ($userData == null) {
+                    $userData             = new User();
+                    $userData->user_id    = $userid;
+                    $userData->name       = $response['user']['name'];
+                    $userData->department = $response['user']['department'];
+                    $userData->save();
+                }
+
                 Auth::login($userData);
                 session(['witness1' => $witness1, 'witness2' => $witness2]);
 
@@ -76,7 +84,8 @@ class MainController extends Controller
                 $userData          = new User();
                 $userData->user_id = $userid;
             }
-            $userData->name = $response['user']['name'];
+            $userData->name       = $response['user']['name'];
+            $userData->department = $response['user']['department'];
             $userData->save();
 
             Auth::login($userData);
@@ -135,14 +144,16 @@ class MainController extends Controller
         if ($response['status'] == 'success') {
             $patient = Patient::where('hn', $hn)->first();
             if ($patient == null) {
-                $patient        = new Patient();
-                $patient->hn    = $hn;
-                $patient->token = Crypt::encryptString($hn);
+                $patient           = new Patient();
+                $patient->hn       = $hn;
+                $patient->token    = Crypt::encryptString($hn);
+                $patient->ref      = $response['patient']['ref'][0]['ref'];
+                $patient->passport = $response['patient']['ref'][0]['card'] == "1" ? false : true;
             }
             $patient->photo_consent     = $response['patient']['photo_consent'];
             $patient->treatment_consent = $response['patient']['treatment_consent'];
             $patient->insurance_consent = $response['patient']['insurance_consent'];
-            $patient->benefit_consent   = $response['patient']['benefit_consent'];
+            $patient->marketing_consent = $response['patient']['marketing_consent'];
             $patient->expires_at        = now()->addMinutes(60);
             $patient->save();
 
@@ -166,7 +177,7 @@ class MainController extends Controller
                 'witness2_user_id' => session('witness2'),
                 'informer_user_id' => auth()->user()->user_id,
                 'visit'            => $visit,
-                'visit_date'       => date('d/m/Y', strtotime($visit)),
+                'visit_date'       => $visit !== '' ? date('d/m/Y', strtotime($visit)) : '',
                 'vn'               => $vn,
                 'doctor_name'      => $doctor_name,
             ];
@@ -185,21 +196,35 @@ class MainController extends Controller
             ];
 
         } else {
+
+            $patient = null;
+
             $patientData = [
                 'hn'    => $hn,
                 'name'  => $response['message'],
                 'phone' => 'N/A',
             ];
-            $generatedResult1 = "Patient with HN {$hn} not found.";
+
+            $queryParams = [
+                'witness1_user_id' => session('witness1'),
+                'witness2_user_id' => session('witness2'),
+                'informer_user_id' => auth()->user()->user_id,
+                'visit'            => '',
+                'visit_date'       => '',
+                'vn'               => '',
+                'doctor_name'      => '',
+            ];
+
+            $generatedResult1 = "";
             $generatedResult2 = "";
             $generatedResult3 = "";
         }
 
         return Inertia::render('admin/index', [
             'patient'           => $patientData,
-            'telemedicines'     => $patient->telemedicines->take(1),
-            'telehealths'       => $patient->telehealths->take(1),
-            'hivs'              => $patient->hivs->take(1),
+            'telemedicines'     => $patient ? $patient->telemedicines->take(1) : [],
+            'telehealths'       => $patient ? $patient->telehealths->take(1) : [],
+            'hivs'              => $patient ? $patient->hivs->take(1) : [],
             'telemedicine_link' => $generatedResult1,
             'telehealth_link'   => $generatedResult2,
             'hiv_link'          => $generatedResult3,
@@ -242,12 +267,34 @@ class MainController extends Controller
         $new->signature            = $request->signature;
         $new->signature_relation   = $request->signature_relation;
         $new->telemedicine_consent = ($request->telemedicine_consent === 'yes') ? true : false;
-        $new->treatment_consent    = ($request->treatment_consent === 'yes') ? true : false;
+        $new->treatment_consent    = true;
         $new->insurance_consent    = ($request->insurance_consent === 'yes') ? true : false;
-        $new->benefit_consent      = ($request->benefit_consent === 'yes') ? true : false;
+        $new->marketing_consent    = ($request->marketing_consent === 'yes') ? true : false;
         $new->informer_user_id     = $data['informer_user_id'];
         $new->witness_user_id      = $data['witness1_user_id'];
         $new->save();
+
+        $patient = Patient::where('hn', $request->hn)->first();
+        if ($patient->insurance_consent == null || $patient->marketing_consent == null) {
+            $patient->insurance_consent = $request->insurance_consent;
+            $patient->marketing_consent = $request->marketing_consent;
+            $patient->save();
+
+            $body = [
+                'hn'         => $request->hn,
+                "idCard"     => $patient->ref,
+                "isPassport" => $patient->passport ? "true" : "false",
+                "consent"    => [
+                    "insurance" => ($request->insurance_consent === 'yes') ? "true" : "false",
+                    "marketing" => ($request->marketing_consent === 'yes') ? "true" : "false",
+                ],
+            ];
+
+            $response = Http::withHeaders(['API_KEY' => env('HIS_PATIENT_KEY')])
+                ->put('http://172.20.1.12:8086/api/patient/patientInformation', $body)
+                ->json();
+
+        }
 
         return redirect()->route('success');
     }
@@ -448,7 +495,7 @@ class MainController extends Controller
             'telemedicine_consent' => $consent->telemedicine_consent,
             'treatment_consent'    => $consent->treatment_consent,
             'insurance_consent'    => $consent->insurance_consent,
-            'benefit_consent'      => $consent->benefit_consent,
+            'marketing_consent'    => $consent->marketing_consent,
             'signature'            => $consent->signature,
             'signature_type'       => $consent->signature_type,
             'signature_relation'   => $consent->signature_relation,

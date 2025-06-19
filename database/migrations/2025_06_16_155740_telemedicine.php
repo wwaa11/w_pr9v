@@ -22,7 +22,7 @@ return new class extends Migration
             $table->boolean('telemedicine_consent');
             $table->boolean('treatment_consent');
             $table->boolean('insurance_consent');
-            $table->boolean('benefit_consent');
+            $table->boolean('marketing_consent');
             $table->string('informer_user_id');
             $table->string('witness_user_id');
             $table->timestamps();

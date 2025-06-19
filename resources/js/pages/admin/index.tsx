@@ -12,6 +12,18 @@ interface PatientInfo {
     phone: string;
 }
 
+interface QueryParams {
+    visit_date: string;
+    vn: string;
+    doctor_name: string;
+}
+
+const defaultPatient: PatientInfo = {
+    hn: '',
+    name: '',
+    phone: '',
+};
+
 interface UserInfo {
     user_id: string;
     name: string;
@@ -40,22 +52,9 @@ interface Hiv {
     id: number;
     type: string;
     name: string;
-    hiv_consent: boolean;
+    hiv_consent: string;
     created_at: string;
 }
-
-interface QueryParams {
-    visit_date: string;
-    vn: string;
-    doctor_name: string;
-}
-
-const defaultPatient: PatientInfo = {
-    hn: '',
-    name: '',
-    phone: '',
-};
-
 
 export default function Index({
     patient: initialPatient = defaultPatient,
@@ -104,6 +103,17 @@ export default function Index({
             showConfirmButton: false,
             timer: 1500
         });
+    };
+
+    const setHivStatus = (hiv: Hiv) => {
+        if (hiv.hiv_consent == 'self') {
+            return { label: 'Self', color: 'success' };
+        } else if (hiv.hiv_consent == 'other') {
+            return { label: 'Other', color: 'warning' };
+        } else if (hiv.hiv_consent == 'none') {
+            return { label: 'None', color: 'error' };
+        }
+
     };
 
     return (
@@ -230,7 +240,7 @@ export default function Index({
                                                 </Grid>
                                                 <Grid size={2}>
                                                     <Typography variant="body1" >
-                                                        <strong>Visit VN</strong> <br /> {queryParams?.vn || 'ไม่พบข้อมูล'}
+                                                        <strong>Visit VN</strong> <br /> {queryParams?.vn || '-'}
                                                     </Typography>
                                                 </Grid>
                                             </Grid>
@@ -364,6 +374,7 @@ export default function Index({
                                             );
                                         })}
                                         {hivs.map((hiv) => {
+                                            const status = setHivStatus(hiv);
                                             return (
                                                 <TableRow key={hiv.id} hover>
                                                     <TableCell>
@@ -376,8 +387,8 @@ export default function Index({
                                                     <TableCell>{hiv.name}</TableCell>
                                                     <TableCell>
                                                         <Chip
-                                                            label={hiv.hiv_consent ? 'Approved' : 'Rejected'}
-                                                            color={hiv.hiv_consent ? 'success' : 'error'}
+                                                            label={status?.label}
+                                                            color={status?.color as any}
                                                             size="small"
                                                         />
                                                     </TableCell>

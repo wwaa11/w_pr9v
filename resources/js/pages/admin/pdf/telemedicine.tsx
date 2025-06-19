@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import AppLayout from '@/layouts/admin-dashboard';
-import { usePage } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import { Box, Button, Card, Grid, Typography } from '@mui/material';
 import { Document, Page, pdfjs } from 'react-pdf';
 
@@ -44,7 +44,7 @@ interface Consent {
     telemedicine_consent: boolean;
     treatment_consent: boolean;
     insurance_consent: boolean;
-    benefit_consent: boolean;
+    marketing_consent: boolean;
     informer_name: string;
     informer_sign: string;
     witness_name: string;
@@ -288,12 +288,12 @@ export default function TelemedicineConsent() {
                                 &#10003;
                             </Typography>
                         )}
-                        {consent.benefit_consent && (
+                        {consent.marketing_consent && (
                             <Typography sx={{ color: 'blue', position: 'absolute', top: '288px', left: '256px', fontSize: '12px' }}>
                                 &#10003;
                             </Typography>
                         )}
-                        {!consent.benefit_consent && (
+                        {!consent.marketing_consent && (
                             <Typography sx={{ color: 'blue', position: 'absolute', top: '288px', left: '374px', fontSize: '12px' }}>
                                 &#10003;
                             </Typography>
@@ -352,6 +352,9 @@ export default function TelemedicineConsent() {
 
     return (
         <AppLayout>
+            <Head>
+                <title>Telemedicine PDF</title>
+            </Head>
             <Box sx={{ width: '100%', maxWidth: 1600, mx: 'auto', p: 2 }}>
                 <Grid container spacing={2}>
                     <Grid size={{ sm: 12, md: 10 }}>

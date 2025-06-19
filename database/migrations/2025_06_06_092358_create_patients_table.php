@@ -15,10 +15,12 @@ return new class extends Migration
             $table->id();
             $table->string('hn')->unique();
             $table->string('token')->unique();
+            $table->string('ref');
+            $table->boolean('passport')->default(false);
             $table->string('photo_consent')->nullable();
             $table->string('treatment_consent')->nullable();
             $table->string('insurance_consent')->nullable();
-            $table->string('benefit_consent')->nullable();
+            $table->string('marketing_consent')->nullable();
             $table->dateTime('expires_at', precision: 0)->default(now());
             $table->timestamps();
         });

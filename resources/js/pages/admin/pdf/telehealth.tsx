@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import AppLayout from '@/layouts/admin-dashboard';
-import { usePage } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import { Box, Button, Grid, Typography } from '@mui/material';
 import { Document, Page, pdfjs } from 'react-pdf';
 
@@ -224,6 +224,9 @@ export default function TelemedicineConsent() {
 
     return (
         <AppLayout>
+            <Head>
+                <title>Telehealth PDF</title>
+            </Head>
             <Box sx={{ width: '100%', maxWidth: 1600, mx: 'auto', p: 2 }}>
                 <Grid container spacing={2}>
                     <Grid size={{ sm: 12, md: 10 }}>

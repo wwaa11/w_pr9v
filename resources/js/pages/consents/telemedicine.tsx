@@ -22,7 +22,7 @@ interface ConsentTelemedicineProps {
         hn: string;
         treatment_consent: string;
         insurance_consent: string;
-        benefit_consent: string;
+        marketing_consent: string;
     }
 }
 
@@ -43,7 +43,7 @@ export default function ConsentTelemedicine({ patient }: ConsentTelemedicineProp
         telemedicine_consent: "",
         treatment_consent: patient.treatment_consent,
         insurance_consent: patient.insurance_consent,
-        benefit_consent: patient.benefit_consent,
+        marketing_consent: patient.marketing_consent,
     });
 
     const sigPadRef = useRef<any>(null);
@@ -68,7 +68,7 @@ export default function ConsentTelemedicine({ patient }: ConsentTelemedicineProp
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (data.telemedicine_consent === "" || data.treatment_consent === "" || data.insurance_consent === "" || data.benefit_consent === "") {
+        if (data.telemedicine_consent === "" || data.treatment_consent === "" || data.insurance_consent === "" || data.marketing_consent === "") {
             Swal.fire({
                 icon: "warning",
                 title: "โปรดระบุความยินยอมให้ครบ",
@@ -307,11 +307,11 @@ export default function ConsentTelemedicine({ patient }: ConsentTelemedicineProp
                                 <FormControl component="fieldset" sx={{ width: '100%' }}>
                                     <FormLabel component="legend">&emsp;10.4 การเก็บรวมรวมข้อมูลส่วนบุคคลเพื่อการแจ้งสิทธิประโยชน์ทางการแพทย์ ข้าพเจ้า ...... ให้โรงพยาบาลพระรามเก้าใช้ข้อมูลส่วนบุคคล เพื่อแจ้งสิทธิ ประโยชน์ทางการแพทย์และส่งเสริม การขายการตลาด รายการผลิตภัณฑ์และบริการ รวมถึงสามารถส่งข้อมูล ข่าวสารดังกล่าว หรือส่งแบบสอบถามเพื่อการประเมินผลการให้บริการของบริษัท ให้กับข้าพเจ้าได้ ซึ่งข้าพเจ้า สามารถยกเลิกความยินยอมในการรับแจ้งข้อมูลข่าวสารได้ตามช่องทางที่โรงพยาบาลพระรามเก้ากำหนด</FormLabel>
                                     <RadioGroup
-                                        value={data.benefit_consent}
-                                        onChange={(e) => setData('benefit_consent', e.target.value)}
+                                        value={data.marketing_consent}
+                                        onChange={(e) => setData('marketing_consent', e.target.value)}
                                     >
-                                        <FormControlLabel value="yes" control={<Radio />} label="ยินยอมโดยสมัครใจ" disabled={!!patient.benefit_consent} />
-                                        <FormControlLabel value="no" control={<Radio />} label="ไม่ยินยอม" disabled={!!patient.benefit_consent} />
+                                        <FormControlLabel value="yes" control={<Radio />} label="ยินยอมโดยสมัครใจ" disabled={!!patient.marketing_consent} />
+                                        <FormControlLabel value="no" control={<Radio />} label="ไม่ยินยอม" disabled={!!patient.marketing_consent} />
                                     </RadioGroup>
                                 </FormControl>
                             </Box>

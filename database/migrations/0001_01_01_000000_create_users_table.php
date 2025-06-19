@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('user_id')->unique();
             $table->string('name');
+            $table->string('department');
             $table->text('signature')->nullable();
             $table->string('role')->default('user');
             $table->timestamps();
