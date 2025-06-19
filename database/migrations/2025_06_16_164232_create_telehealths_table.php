@@ -16,8 +16,7 @@ return new class extends Migration
             $table->string('hn');
             $table->string('type');
             $table->string('vn')->nullable();
-            $table->date('visit_date')->nullable();
-            $table->time('visit_time')->nullable();
+            $table->datetime('visit_date')->nullable();
             $table->string('doctor_name')->nullable();
             $table->string('name');
             $table->string('name_type');

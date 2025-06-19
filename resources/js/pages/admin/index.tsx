@@ -1,7 +1,7 @@
 import AppLayout from '@/layouts/admin-dashboard';
 import React from 'react';
 import { Head, useForm, usePage, Link } from '@inertiajs/react';
-import { Box, Button, TextField, Stack, Typography, IconButton, InputAdornment, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, Grid } from '@mui/material';
+import { Box, Button, TextField, Stack, Typography, IconButton, InputAdornment, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, Grid, Card } from '@mui/material';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import Swal from 'sweetalert2';
 import { format } from 'date-fns';
@@ -44,11 +44,18 @@ interface Hiv {
     created_at: string;
 }
 
+interface QueryParams {
+    visit_date: string;
+    vn: string;
+    doctor_name: string;
+}
+
 const defaultPatient: PatientInfo = {
     hn: '',
     name: '',
     phone: '',
 };
+
 
 export default function Index({
     patient: initialPatient = defaultPatient,
@@ -58,6 +65,11 @@ export default function Index({
     witness1,
     witness2,
     informer,
+    queryParams = {
+        visit_date: '',
+        vn: '',
+        doctor_name: '',
+    },
     telemedicines = [],
     telehealths = [],
     hivs = [],
@@ -69,6 +81,7 @@ export default function Index({
     witness1?: UserInfo;
     witness2?: UserInfo;
     informer?: UserInfo;
+    queryParams?: QueryParams;
     telemedicines?: Telemedicine[];
     telehealths?: Telehealth[];
     hivs?: Hiv[];
@@ -172,11 +185,11 @@ export default function Index({
                                         Consent Generated Link
                                     </Typography>
                                     <Typography variant="body1" mb={3} >
-                                        Informer : {informer?.name} ({informer?.user_id})
+                                        ผู้ให้ข้อมูล : {informer?.name} ({informer?.user_id})
                                         <br />
-                                        Witness 1 : {witness1?.name} ({witness1?.user_id})
+                                        พยานที่ 1 : {witness1?.name} ({witness1?.user_id})
                                         <br />
-                                        Witness 2 : {witness2?.name} ({witness2?.user_id})
+                                        พยานที่ 2 : {witness2?.name} ({witness2?.user_id})
                                     </Typography>
                                     <Stack spacing={2}>
                                         <TextField
@@ -200,6 +213,28 @@ export default function Index({
                                             multiline
                                             rows={2}
                                         />
+                                        <Card sx={{ p: 2 }}>
+                                            <Typography variant="body1" >
+                                                <strong>Visit Information</strong>
+                                            </Typography>
+                                            <Grid container spacing={2}>
+                                                <Grid size={5}>
+                                                    <Typography variant="body1" >
+                                                        <strong>Doctor Name</strong> <br /> {queryParams?.doctor_name || 'ไม่พบข้อมูล'}
+                                                    </Typography>
+                                                </Grid>
+                                                <Grid size={5}>
+                                                    <Typography variant="body1" >
+                                                        <strong>Visit Date</strong> <br /> {queryParams?.visit_date || 'ไม่พบข้อมูล'}
+                                                    </Typography>
+                                                </Grid>
+                                                <Grid size={2}>
+                                                    <Typography variant="body1" >
+                                                        <strong>Visit VN</strong> <br /> {queryParams?.vn || 'ไม่พบข้อมูล'}
+                                                    </Typography>
+                                                </Grid>
+                                            </Grid>
+                                        </Card>
                                         <TextField
                                             label="Telehealth Consent"
                                             value={initialTelehealthLink}

@@ -31,17 +31,13 @@ export default function ConsentTelehealth({ patient }: ConsentTelehealthProps) {
     const { data, setData, post, processing, errors } = useForm({
         type: "Telehealth",
         hn: patient.hn,
-        vn: params.get('vn') || "",
-        visit_date: params.get('visit') || "",
+        data: params.get('data'),
+        doctor_name: params.get('doctor_name') || "",
         patient_name: "",
         patient_type: "patient",
         patient_relation: "",
         patient_phone: "",
         patient_address: "",
-        doctor_name: params.get('doctor_name') || "",
-        witness_user_id1: params.get('witness1_user_id'),
-        witness_user_id2: params.get('witness2_user_id'),
-        informer_user_id: params.get('informer_user_id'),
         document_information: "yes",
         signature: "",
     });
@@ -123,7 +119,7 @@ export default function ConsentTelehealth({ patient }: ConsentTelehealthProps) {
                         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 2, gap: 2 }}>
                             <img src={url + "/images/logo.png"} alt="logo" width={100} />
                             <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
-                                หนังสือแสดงเจตจำนง ปฏิเสธกํารบันทึกภําพ วีดีโอ และเสียงในกํารรับบริการการแพทย์ทางไกล (Telehealth Service)
+                                หนังสือแสดงเจตจำนง ปฏิเสธกํารบันทึกภาพ วีดีโอ และเสียงในกํารรับบริการการแพทย์ทางไกล (Telehealth Service)
                             </Typography>
                         </Box>
                         {/* Signature Section */}
@@ -193,6 +189,7 @@ export default function ConsentTelehealth({ patient }: ConsentTelehealthProps) {
                             </Typography>
                             <TextField
                                 fullWidth
+                                disabled
                                 label="แพทย์ผู้ดูแลรักษา"
                                 value={data.doctor_name}
                                 onChange={(e) => setData('doctor_name', e.target.value)}

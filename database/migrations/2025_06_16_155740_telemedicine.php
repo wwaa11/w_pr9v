@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('type');
             $table->string('signature_type');
             $table->string('signature_name');
+            $table->string('signature_relation')->nullable();
             $table->text('signature');
             $table->boolean('telemedicine_consent');
             $table->boolean('treatment_consent');

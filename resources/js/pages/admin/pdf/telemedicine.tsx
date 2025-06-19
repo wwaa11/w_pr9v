@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import AppLayout from '@/layouts/admin-dashboard';
 import { usePage } from '@inertiajs/react';
-import { Box, Button, Grid, Typography } from '@mui/material';
+import { Box, Button, Card, Grid, Typography } from '@mui/material';
 import { Document, Page, pdfjs } from 'react-pdf';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
@@ -24,6 +24,7 @@ interface Patient {
     martial: string;
     occupation: string;
     education: string;
+    education_code: string;
     allergy: boolean;
     allergy_name: string;
     allergy_symptom: string;
@@ -51,6 +52,7 @@ interface Consent {
     signature: string;
     signature_type: string;
     signature_name: string;
+    signature_relation: string;
 }
 
 
@@ -135,17 +137,22 @@ export default function TelemedicineConsent() {
                         <Typography sx={{ color: 'blue', position: 'absolute', top: '170px', left: '270px', fontSize: '10px' }}>
                             {consent.patient.occupation}
                         </Typography>
-                        {consent.patient.education == 'ต่ำกว่าปริญญาตรี' && (
+                        {consent.patient.education_code == '004' && (
                             <Typography sx={{ color: 'blue', position: 'absolute', top: '170px', left: '483px', fontSize: '12px' }}>
                                 &#10003;
                             </Typography>
                         )}
-                        {consent.patient.education == 'ปริญญาตรี' && (
+                        {consent.patient.education_code == '005' && (
                             <Typography sx={{ color: 'blue', position: 'absolute', top: '170px', left: '581px', fontSize: '12px' }}>
                                 &#10003;
                             </Typography>
                         )}
-                        {consent.patient.education == 'ปริญญาโท' || consent.patient.education == 'ปริญญาเอก' && (
+                        {consent.patient.education_code == '006' && (
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '170px', left: '650px', fontSize: '12px' }}>
+                                &#10003;
+                            </Typography>
+                        )}
+                        {consent.patient.education_code == '007' && (
                             <Typography sx={{ color: 'blue', position: 'absolute', top: '170px', left: '650px', fontSize: '12px' }}>
                                 &#10003;
                             </Typography>
@@ -371,6 +378,18 @@ export default function TelemedicineConsent() {
                         </div>
                     </Grid>
                     <Grid size={{ sm: 12, md: 2 }} className="no-print">
+                        {consent.signature_type == 'representative' && (
+                            <>
+                                <Card sx={{ p: 2, mb: 2 }}>
+                                    <Typography variant='h6' sx={{ mb: 2 }}>
+                                        ความสัมพันธ์กับผู้ป่วย
+                                    </Typography>
+                                    <Typography color="primary" sx={{ width: '100%' }}>
+                                        {consent.signature_relation}
+                                    </Typography>
+                                </Card>
+                            </>
+                        )}
                         <Button variant="contained" color="primary" sx={{ width: '100%' }} onClick={handlePrint}>
                             Print PDF
                         </Button>

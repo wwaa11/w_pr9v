@@ -135,15 +135,15 @@ class MainController extends Controller
         if ($response['status'] == 'success') {
             $patient = Patient::where('hn', $hn)->first();
             if ($patient == null) {
-                $patient                    = new Patient();
-                $patient->hn                = $hn;
-                $patient->token             = Crypt::encryptString($hn);
-                $patient->photo_consent     = $response['patient']['photo_consent'];
-                $patient->treatment_consent = $response['patient']['treatment_consent'];
-                $patient->insurance_consent = $response['patient']['insurance_consent'];
-                $patient->benefit_consent   = $response['patient']['benefit_consent'];
+                $patient        = new Patient();
+                $patient->hn    = $hn;
+                $patient->token = Crypt::encryptString($hn);
             }
-            $patient->expires_at = now()->addMinutes(60);
+            $patient->photo_consent     = $response['patient']['photo_consent'];
+            $patient->treatment_consent = $response['patient']['treatment_consent'];
+            $patient->insurance_consent = $response['patient']['insurance_consent'];
+            $patient->benefit_consent   = $response['patient']['benefit_consent'];
+            $patient->expires_at        = now()->addMinutes(60);
             $patient->save();
 
             $visit_response = Http::withHeaders(['key' => env('API_PATIENT_KEY')])
@@ -161,20 +161,22 @@ class MainController extends Controller
                 $doctor_name = $visit_response['patient']['doctor'];
             }
 
-            $queryParams = http_build_query([
+            $queryParams = [
                 'witness1_user_id' => session('witness1'),
                 'witness2_user_id' => session('witness2'),
                 'informer_user_id' => auth()->user()->user_id,
                 'visit'            => $visit,
+                'visit_date'       => date('d/m/Y', strtotime($visit)),
                 'vn'               => $vn,
                 'doctor_name'      => $doctor_name,
-            ]);
+            ];
+
+            $header_params = Crypt::encryptString(json_encode($queryParams));
 
             $baseUrl          = env('APP_URL');
-            $generatedResult1 = "{$baseUrl}/telemedicine/{$patient->token}?{$queryParams}";
-
-            $generatedResult2 = "{$baseUrl}/telehealth/{$patient->token}?{$queryParams}";
-            $generatedResult3 = "{$baseUrl}/hiv/{$patient->token}?{$queryParams}";
+            $generatedResult1 = "{$baseUrl}/telemedicine/{$patient->token}?data={$header_params}";
+            $generatedResult2 = "{$baseUrl}/telehealth/{$patient->token}?data={$header_params}&doctor_name={$doctor_name}";
+            $generatedResult3 = "{$baseUrl}/hiv/{$patient->token}?data={$header_params}";
 
             $patientData = [
                 'hn'    => $patient->hn,
@@ -201,6 +203,7 @@ class MainController extends Controller
             'telemedicine_link' => $generatedResult1,
             'telehealth_link'   => $generatedResult2,
             'hiv_link'          => $generatedResult3,
+            'queryParams'       => $queryParams,
             'informer'          => auth()->user(),
             'witness1'          => User::where('user_id', session('witness1'))->first(),
             'witness2'          => User::where('user_id', session('witness2'))->first(),
@@ -221,15 +224,15 @@ class MainController extends Controller
     {
         $validated = $request->validate([
             'hn'                   => 'required|string|exists:patients,hn',
+            'data'                 => 'required|string',
             'type'                 => 'required|string',
             'signature_name'       => 'required|string',
             'signature_type'       => 'required|string',
             'signature'            => 'required|string',
             'telemedicine_consent' => 'required|string',
-            'treatment_consent'    => 'required|string',
-            'insurance_consent'    => 'required|string',
-            'benefit_consent'      => 'required|string',
         ]);
+
+        $data = json_decode(Crypt::decryptString($request->data), true);
 
         $new                       = new Telemedicine;
         $new->hn                   = $request->hn;
@@ -237,12 +240,13 @@ class MainController extends Controller
         $new->signature_type       = $request->signature_type;
         $new->signature_name       = $request->signature_name;
         $new->signature            = $request->signature;
+        $new->signature_relation   = $request->signature_relation;
         $new->telemedicine_consent = ($request->telemedicine_consent === 'yes') ? true : false;
         $new->treatment_consent    = ($request->treatment_consent === 'yes') ? true : false;
         $new->insurance_consent    = ($request->insurance_consent === 'yes') ? true : false;
         $new->benefit_consent      = ($request->benefit_consent === 'yes') ? true : false;
-        $new->informer_user_id     = $request->informer_user_id;
-        $new->witness_user_id      = $request->witness_user_id1;
+        $new->informer_user_id     = $data['informer_user_id'];
+        $new->witness_user_id      = $data['witness1_user_id'];
         $new->save();
 
         return redirect()->route('success');
@@ -262,19 +266,21 @@ class MainController extends Controller
     {
         $validated = $request->validate([
             'hn'           => 'required|string|exists:patients,hn',
+            'data'         => 'required|string',
             'type'         => 'required|string',
             'patient_name' => 'required|string',
             'patient_type' => 'required|string',
             'signature'    => 'required|string',
         ]);
 
+        $data = json_decode(Crypt::decryptString($request->data), true);
+
         $new                       = new Telehealth;
         $new->hn                   = $request->hn;
         $new->type                 = $request->type;
-        $new->vn                   = $request->vn;
-        $new->visit_date           = date('Y-m-d', strtotime($request->visit_date));
-        $new->visit_time           = date('H:i:s', strtotime($request->visit_date));
-        $new->doctor_name          = $request->doctor_name;
+        $new->vn                   = $data['vn'];
+        $new->visit_date           = date('Y-m-d H:i:s', strtotime($data['visit']));
+        $new->doctor_name          = $data['doctor_name'];
         $new->name                 = $request->patient_name;
         $new->name_type            = $request->patient_type;
         $new->name_relation        = $request->patient_relation;
@@ -283,9 +289,9 @@ class MainController extends Controller
         $new->signature            = $request->signature;
         $new->document_information = true;
         $new->telehealth_consent   = true;
-        $new->informer_user_id     = $request->informer_user_id;
-        $new->witness1_user_id     = $request->witness_user_id1;
-        $new->witness2_user_id     = $request->witness_user_id2;
+        $new->informer_user_id     = $data['informer_user_id'];
+        $new->witness1_user_id     = $data['witness1_user_id'];
+        $new->witness2_user_id     = $data['witness2_user_id'];
 
         $new->save();
 
@@ -306,6 +312,7 @@ class MainController extends Controller
     {
         $validated = $request->validate([
             'hn'           => 'required|string|exists:patients,hn',
+            'data'         => 'required|string',
             'type'         => 'required|string',
             'patient_name' => 'required|string',
             'patient_type' => 'required|string',
@@ -313,13 +320,14 @@ class MainController extends Controller
             'signature'    => 'required|string',
         ]);
 
+        $data = json_decode(Crypt::decryptString($request->data), true);
+
         $new                   = new Hiv;
         $new->hn               = $request->hn;
         $new->type             = $request->type;
-        $new->vn               = $request->vn;
-        $new->visit_date       = date('Y-m-d', strtotime($request->visit_date));
-        $new->visit_time       = date('H:i:s', strtotime($request->visit_date));
-        $new->doctor_name      = $request->doctor_name;
+        $new->vn               = $data['vn'];
+        $new->visit_date       = date('Y-m-d H:i:s', strtotime($data['visit']));
+        $new->doctor_name      = $data['doctor_name'];
         $new->name             = $request->patient_name;
         $new->name_type        = $request->patient_type;
         $new->name_relation    = $request->patient_relation;
@@ -328,9 +336,9 @@ class MainController extends Controller
         $new->signature        = $request->signature;
         $new->hiv_consent      = $request->hiv_consent;
         $new->hiv_name         = $request->hiv_name;
-        $new->informer_user_id = $request->informer_user_id;
-        $new->witness1_user_id = $request->witness_user_id1;
-        $new->witness2_user_id = $request->witness_user_id2;
+        $new->informer_user_id = $data['informer_user_id'];
+        $new->witness1_user_id = $data['witness1_user_id'];
+        $new->witness2_user_id = $data['witness2_user_id'];
         $new->save();
 
         return redirect()->route('success');
@@ -396,8 +404,12 @@ class MainController extends Controller
         $allergySymptom = '';
         if ($response['patient']['allergy']) {
             foreach ($response['patient']['allergy_list'] as $allergy) {
-                $allergyName .= $allergy['name'] . ', ';
-                $allergySymptom .= $allergy['remark'] . ', ';
+                if (array_key_exists('name', $allergy)) {
+                    $allergyName .= $allergy['name'] . ', ';
+                }
+                if (array_key_exists('remark', $allergy)) {
+                    $allergySymptom .= $allergy['remark'] . ', ';
+                }
             }
         }
 
@@ -419,6 +431,7 @@ class MainController extends Controller
                 'email'              => $response['patient']['email'],
                 'occupation'         => $response['patient']['ocupation'],
                 'education'          => $response['patient']['education'],
+                'education_code'     => $response['patient']['education_code'],
                 'address'            => $response['patient']['address']['home']['full_address'],
                 'address_contact'    => $response['patient']['address']['contact']['full_address'],
                 'allergy'            => $response['patient']['allergy'],
@@ -438,6 +451,7 @@ class MainController extends Controller
             'benefit_consent'      => $consent->benefit_consent,
             'signature'            => $consent->signature,
             'signature_type'       => $consent->signature_type,
+            'signature_relation'   => $consent->signature_relation,
             'signature_name'       => $consent->signature_name,
             'informer_name'        => $consent->informer->name,
             'informer_sign'        => $consent->informer->signature,
@@ -472,8 +486,12 @@ class MainController extends Controller
         $allergySymptom = '';
         if ($response['patient']['allergy']) {
             foreach ($response['patient']['allergy_list'] as $allergy) {
-                $allergyName .= $allergy['name'] . ', ';
-                $allergySymptom .= $allergy['remark'] . ', ';
+                if (array_key_exists('name', $allergy)) {
+                    $allergyName .= $allergy['name'] . ', ';
+                }
+                if (array_key_exists('remark', $allergy)) {
+                    $allergySymptom .= $allergy['remark'] . ', ';
+                }
             }
         }
 
@@ -514,7 +532,7 @@ class MainController extends Controller
             'name_phone'           => $consent->name_phone,
             'name_address'         => $consent->name_address,
             'visit_date'           => date('d/m/Y', strtotime($consent->visit_date)),
-            'visit_time'           => date('H:i', strtotime($consent->visit_time)),
+            'visit_time'           => date('H:i', strtotime($consent->visit_date)),
             'doctor_name'          => $consent->doctor_name,
             'document_information' => $consent->document_information,
             'signature'            => $consent->signature,
@@ -549,8 +567,12 @@ class MainController extends Controller
         $allergySymptom = '';
         if ($response['patient']['allergy']) {
             foreach ($response['patient']['allergy_list'] as $allergy) {
-                $allergyName .= $allergy['name'] . ', ';
-                $allergySymptom .= $allergy['remark'] . ', ';
+                if (array_key_exists('name', $allergy)) {
+                    $allergyName .= $allergy['name'] . ', ';
+                }
+                if (array_key_exists('remark', $allergy)) {
+                    $allergySymptom .= $allergy['remark'] . ', ';
+                }
             }
         }
 
@@ -591,7 +613,7 @@ class MainController extends Controller
             'name_phone'    => $consent->name_phone,
             'name_address'  => $consent->name_address,
             'visit_date'    => date('d/m/Y', strtotime($consent->visit_date)),
-            'visit_time'    => date('H:i', strtotime($consent->visit_time)),
+            'visit_time'    => date('H:i', strtotime($consent->visit_date)),
             'doctor_name'   => $consent->doctor_name,
             'hiv_consent'   => $consent->hiv_consent,
             'hiv_name'      => $consent->hiv_name,

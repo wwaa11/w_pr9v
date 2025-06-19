@@ -34,13 +34,12 @@ export default function ConsentTelemedicine({ patient }: ConsentTelemedicineProp
 
     const { data, setData, post, processing, errors } = useForm({
         type: "Telemedicine",
-        witness_user_id1: params.get('witness1_user_id'),
-        witness_user_id2: params.get('witness2_user_id'),
-        informer_user_id: params.get('informer_user_id'),
+        data: params.get('data'),
         hn: patient.hn,
         signature: "",
         signature_name: "",
         signature_type: "patient",
+        signature_relation: "",
         telemedicine_consent: "",
         treatment_consent: patient.treatment_consent,
         insurance_consent: patient.insurance_consent,
@@ -352,6 +351,16 @@ export default function ConsentTelemedicine({ patient }: ConsentTelemedicineProp
                                     <FormControlLabel value="representative" control={<Radio />} label="ผู้แทนผู้ป่วย" />
                                 </RadioGroup>
                             </FormControl>
+                            {data.signature_type == "representative" && (
+                                <TextField
+                                    required={data.signature_type == "representative"}
+                                    fullWidth
+                                    label="ความสัมพันธ์กับผู้ป่วย"
+                                    value={data.signature_relation}
+                                    onChange={(e) => setData('signature_relation', e.target.value)}
+                                    sx={{ mb: 2 }}
+                                />
+                            )}
                             <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
                                 ลายมือชื่อผู้ลงนาม
                             </Typography>
