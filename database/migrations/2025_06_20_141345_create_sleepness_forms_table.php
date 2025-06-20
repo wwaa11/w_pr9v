@@ -26,18 +26,17 @@ return new class extends Migration
             $table->string('bmi');
             $table->string('neck_size');
             $table->boolean('disease');
-            $table->string('disease_text');
+            $table->string('disease_text')->nullable();
             $table->boolean('medicine');
-            $table->string('medicine_text');
+            $table->string('medicine_text')->nullable();
             $table->boolean('sleep_pill');
-            $table->string('sleep_pill_text');
+            $table->string('sleep_pill_text')->nullable();
             $table->boolean('tobacco');
             $table->boolean('alcohol');
             $table->boolean('caffeine');
             $table->json('sleep_problem');
             $table->json('sleep_situation');
             $table->json('sleep_schedule');
-
             $table->string('informer_user_id');
             $table->timestamps();
         });

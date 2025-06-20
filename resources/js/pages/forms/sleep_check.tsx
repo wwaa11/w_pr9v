@@ -36,6 +36,7 @@ import BedtimeIcon from '@mui/icons-material/Bedtime';
 import QuizIcon from '@mui/icons-material/Quiz';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import Swal from 'sweetalert2';
+import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
 
 interface SleepCheckProps {
     patient: {
@@ -43,12 +44,17 @@ interface SleepCheckProps {
     }
 }
 
-function formatTimeTo24Hr(value: string) {
+function formatTimeTo24Hr(value: string, isBlur = false) {
     // Accept dot or comma as separator and convert to colon
     let cleaned = value.replace(/,/g, ':').replace(/\./g, ':');
     // Remove non-digits and colon
     cleaned = cleaned.replace(/[^0-9:]/g, '');
 
+    // If user types 4 digits, auto-insert colon (e.g., 2259 -> 22:59)
+    if (/^\d{3,4}$/.test(cleaned)) {
+        cleaned = cleaned.padStart(4, '0');
+        cleaned = cleaned.slice(0, 2) + ':' + cleaned.slice(2, 4);
+    }
     // If user types 2 digits and then colon, allow (e.g., 22:)
     if (/^\d{2}(:\d{0,2})?$/.test(cleaned)) {
         // valid partial
@@ -65,10 +71,28 @@ function formatTimeTo24Hr(value: string) {
             cleaned = '';
         }
     }
-    // Clamp hours and minutes
-    const [h, m] = cleaned.split(':');
-    if (h && Number(h) > 23) cleaned = '23' + (m ? ':' + m : '');
-    if (m && Number(m) > 59) cleaned = (h ? h : '00') + ':59';
+
+    // On blur, auto-complete and validate
+    if (isBlur) {
+        // If only hour (e.g., '22'), make '22:00'
+        if (/^\d{1,2}$/.test(cleaned)) {
+            cleaned = cleaned.padStart(2, '0') + ':00';
+        }
+        // If hour:minute with 1 digit minute (e.g., '9:1'), pad minute
+        if (/^\d{1,2}:\d{1}$/.test(cleaned)) {
+            const [h, m] = cleaned.split(':');
+            cleaned = h.padStart(2, '0') + ':' + m.padStart(2, '0');
+        }
+        // If hour:minute with 2 digit hour and minute, keep as is
+        if (/^\d{2}:\d{2}$/.test(cleaned)) {
+            // already formatted
+        }
+        // Validate range
+        const [h, m] = cleaned.split(':');
+        if (!h || !m || Number(h) > 23 || Number(m) > 59) {
+            return '';
+        }
+    }
     return cleaned;
 }
 
@@ -156,11 +180,11 @@ export default function SleepCheck({ patient }: SleepCheckProps) {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        console.log(data);
 
-        if (data.disease == '' || data.medicine == '' || data.sleep_pill == '' || data.alcohol == '' || data.tobacco == '' || data.caffeine == '') {
+        if (data.disease == '' || data.medicine == '' || data.sleep_pill == '' || data.alcohol == '' || data.tobacco == '' || data.caffeine == '' || data.neck_size == '') {
             Swal.fire({
-                title: 'กรุณากรอกข้อมูล ประวัติทางการแพทย์ ทั้งหมด',
+                title: 'กรุณากรอกข้อมูล',
+                text: 'ประวัติทางการแพทย์ ทั้งหมด',
                 icon: 'warning',
                 confirmButtonText: 'ตกลง'
             });
@@ -169,7 +193,8 @@ export default function SleepCheck({ patient }: SleepCheckProps) {
 
         if (data.sleep_problem_1 == '' || data.sleep_problem_2 == '' || data.sleep_problem_3 == '' || data.sleep_problem_4 == '' || data.sleep_problem_5 == '' || data.sleep_problem_6 == '' || data.sleep_problem_7 == '' || data.sleep_problem_8 == '' || data.sleep_problem_9 == '' || data.sleep_problem_10 == '' || data.sleep_problem_11 == '' || data.sleep_problem_12 == '' || data.sleep_problem_13 == '') {
             Swal.fire({
-                title: 'กรุณากรอกข้อมูล ปัญหาเกี่ยวกับการนอน ทั้งหมด',
+                title: 'กรุณากรอกข้อมูล',
+                text: 'ปัญหาเกี่ยวกับการนอน ทั้งหมด',
                 icon: 'warning',
                 confirmButtonText: 'ตกลง'
             });
@@ -178,7 +203,8 @@ export default function SleepCheck({ patient }: SleepCheckProps) {
 
         if (data.sleep_situation_1 == '' || data.sleep_situation_2 == '' || data.sleep_situation_3 == '' || data.sleep_situation_4 == '' || data.sleep_situation_5 == '' || data.sleep_situation_6 == '' || data.sleep_situation_7 == '' || data.sleep_situation_8 == '') {
             Swal.fire({
-                title: 'กรุณากรอกข้อมูล สถานการณ์ขณะนอน ทั้งหมด',
+                title: 'กรุณากรอกข้อมูล',
+                text: 'แบบทดสอบระดับความง่วงนอน ทั้งหมด',
                 icon: 'warning',
                 confirmButtonText: 'ตกลง'
             });
@@ -187,13 +213,26 @@ export default function SleepCheck({ patient }: SleepCheckProps) {
 
         if (data.weekday_sleep == '' || data.weekday_awake == '' || data.weekday_turnoff_light == '' || data.weekday_night_awake == '' || data.weekday_night_awake_until_sleep == '' || data.weekday_alarm == '' || data.weekend_sleep == '' || data.weekend_awake == '' || data.weekend_turnoff_light == '' || data.weekend_night_awake == '' || data.weekend_night_awake_until_sleep == '' || data.weekend_alarm == '') {
             Swal.fire({
-                title: 'กรุณากรอกข้อมูล ตารางเวลาการนอน ทั้งหมด',
+                title: 'กรุณากรอกข้อมูล',
+                text: 'ตารางเวลาการนอน ทั้งหมด',
                 icon: 'warning',
                 confirmButtonText: 'ตกลง'
             });
             return;
         }
-        // post(`${url}/sleep-check`);
+
+        const result = await Swal.fire({
+            title: "ยืนยันการส่งข้อมูล",
+            text: "คุณต้องการส่งข้อมูลหรือไม่?",
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonText: "ยืนยัน",
+            cancelButtonText: "ยกเลิก",
+        });
+
+        if (result.isConfirmed) {
+            post(`${url}/sleep-check`);
+        }
     };
 
     const sleep_problem_list = [
@@ -226,7 +265,7 @@ export default function SleepCheck({ patient }: SleepCheckProps) {
     return (
         <AppLayout>
             <Head>
-                <title>Sleep Check - แบบฟอร์มการตรวจความผิดปกติขณะหลับ</title>
+                <title>แบบฟอร์มการตรวจความผิดปกติขณะหลับ</title>
             </Head>
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -385,9 +424,7 @@ export default function SleepCheck({ patient }: SleepCheckProps) {
                                                 fullWidth
                                                 variant="outlined"
                                                 size="medium"
-                                                InputProps={{
-                                                    startAdornment: <MonitorWeightIcon sx={{ mr: 1, color: 'text.secondary' }} />
-                                                }}
+                                                slotProps={{ input: { startAdornment: <MonitorWeightIcon sx={{ mr: 1, color: 'text.secondary' }} /> } }}
                                             />
                                         </Grid>
                                         <Grid size={{ xs: 12, sm: 3 }}>
@@ -401,9 +438,7 @@ export default function SleepCheck({ patient }: SleepCheckProps) {
                                                 fullWidth
                                                 variant="outlined"
                                                 size="medium"
-                                                InputProps={{
-                                                    startAdornment: <HeightIcon sx={{ mr: 1, color: 'text.secondary' }} />
-                                                }}
+                                                slotProps={{ input: { startAdornment: <HeightIcon sx={{ mr: 1, color: 'text.secondary' }} /> } }}
                                             />
                                         </Grid>
                                         <Grid size={{ xs: 12, sm: 3 }}>
@@ -414,9 +449,7 @@ export default function SleepCheck({ patient }: SleepCheckProps) {
                                                 fullWidth
                                                 variant="outlined"
                                                 size="medium"
-                                                InputProps={{
-                                                    startAdornment: <CalculateIcon sx={{ mr: 1, color: 'text.secondary' }} />
-                                                }}
+                                                slotProps={{ input: { startAdornment: <CalculateIcon sx={{ mr: 1, color: 'text.secondary' }} /> } }}
                                             />
                                             {data.bmi && (
                                                 <Typography
@@ -430,11 +463,16 @@ export default function SleepCheck({ patient }: SleepCheckProps) {
                                         </Grid>
                                         <Grid size={{ xs: 12, sm: 3 }}>
                                             <TextField
-                                                required
                                                 type="number"
+                                                required
                                                 label="รอบคอ (นิ้ว)"
                                                 value={data.neck_size}
                                                 onChange={(e) => setData('neck_size', e.target.value)}
+                                                onBlur={calculateBMI}
+                                                fullWidth
+                                                variant="outlined"
+                                                size="medium"
+                                                slotProps={{ input: { startAdornment: <PersonRemoveIcon sx={{ mr: 1, color: 'text.secondary' }} /> } }}
                                             />
                                         </Grid>
                                     </Grid>
@@ -652,8 +690,8 @@ export default function SleepCheck({ patient }: SleepCheckProps) {
                                                     type="text"
                                                     label="เวลาเข้านอน"
                                                     value={data.weekday_sleep}
-                                                    onChange={e => setData('weekday_sleep', formatTimeTo24Hr(e.target.value))}
-                                                    onBlur={e => setData('weekday_sleep', formatTimeTo24Hr(e.target.value))}
+                                                    onChange={e => setData('weekday_sleep', formatTimeTo24Hr(e.target.value, false))}
+                                                    onBlur={e => setData('weekday_sleep', formatTimeTo24Hr(e.target.value, true))}
                                                     fullWidth
                                                     required
                                                     helperText="เช่น 22:00 น. (24 ชั่วโมง)"
@@ -664,8 +702,8 @@ export default function SleepCheck({ patient }: SleepCheckProps) {
                                                     type="text"
                                                     label="เวลาตื่นนอน"
                                                     value={data.weekday_awake}
-                                                    onChange={e => setData('weekday_awake', formatTimeTo24Hr(e.target.value))}
-                                                    onBlur={e => setData('weekday_awake', formatTimeTo24Hr(e.target.value))}
+                                                    onChange={e => setData('weekday_awake', formatTimeTo24Hr(e.target.value, false))}
+                                                    onBlur={e => setData('weekday_awake', formatTimeTo24Hr(e.target.value, true))}
                                                     fullWidth
                                                     required
                                                     helperText="เช่น 06:00 น. (24 ชั่วโมง)"
@@ -726,8 +764,8 @@ export default function SleepCheck({ patient }: SleepCheckProps) {
                                                     type="text"
                                                     label="เวลาเข้านอน"
                                                     value={data.weekend_sleep}
-                                                    onChange={e => setData('weekend_sleep', formatTimeTo24Hr(e.target.value))}
-                                                    onBlur={e => setData('weekend_sleep', formatTimeTo24Hr(e.target.value))}
+                                                    onChange={e => setData('weekend_sleep', formatTimeTo24Hr(e.target.value, false))}
+                                                    onBlur={e => setData('weekend_sleep', formatTimeTo24Hr(e.target.value, true))}
                                                     fullWidth
                                                     required
                                                     helperText="เช่น 23:00 น. (24 ชั่วโมง)"
@@ -738,8 +776,8 @@ export default function SleepCheck({ patient }: SleepCheckProps) {
                                                     type="text"
                                                     label="เวลาตื่นนอน"
                                                     value={data.weekend_awake}
-                                                    onChange={e => setData('weekend_awake', formatTimeTo24Hr(e.target.value))}
-                                                    onBlur={e => setData('weekend_awake', formatTimeTo24Hr(e.target.value))}
+                                                    onChange={e => setData('weekend_awake', formatTimeTo24Hr(e.target.value, false))}
+                                                    onBlur={e => setData('weekend_awake', formatTimeTo24Hr(e.target.value, true))}
                                                     fullWidth
                                                     required
                                                     helperText="เช่น 08:00 น. (24 ชั่วโมง)"

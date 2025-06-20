@@ -20,6 +20,7 @@ import { motion } from "framer-motion";
 interface ConsentTelemedicineProps {
     patient: {
         hn: string;
+        name: string;
         treatment_consent: string;
         insurance_consent: string;
         marketing_consent: string;
@@ -37,7 +38,7 @@ export default function ConsentTelemedicine({ patient }: ConsentTelemedicineProp
         data: params.get('data'),
         hn: patient.hn,
         signature: "",
-        signature_name: "",
+        signature_name: patient.name,
         signature_type: "patient",
         signature_relation: "",
         telemedicine_consent: "",

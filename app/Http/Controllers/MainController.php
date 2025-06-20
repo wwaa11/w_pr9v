@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Hiv;
 use App\Models\Patient;
+use App\Models\SleepnessForm;
 use App\Models\Telehealth;
 use App\Models\Telemedicine;
 use App\Models\User;
@@ -443,7 +444,6 @@ class MainController extends Controller
 
     public function sleep_check_store(Request $request)
     {
-        dd($request->all());
         $validated = $request->validate([
             'hn'                              => 'required|string|exists:patients,hn',
             'data'                            => 'required|string',
@@ -492,8 +492,81 @@ class MainController extends Controller
             'weekend_alarm'                   => 'required|string',
         ]);
 
+        $sleep_problem = [
+            'sleep_problem_1'  => $request->sleep_problem_1,
+            'sleep_problem_2'  => $request->sleep_problem_2,
+            'sleep_problem_3'  => $request->sleep_problem_3,
+            'sleep_problem_4'  => $request->sleep_problem_4,
+            'sleep_problem_5'  => $request->sleep_problem_5,
+            'sleep_problem_6'  => $request->sleep_problem_6,
+            'sleep_problem_7'  => $request->sleep_problem_7,
+            'sleep_problem_8'  => $request->sleep_problem_8,
+            'sleep_problem_9'  => $request->sleep_problem_9,
+            'sleep_problem_10' => $request->sleep_problem_10,
+            'sleep_problem_11' => $request->sleep_problem_11,
+            'sleep_problem_12' => $request->sleep_problem_12,
+            'sleep_problem_13' => $request->sleep_problem_13,
+            'sleep_problem_14' => $request->sleep_problem_14,
+        ];
+
+        $sleep_situation = [
+            'sleep_situation_1' => $request->sleep_situation_1,
+            'sleep_situation_2' => $request->sleep_situation_2,
+            'sleep_situation_3' => $request->sleep_situation_3,
+            'sleep_situation_4' => $request->sleep_situation_4,
+            'sleep_situation_5' => $request->sleep_situation_5,
+            'sleep_situation_6' => $request->sleep_situation_6,
+            'sleep_situation_7' => $request->sleep_situation_7,
+            'sleep_situation_8' => $request->sleep_situation_8,
+        ];
+
+        $sleep_schedule = [
+            'weekday_sleep'                   => $request->weekday_sleep,
+            'weekday_awake'                   => $request->weekday_awake,
+            'weekday_turnoff_light'           => $request->weekday_turnoff_light,
+            'weekday_night_awake'             => $request->weekday_night_awake,
+            'weekday_night_awake_until_sleep' => $request->weekday_night_awake_until_sleep,
+            'weekday_alarm'                   => $request->weekday_alarm,
+            'weekend_sleep'                   => $request->weekend_sleep,
+            'weekend_awake'                   => $request->weekend_awake,
+            'weekend_turnoff_light'           => $request->weekend_turnoff_light,
+            'weekend_night_awake'             => $request->weekend_night_awake,
+            'weekend_night_awake_until_sleep' => $request->weekend_night_awake_until_sleep,
+            'weekend_alarm'                   => $request->weekend_alarm,
+        ];
+
         $data = json_decode(Crypt::decryptString($request->data), true);
 
+        $new              = new SleepnessForm;
+        $new->hn          = $request->hn;
+        $new->type        = $request->type;
+        $new->vn          = $data['vn'];
+        $new->visit_date  = $data['visit'] == '' ? null : date('Y-m-d H:i:s', strtotime($data['visit']));
+        $new->doctor_name = $data['doctor_name'];
+
+        $new->patient_type      = $request->patient_type;
+        $new->relative_name     = $request->relative_name;
+        $new->relative_relation = $request->relative_relation;
+        $new->weight            = $request->weight;
+        $new->height            = $request->height;
+        $new->bmi               = $request->bmi;
+        $new->neck_size         = $request->neck_size;
+        $new->disease           = $request->disease;
+        $new->disease_text      = $request->disease_text;
+        $new->medicine          = $request->medicine;
+        $new->medicine_text     = $request->medicine_text;
+        $new->sleep_pill        = $request->sleep_pill;
+        $new->sleep_pill_text   = $request->sleep_pill_text;
+        $new->alcohol           = $request->alcohol;
+        $new->tobacco           = $request->tobacco;
+        $new->caffeine          = $request->caffeine;
+        $new->sleep_problem     = json_encode($sleep_problem);
+        $new->sleep_situation   = json_encode($sleep_situation);
+        $new->sleep_schedule    = json_encode($sleep_schedule);
+        $new->informer_user_id  = $data['informer_user_id'];
+        $new->save();
+
+        return redirect()->route('success');
     }
 
     public function allConsents(Request $request)
@@ -624,7 +697,7 @@ class MainController extends Controller
         }
 
         $consent = Telehealth::findOrFail($id);
-        $visit   = ($consent->visit_date == null) ? false : strtotime($consent->visit_date);
+        $visit   = ($consent->visit_date == null) ? strtotime($consent->created_at) : strtotime($consent->visit_date);
 
         $response = Http::withHeaders(['key' => env('API_PATIENT_KEY')])
             ->post('http://172.20.1.22/w_phr/api/patient/info', [
@@ -686,8 +759,8 @@ class MainController extends Controller
             'name_relation'        => $consent->name_relation,
             'name_phone'           => $consent->name_phone,
             'name_address'         => $consent->name_address,
-            'visit_date'           => ! $visit ? '' : $this->date_Full(date('Y-m-d', $visit)),
-            'visit_time'           => ! $visit ? '' : date('H:i', $visit),
+            'visit_date'           => $this->date_Full(date('Y-m-d', $visit)),
+            'visit_time'           => date('H:i', strtotime($consent->created_at)),
             'doctor_name'          => $consent->doctor_name,
             'document_information' => $consent->document_information,
             'signature'            => $consent->signature,
@@ -707,7 +780,7 @@ class MainController extends Controller
     public function viewHivConsent($id)
     {
         $consent = Hiv::findOrFail($id);
-        $visit   = ($consent->visit_date == null) ? false : strtotime($consent->visit_date);
+        $visit   = ($consent->visit_date == null) ? strtotime($consent->created_at) : strtotime($consent->visit_date);
 
         $response = Http::withHeaders(['key' => env('API_PATIENT_KEY')])
             ->post('http://172.20.1.22/w_phr/api/patient/info', [
@@ -769,8 +842,8 @@ class MainController extends Controller
             'name_relation' => $consent->name_relation,
             'name_phone'    => $consent->name_phone,
             'name_address'  => $consent->name_address,
-            'visit_date'    => ! $visit ? '' : $this->date_Full(date('Y-m-d', $visit)),
-            'visit_time'    => ! $visit ? '' : date('H:i', $visit),
+            'visit_date'    => $this->date_Full(date('Y-m-d', $visit)),
+            'visit_time'    => date('H:i', strtotime($consent->created_at)),
             'doctor_name'   => $consent->doctor_name,
             'hiv_consent'   => $consent->hiv_consent,
             'hiv_name'      => $consent->hiv_name,
