@@ -34,6 +34,7 @@ interface Patient {
     represent_surname: string;
     represent_relation: string;
     represent_phone: string;
+    blood_reaction: string;
 }
 
 interface Consent {
@@ -129,7 +130,7 @@ export default function HivConsent() {
                         <Typography sx={{ color: 'blue', position: 'absolute', top: '50px', left: '710px', fontSize: '10px' }}>
                             {consent.vn}
                         </Typography>
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '73px', left: '355px', fontSize: '10px' }}>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '73px', left: '340px', fontSize: '10px' }}>
                             {consent.visit_date}
                         </Typography>
                         <Typography sx={{ color: 'blue', position: 'absolute', top: '73px', left: '480px', fontSize: '10px' }}>
@@ -140,6 +141,9 @@ export default function HivConsent() {
                         </Typography>
                         <Typography sx={{ color: 'blue', position: 'absolute', top: '95px', left: '360px', fontSize: '10px' }}>
                             {consent.patient.allergy_name}
+                        </Typography>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '117px', left: '400px', fontSize: '10px' }}>
+                            {consent.patient.blood_reaction}
                         </Typography>
                         <Typography sx={{ color: 'blue', position: 'absolute', top: '156px', left: '175px', fontSize: '10px' }}>
                             {consent.name}
@@ -178,7 +182,7 @@ export default function HivConsent() {
                         <Typography sx={{ color: 'blue', position: 'absolute', top: '700px', left: '110px', fontSize: '12px' }}>
                             {consent.informer_name}
                         </Typography>
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '726px', left: '115px', fontSize: '10px' }}>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '726px', left: '115px', fontSize: '9px' }}>
                             {consent.visit_date}
                         </Typography>
                         <Typography sx={{ color: 'blue', position: 'absolute', top: '726px', left: '215px', fontSize: '10px' }}>
@@ -188,7 +192,7 @@ export default function HivConsent() {
                         <Typography sx={{ color: 'blue', position: 'absolute', top: '700px', left: '290px', fontSize: '12px' }}>
                             {consent.name}
                         </Typography>
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '726px', left: '296px', fontSize: '10px' }}>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '726px', left: '289px', fontSize: '9px' }}>
                             {consent.visit_date}
                         </Typography>
                         <Typography sx={{ color: 'blue', position: 'absolute', top: '726px', left: '387px', fontSize: '10px' }}>
@@ -198,7 +202,7 @@ export default function HivConsent() {
                         <Typography sx={{ color: 'blue', position: 'absolute', top: '700px', left: '470px', fontSize: '12px' }}>
                             {consent.witness1_name}
                         </Typography>
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '726px', left: '474px', fontSize: '10px' }}>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '726px', left: '468px', fontSize: '9px' }}>
                             {consent.visit_date}
                         </Typography>
                         <Typography sx={{ color: 'blue', position: 'absolute', top: '726px', left: '563px', fontSize: '10px' }}>
@@ -208,7 +212,7 @@ export default function HivConsent() {
                         <Typography sx={{ color: 'blue', position: 'absolute', top: '700px', left: '635px', fontSize: '12px' }}>
                             {consent.witness2_name}
                         </Typography>
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '726px', left: '640px', fontSize: '10px' }}>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '726px', left: '635px', fontSize: '9px' }}>
                             {consent.visit_date}
                         </Typography>
                         <Typography sx={{ color: 'blue', position: 'absolute', top: '726px', left: '730px', fontSize: '10px' }}>
@@ -247,7 +251,7 @@ export default function HivConsent() {
                         <Typography sx={{ color: 'blue', position: 'absolute', top: '17px', left: '430px', fontSize: '10px' }}>
                             {consent.hn}
                         </Typography>
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '17px', left: '550px', fontSize: '10px' }}>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '17px', left: '545px', fontSize: '10px' }}>
                             {consent.visit_date}
                         </Typography>
                         <Typography sx={{ color: 'blue', position: 'absolute', top: '17px', left: '680px', fontSize: '10px' }}>

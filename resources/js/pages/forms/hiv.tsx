@@ -20,6 +20,7 @@ import Swal from 'sweetalert2';
 interface ConsentHivProps {
     patient: {
         hn: string;
+        name: string;
     }
 }
 
@@ -32,7 +33,7 @@ export default function ConsentHiv({ patient }: ConsentHivProps) {
         type: "HIV",
         hn: patient.hn,
         data: params.get('data'),
-        patient_name: "",
+        patient_name: patient.name,
         patient_type: "patient",
         patient_relation: "",
         patient_phone: "",

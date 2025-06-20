@@ -14,6 +14,42 @@ use Inertia\Inertia;
 
 class MainController extends Controller
 {
+    public function date_Full($dateInput, $perferEnglisgh = false)
+    {
+        $dateParts = explode('-', $dateInput);
+        if (count($dateParts) !== 3) {
+            return '';
+        }
+
+        list($year, $month, $day) = $dateParts;
+
+        $thaiMonths = [
+            '01' => 'มกราคม', '02'  => 'กุมภาพันธ์', '03' => 'มีนาคม',
+            '04' => 'เมษายน', '05'  => 'พฤษภาคม', '06'    => 'มิถุนายน',
+            '07' => 'กรกฎาคม', '08' => 'สิงหาคม', '09'    => 'กันยายน',
+            '10' => 'ตุลาคม', '11'  => 'พฤศจิกายน', '12'  => 'ธันวาคม',
+        ];
+
+        $englishMonths = [
+            '01' => 'January', '02' => 'February', '03' => 'March',
+            '04' => 'April', '05'   => 'May', '06'      => 'June',
+            '07' => 'July', '08'    => 'August', '09'   => 'September',
+            '10' => 'October', '11' => 'November', '12' => 'December',
+        ];
+
+        $fullmonth = '';
+        if ($perferEnglisgh) {
+            $fullmonth = $englishMonths[$month] ?? '';
+        } else {
+            $year += 543;
+            $fullmonth = $thaiMonths[$month] ?? '';
+        }
+
+        $dayPart = substr($day, 0, 2);
+
+        return $dayPart . " " . $fullmonth . " " . $year;
+    }
+
     public function login()
     {
         $users = User::where('role', 'witness')->get();
@@ -146,6 +182,7 @@ class MainController extends Controller
             if ($patient == null) {
                 $patient           = new Patient();
                 $patient->hn       = $hn;
+                $patient->name     = $response['patient']['name']['first_th'] . ' ' . $response['patient']['name']['last_th'];
                 $patient->token    = Crypt::encryptString($hn);
                 $patient->ref      = $response['patient']['ref'][0]['ref'];
                 $patient->passport = $response['patient']['ref'][0]['card'] == "1" ? false : true;
@@ -185,9 +222,10 @@ class MainController extends Controller
             $header_params = Crypt::encryptString(json_encode($queryParams));
 
             $baseUrl          = env('APP_URL');
-            $generatedResult1 = "{$baseUrl}/telemedicine/{$patient->token}?data={$header_params}";
-            $generatedResult2 = "{$baseUrl}/telehealth/{$patient->token}?data={$header_params}&doctor_name={$doctor_name}";
-            $generatedResult3 = "{$baseUrl}/hiv/{$patient->token}?data={$header_params}";
+            $telemedicinesURL = "{$baseUrl}/telemedicine/{$patient->token}?data={$header_params}";
+            $telehealthURL    = "{$baseUrl}/telehealth/{$patient->token}?data={$header_params}&doctor_name={$doctor_name}";
+            $hivURL           = "{$baseUrl}/hiv/{$patient->token}?data={$header_params}";
+            $sleepCheckURL    = "{$baseUrl}/sleep-check/{$patient->token}?data={$header_params}";
 
             $patientData = [
                 'hn'    => $patient->hn,
@@ -215,9 +253,10 @@ class MainController extends Controller
                 'doctor_name'      => '',
             ];
 
-            $generatedResult1 = "";
-            $generatedResult2 = "";
-            $generatedResult3 = "";
+            $telemedicinesURL = "";
+            $telehealthURL    = "";
+            $hivURL           = "";
+            $sleepCheckURL    = "";
         }
 
         return Inertia::render('admin/index', [
@@ -225,9 +264,10 @@ class MainController extends Controller
             'telemedicines'     => $patient ? $patient->telemedicines->take(1) : [],
             'telehealths'       => $patient ? $patient->telehealths->take(1) : [],
             'hivs'              => $patient ? $patient->hivs->take(1) : [],
-            'telemedicine_link' => $generatedResult1,
-            'telehealth_link'   => $generatedResult2,
-            'hiv_link'          => $generatedResult3,
+            'telemedicine_link' => $telemedicinesURL,
+            'telehealth_link'   => $telehealthURL,
+            'hiv_link'          => $hivURL,
+            'sleep_check_link'  => $sleepCheckURL,
             'queryParams'       => $queryParams,
             'informer'          => auth()->user(),
             'witness1'          => User::where('user_id', session('witness1'))->first(),
@@ -242,7 +282,7 @@ class MainController extends Controller
             return redirect()->route('error');
         }
 
-        return inertia::render('consents/telemedicine', compact('patient'));
+        return inertia::render('forms/telemedicine', compact('patient'));
     }
 
     public function telemedicine_store(Request $request)
@@ -306,7 +346,7 @@ class MainController extends Controller
             return redirect()->route('error');
         }
 
-        return inertia::render('consents/telehealth', compact('patient'));
+        return inertia::render('forms/telehealth', compact('patient'));
     }
 
     public function telehealth_store(Request $request)
@@ -326,7 +366,7 @@ class MainController extends Controller
         $new->hn                   = $request->hn;
         $new->type                 = $request->type;
         $new->vn                   = $data['vn'];
-        $new->visit_date           = date('Y-m-d H:i:s', strtotime($data['visit']));
+        $new->visit_date           = $data['visit'] == '' ? null : date('Y-m-d H:i:s', strtotime($data['visit']));
         $new->doctor_name          = $data['doctor_name'];
         $new->name                 = $request->patient_name;
         $new->name_type            = $request->patient_type;
@@ -352,7 +392,7 @@ class MainController extends Controller
             return redirect()->route('error');
         }
 
-        return inertia::render('consents/hiv', compact('patient'));
+        return inertia::render('forms/hiv', compact('patient'));
     }
 
     public function hiv_store(Request $request)
@@ -373,7 +413,7 @@ class MainController extends Controller
         $new->hn               = $request->hn;
         $new->type             = $request->type;
         $new->vn               = $data['vn'];
-        $new->visit_date       = date('Y-m-d H:i:s', strtotime($data['visit']));
+        $new->visit_date       = $data['visit'] == '' ? null : date('Y-m-d H:i:s', strtotime($data['visit']));
         $new->doctor_name      = $data['doctor_name'];
         $new->name             = $request->patient_name;
         $new->name_type        = $request->patient_type;
@@ -389,6 +429,71 @@ class MainController extends Controller
         $new->save();
 
         return redirect()->route('success');
+    }
+
+    public function sleep_check($token)
+    {
+        $patient = Patient::where('token', $token)->first();
+        if (! $patient || $patient->expires_at < now()) {
+            return redirect()->route('error');
+        }
+
+        return inertia::render('forms/sleep_check', compact('patient'));
+    }
+
+    public function sleep_check_store(Request $request)
+    {
+        dd($request->all());
+        $validated = $request->validate([
+            'hn'                              => 'required|string|exists:patients,hn',
+            'data'                            => 'required|string',
+            'type'                            => 'required|string',
+            'weight'                          => 'required|string',
+            'height'                          => 'required|string',
+            'bmi'                             => 'required|string',
+            'disease'                         => 'required|string',
+            'medicine'                        => 'required|string',
+            'sleep_pill'                      => 'required|string',
+            'alcohol'                         => 'required|string',
+            'tobacco'                         => 'required|string',
+            'caffeine'                        => 'required|string',
+            'sleep_problem_1'                 => 'required|string',
+            'sleep_problem_2'                 => 'required|string',
+            'sleep_problem_3'                 => 'required|string',
+            'sleep_problem_4'                 => 'required|string',
+            'sleep_problem_5'                 => 'required|string',
+            'sleep_problem_6'                 => 'required|string',
+            'sleep_problem_7'                 => 'required|string',
+            'sleep_problem_8'                 => 'required|string',
+            'sleep_problem_9'                 => 'required|string',
+            'sleep_problem_10'                => 'required|string',
+            'sleep_problem_11'                => 'required|string',
+            'sleep_problem_12'                => 'required|string',
+            'sleep_problem_13'                => 'required|string',
+            'sleep_situation_1'               => 'required|string',
+            'sleep_situation_2'               => 'required|string',
+            'sleep_situation_3'               => 'required|string',
+            'sleep_situation_4'               => 'required|string',
+            'sleep_situation_5'               => 'required|string',
+            'sleep_situation_6'               => 'required|string',
+            'sleep_situation_7'               => 'required|string',
+            'sleep_situation_8'               => 'required|string',
+            'weekday_sleep'                   => 'required|string',
+            'weekday_awake'                   => 'required|string',
+            'weekday_turnoff_light'           => 'required|string',
+            'weekday_night_awake'             => 'required|string',
+            'weekday_night_awake_until_sleep' => 'required|string',
+            'weekday_alarm'                   => 'required|string',
+            'weekend_sleep'                   => 'required|string',
+            'weekend_awake'                   => 'required|string',
+            'weekend_turnoff_light'           => 'required|string',
+            'weekend_night_awake'             => 'required|string',
+            'weekend_night_awake_until_sleep' => 'required|string',
+            'weekend_alarm'                   => 'required|string',
+        ]);
+
+        $data = json_decode(Crypt::decryptString($request->data), true);
+
     }
 
     public function allConsents(Request $request)
@@ -489,8 +594,9 @@ class MainController extends Controller
                 'represent_surname'  => $response['patient']['notify']['last_name'],
                 'represent_relation' => $response['patient']['notify']['relation'],
                 'represent_phone'    => $response['patient']['notify']['phone'],
+                'photo'              => true,
             ],
-            'visit_date'           => $consent->created_at->format('d/m/Y'),
+            'visit_date'           => $this->date_Full($consent->created_at->format('Y-m-d')),
             'visit_time'           => $consent->created_at->format('H:i'),
             'telemedicine_consent' => $consent->telemedicine_consent,
             'treatment_consent'    => $consent->treatment_consent,
@@ -518,6 +624,7 @@ class MainController extends Controller
         }
 
         $consent = Telehealth::findOrFail($id);
+        $visit   = ($consent->visit_date == null) ? false : strtotime($consent->visit_date);
 
         $response = Http::withHeaders(['key' => env('API_PATIENT_KEY')])
             ->post('http://172.20.1.22/w_phr/api/patient/info', [
@@ -571,6 +678,7 @@ class MainController extends Controller
                 'represent_surname'  => $response['patient']['notify']['last_name'],
                 'represent_relation' => $response['patient']['notify']['relation'],
                 'represent_phone'    => $response['patient']['notify']['phone'],
+                'blood_reaction'     => $response['patient']['blood_reaction'],
             ],
             'vn'                   => $consent->vn,
             'name'                 => $consent->name,
@@ -578,8 +686,8 @@ class MainController extends Controller
             'name_relation'        => $consent->name_relation,
             'name_phone'           => $consent->name_phone,
             'name_address'         => $consent->name_address,
-            'visit_date'           => date('d/m/Y', strtotime($consent->visit_date)),
-            'visit_time'           => date('H:i', strtotime($consent->visit_date)),
+            'visit_date'           => ! $visit ? '' : $this->date_Full(date('Y-m-d', $visit)),
+            'visit_time'           => ! $visit ? '' : date('H:i', $visit),
             'doctor_name'          => $consent->doctor_name,
             'document_information' => $consent->document_information,
             'signature'            => $consent->signature,
@@ -599,6 +707,7 @@ class MainController extends Controller
     public function viewHivConsent($id)
     {
         $consent = Hiv::findOrFail($id);
+        $visit   = ($consent->visit_date == null) ? false : strtotime($consent->visit_date);
 
         $response = Http::withHeaders(['key' => env('API_PATIENT_KEY')])
             ->post('http://172.20.1.22/w_phr/api/patient/info', [
@@ -652,6 +761,7 @@ class MainController extends Controller
                 'represent_surname'  => $response['patient']['notify']['last_name'],
                 'represent_relation' => $response['patient']['notify']['relation'],
                 'represent_phone'    => $response['patient']['notify']['phone'],
+                'blood_reaction'     => $response['patient']['blood_reaction'],
             ],
             'vn'            => $consent->vn,
             'name'          => $consent->name,
@@ -659,8 +769,8 @@ class MainController extends Controller
             'name_relation' => $consent->name_relation,
             'name_phone'    => $consent->name_phone,
             'name_address'  => $consent->name_address,
-            'visit_date'    => date('d/m/Y', strtotime($consent->visit_date)),
-            'visit_time'    => date('H:i', strtotime($consent->visit_date)),
+            'visit_date'    => ! $visit ? '' : $this->date_Full(date('Y-m-d', $visit)),
+            'visit_time'    => ! $visit ? '' : date('H:i', $visit),
             'doctor_name'   => $consent->doctor_name,
             'hiv_consent'   => $consent->hiv_consent,
             'hiv_name'      => $consent->hiv_name,
@@ -726,10 +836,11 @@ class MainController extends Controller
             ->json();
 
         if ($response['status'] == 1) {
-            $user          = new User();
-            $user->user_id = $request->userid;
-            $user->name    = $response['user']['name'];
-            $user->role    = 'witness';
+            $user             = new User();
+            $user->user_id    = $request->userid;
+            $user->name       = $response['user']['name'];
+            $user->department = $response['user']['department'];
+            $user->role       = 'witness';
             $user->save();
 
             return back()->with('success', 'User added successfully as witness');

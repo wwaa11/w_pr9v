@@ -34,6 +34,7 @@ interface Patient {
     represent_surname: string;
     represent_relation: string;
     represent_phone: string;
+    blood_reaction: string;
 }
 
 interface Consent {
@@ -140,6 +141,9 @@ export default function TelemedicineConsent() {
                         <Typography sx={{ color: 'blue', position: 'absolute', top: '106px', left: '385px', fontSize: '10px' }}>
                             {consent.patient.allergy_name}
                         </Typography>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '127px', left: '420px', fontSize: '10px' }}>
+                            {consent.patient.blood_reaction}
+                        </Typography>
                         <Typography sx={{ color: 'blue', position: 'absolute', top: '165px', left: '130px', fontSize: '10px' }}>
                             {consent.name}
                         </Typography>
@@ -163,7 +167,7 @@ export default function TelemedicineConsent() {
                         <Typography sx={{ color: 'blue', position: 'absolute', top: '646px', left: '110px', fontSize: '12px' }}>
                             {consent.informer_name}
                         </Typography>
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '676px', left: '113px', fontSize: '10px' }}>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '676px', left: '110px', fontSize: '9px' }}>
                             {consent.visit_date}
                         </Typography>
                         <Typography sx={{ color: 'blue', position: 'absolute', top: '676px', left: '200px', fontSize: '10px' }}>
@@ -173,7 +177,7 @@ export default function TelemedicineConsent() {
                         <Typography sx={{ color: 'blue', position: 'absolute', top: '646px', left: '290px', fontSize: '12px' }}>
                             {consent.name}
                         </Typography>
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '676px', left: '298px', fontSize: '10px' }}>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '676px', left: '292px', fontSize: '9px' }}>
                             {consent.visit_date}
                         </Typography>
                         <Typography sx={{ color: 'blue', position: 'absolute', top: '676px', left: '385px', fontSize: '10px' }}>
@@ -183,7 +187,7 @@ export default function TelemedicineConsent() {
                         <Typography sx={{ color: 'blue', position: 'absolute', top: '646px', left: '470px', fontSize: '12px' }}>
                             {consent.witness1_name}
                         </Typography>
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '676px', left: '475px', fontSize: '10px' }}>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '676px', left: '470px', fontSize: '9px' }}>
                             {consent.visit_date}
                         </Typography>
                         <Typography sx={{ color: 'blue', position: 'absolute', top: '676px', left: '560px', fontSize: '10px' }}>
@@ -193,7 +197,7 @@ export default function TelemedicineConsent() {
                         <Typography sx={{ color: 'blue', position: 'absolute', top: '646px', left: '630px', fontSize: '12px' }}>
                             {consent.witness2_name}
                         </Typography>
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '676px', left: '638px', fontSize: '10px' }}>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '676px', left: '635px', fontSize: '9px' }}>
                             {consent.visit_date}
                         </Typography>
                         <Typography sx={{ color: 'blue', position: 'absolute', top: '676px', left: '720px', fontSize: '10px' }}>

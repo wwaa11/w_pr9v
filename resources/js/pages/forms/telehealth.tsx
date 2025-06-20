@@ -20,6 +20,7 @@ import Swal from 'sweetalert2';
 interface ConsentTelehealthProps {
     patient: {
         hn: string;
+        name: string;
     }
 }
 
@@ -33,7 +34,7 @@ export default function ConsentTelehealth({ patient }: ConsentTelehealthProps) {
         hn: patient.hn,
         data: params.get('data'),
         doctor_name: params.get('doctor_name') || "",
-        patient_name: "",
+        patient_name: patient.name,
         patient_type: "patient",
         patient_relation: "",
         patient_phone: "",

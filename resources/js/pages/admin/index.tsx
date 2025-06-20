@@ -61,6 +61,7 @@ export default function Index({
     telemedicine_link: initialTelemedicineLink = '',
     telehealth_link: initialTelehealthLink = '',
     hiv_link: initialHivLink = '',
+    sleep_check_link: initialSleepCheckLink = '',
     witness1,
     witness2,
     informer,
@@ -77,6 +78,7 @@ export default function Index({
     telemedicine_link?: string;
     telehealth_link?: string;
     hiv_link?: string;
+    sleep_check_link?: string;
     witness1?: UserInfo;
     witness2?: UserInfo;
     informer?: UserInfo;
@@ -277,6 +279,27 @@ export default function Index({
                                                     endAdornment: (
                                                         <InputAdornment position="end">
                                                             <IconButton onClick={() => handleCopy(initialHivLink)} edge="end" disabled={!initialHivLink}>
+                                                                <ContentCopyIcon />
+                                                            </IconButton>
+                                                        </InputAdornment>
+                                                    ),
+                                                },
+                                            }}
+                                            fullWidth
+                                            multiline
+                                            rows={2}
+                                        />
+                                        <TextField
+                                            label="Sleep Check Consent"
+                                            value={initialSleepCheckLink}
+                                            slotProps={{
+                                                htmlInput: {
+                                                    readOnly: true
+                                                },
+                                                input: {
+                                                    endAdornment: (
+                                                        <InputAdornment position="end">
+                                                            <IconButton onClick={() => handleCopy(initialSleepCheckLink)} edge="end" disabled={!initialSleepCheckLink}>
                                                                 <ContentCopyIcon />
                                                             </IconButton>
                                                         </InputAdornment>

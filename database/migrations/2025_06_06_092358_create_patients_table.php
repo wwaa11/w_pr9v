@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('patients', function (Blueprint $table) {
             $table->id();
             $table->string('hn')->unique();
+            $table->string('name');
             $table->string('token')->unique();
             $table->string('ref');
             $table->boolean('passport')->default(false);

@@ -26,6 +26,9 @@ Route::post('/telehealth', [MainController::class, 'telehealth_store']);
 Route::get('/hiv/{hn_token}', [MainController::class, 'hiv'])->name('hiv');
 Route::post('/hiv', [MainController::class, 'hiv_store']);
 
+Route::get('/sleep-check/{token}', [MainController::class, 'sleep_check'])->name('sleep-check');
+Route::post('/sleep-check', [MainController::class, 'sleep_check_store']);
+
 Route::middleware(['auth'])->group(function () {
     Route::post('/api/update-signature', [MainController::class, 'updateSignature'])->middleware('auth');
 
