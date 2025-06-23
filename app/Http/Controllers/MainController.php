@@ -267,6 +267,7 @@ class MainController extends Controller
             'telemedicines'     => $patient ? $patient->telemedicines->take(1) : [],
             'telehealths'       => $patient ? $patient->telehealths->take(1) : [],
             'hivs'              => $patient ? $patient->hivs->take(1) : [],
+            'sleepnesses'       => $patient ? $patient->sleepnesses->take(1) : [],
             'telemedicine_link' => $telemedicinesURL,
             'telehealth_link'   => $telehealthURL,
             'hiv_link'          => $hivURL,
@@ -1047,13 +1048,16 @@ class MainController extends Controller
             $consentData[$key] = $problem;
         }
         $sleep_situation = json_decode($consent->sleep_situation);
+        $total_situation = 0;
         foreach ($sleep_situation as $key => $situation) {
             $consentData[$key] = $situation;
+            $total_situation += $situation;
         }
         $sleep_schedule = json_decode($consent->sleep_schedule);
         foreach ($sleep_schedule as $key => $schedule) {
             $consentData[$key] = $schedule;
         }
+        $consentData['total_situation'] = $total_situation;
 
         return inertia::render('admin/pdf/sleepness', [
             'consent' => $consentData,

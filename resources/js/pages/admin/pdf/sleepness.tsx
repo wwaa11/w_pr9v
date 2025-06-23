@@ -96,6 +96,7 @@ interface Consent {
     weekend_night_awake: string;
     weekend_night_awake_until_sleep: string;
     weekend_alarm: string;
+    total_situation: number;
 }
 
 
@@ -566,6 +567,9 @@ export default function SleepnessConsent() {
                                 &#10003;
                             </Typography>
                         )}
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '846px', left: '660px', fontSize: '16px' }}>
+                            {consent.total_situation}
+                        </Typography>
                         <Typography sx={{ color: 'blue', position: 'absolute', top: '908px', left: '238px', fontSize: '10px' }}>
                             {consent.weekday_sleep}
                         </Typography>

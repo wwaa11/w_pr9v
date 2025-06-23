@@ -32,8 +32,9 @@ interface UserInfo {
 interface Telemedicine {
     id: number;
     type: string;
-    signature_type: string;
     signature_name: string;
+    signature_type: string;
+    signature_relation: string;
     telemedicine_consent: boolean;
     created_at: string;
 }
@@ -52,7 +53,18 @@ interface Hiv {
     id: number;
     type: string;
     name: string;
+    name_type: string;
+    name_relation: string;
     hiv_consent: string;
+    created_at: string;
+}
+
+interface Sleepness {
+    id: number;
+    type: string;
+    name: string;
+    patient_type: string;
+    relative_relation: string;
     created_at: string;
 }
 
@@ -73,6 +85,7 @@ export default function Index({
     telemedicines = [],
     telehealths = [],
     hivs = [],
+    sleepnesses = [],
 }: {
     patient?: PatientInfo;
     telemedicine_link?: string;
@@ -86,6 +99,7 @@ export default function Index({
     telemedicines?: Telemedicine[];
     telehealths?: Telehealth[];
     hivs?: Hiv[];
+    sleepnesses?: Sleepness[];
 }) {
     const page = usePage();
     const url = page.props.url as string;
@@ -109,11 +123,11 @@ export default function Index({
 
     const setHivStatus = (hiv: Hiv) => {
         if (hiv.hiv_consent == 'self') {
-            return { label: 'Self', color: 'success' };
+            return { label: 'Approve : Self', color: 'success' };
         } else if (hiv.hiv_consent == 'other') {
-            return { label: 'Other', color: 'warning' };
+            return { label: 'Approve : Other', color: 'warning' };
         } else if (hiv.hiv_consent == 'none') {
-            return { label: 'None', color: 'error' };
+            return { label: 'Approve : None', color: 'error' };
         }
 
     };
@@ -342,7 +356,7 @@ export default function Index({
                                                         {format(new Date(telemedicine.created_at), 'HH:mm:ss')}
                                                     </TableCell>
                                                     <TableCell>{telemedicine.type}</TableCell>
-                                                    <TableCell>{telemedicine.signature_name}</TableCell>
+                                                    <TableCell>{telemedicine.signature_name} {telemedicine.signature_type == 'representative' ? '(' + telemedicine.signature_relation + ')' : ''}</TableCell>
                                                     <TableCell>
                                                         <Chip
                                                             label={telemedicine.telemedicine_consent ? 'Approved' : 'Rejected'}
@@ -374,7 +388,7 @@ export default function Index({
                                                         {format(new Date(telehealth.created_at), 'HH:mm:ss')}
                                                     </TableCell>
                                                     <TableCell>{telehealth.type}</TableCell>
-                                                    <TableCell>{telehealth.name}</TableCell>
+                                                    <TableCell>{telehealth.name} {telehealth.name_type == 'representative' ? '(' + telehealth.name_relation + ')' : ''}</TableCell>
                                                     <TableCell>
                                                         <Chip
                                                             label={telehealth.telehealth_consent ? 'Approved' : 'Rejected'}
@@ -407,7 +421,7 @@ export default function Index({
                                                         {format(new Date(hiv.created_at), 'HH:mm:ss')}
                                                     </TableCell>
                                                     <TableCell>{hiv.type}</TableCell>
-                                                    <TableCell>{hiv.name}</TableCell>
+                                                    <TableCell>{hiv.name} {hiv.name_type == 'representative' ? '(' + hiv.name_relation + ')' : ''}</TableCell>
                                                     <TableCell>
                                                         <Chip
                                                             label={status?.label}
@@ -419,6 +433,38 @@ export default function Index({
                                                         <Button
                                                             component={Link}
                                                             href={route('admin.hiv-consent', hiv.id)}
+                                                            variant="contained"
+                                                            size="small"
+                                                            color="primary"
+                                                        >
+                                                            View Details
+                                                        </Button>
+                                                    </TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
+                                        {sleepnesses.map((sleepness) => {
+                                            return (
+                                                <TableRow key={sleepness.id} hover>
+                                                    <TableCell>
+                                                        {format(new Date(sleepness.created_at), 'dd/MM/yyyy')}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {format(new Date(sleepness.created_at), 'HH:mm:ss')}
+                                                    </TableCell>
+                                                    <TableCell>{sleepness.type}</TableCell>
+                                                    <TableCell>{sleepness.name} {sleepness.patient_type == 'relative' ? '(' + sleepness.relative_relation + ')' : ''}</TableCell>
+                                                    <TableCell>
+                                                        <Chip
+                                                            label="SUCCESS"
+                                                            color='success'
+                                                            size="small"
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Button
+                                                            component={Link}
+                                                            href={route('admin.sleepness-consent', sleepness.id)}
                                                             variant="contained"
                                                             size="small"
                                                             color="primary"
