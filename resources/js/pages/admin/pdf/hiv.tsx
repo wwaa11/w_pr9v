@@ -154,9 +154,14 @@ export default function HivConsent() {
                             </Typography>
                         )}
                         {consent.name_type == 'representative' && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '154px', left: '460px', fontSize: '12px' }}>
-                                &#10003;
-                            </Typography>
+                            <>
+                                <Typography sx={{ color: 'blue', position: 'absolute', top: '154px', left: '460px', fontSize: '12px' }}>
+                                    &#10003;
+                                </Typography>
+                                <Typography sx={{ color: 'blue', position: 'absolute', top: '154px', left: '615px', fontSize: '12px' }}>
+                                    {consent.name_relation}
+                                </Typography>
+                            </>
                         )}
                         {consent.hiv_consent == 'self' && (
                             <Typography sx={{ color: 'blue', position: 'absolute', top: '406px', left: '127px', fontSize: '12px' }}>

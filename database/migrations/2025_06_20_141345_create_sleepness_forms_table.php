@@ -19,8 +19,8 @@ return new class extends Migration
             $table->datetime('visit_date')->nullable();
             $table->string('doctor_name')->nullable();
             $table->string('patient_type');
-            $table->string('relative_name');
-            $table->string('relative_relation');
+            $table->string('relative_name')->nullable();
+            $table->string('relative_relation')->nullable();
             $table->string('weight');
             $table->string('height');
             $table->string('bmi');

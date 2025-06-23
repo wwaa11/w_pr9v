@@ -61,6 +61,10 @@ export default function Users({ users }: Props) {
         router.post(`${url}/admin/users/${userId}/set-witness`);
     };
 
+    const handleSetUser = (userId: number) => {
+        router.post(`${url}/admin/users/${userId}/set-user`);
+    };
+
     const handleRequestSort = (property: keyof User) => {
         const isAsc = orderBy === property && order === 'asc';
         const newOrder = isAsc ? 'desc' : 'asc';
@@ -207,6 +211,16 @@ export default function Users({ users }: Props) {
                                                             onClick={() => handleSetWitness(user.id)}
                                                         >
                                                             Set as Witness
+                                                        </Button>
+                                                    )}
+                                                    {user.role === 'witness' && (
+                                                        <Button
+                                                            variant="contained"
+                                                            color="secondary"
+                                                            size="small"
+                                                            onClick={() => { handleSetUser(user.id); }}
+                                                        >
+                                                            Change to User
                                                         </Button>
                                                     )}
                                                 </TableCell>

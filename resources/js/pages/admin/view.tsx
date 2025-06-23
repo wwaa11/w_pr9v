@@ -18,6 +18,10 @@ import {
     Link,
     TableSortLabel,
     TextField,
+    Select,
+    MenuItem,
+    FormControl,
+    InputLabel,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -30,14 +34,19 @@ interface Consent {
     pdf_id: number;
     created_at: string;
     hn: string;
+    patient_name: string;
     type: string;
-    signature_name: string;
     signature_type: string;
+    signature_name: string;
+    signature_relation: string;
     telemedicine_consent: boolean;
-    name: string;
     name_type: string;
+    name_relation: string;
     telehealth_consent: boolean;
     hiv_consent: string;
+    patient_type: string;
+    name: string;
+    relative_relation: string;
 }
 
 type Order = 'asc' | 'desc';
@@ -48,8 +57,12 @@ interface HeadCell {
     numeric: boolean;
 }
 
+interface TypeSelect {
+    label: string;
+    value: string;
+}
+
 const headCells: HeadCell[] = [
-    { id: 'id', label: '#', numeric: true },
     { id: 'created_at', label: 'Date & Time', numeric: false },
     { id: 'hn', label: 'HN', numeric: false },
     { id: 'type', label: 'Type', numeric: false },
@@ -60,13 +73,16 @@ export default function View() {
     const pageProps = usePage();
     const url = pageProps.props.url as string;
     const consents = pageProps.props.consents as Consent[];
+    const type_select = pageProps.props.type_select as TypeSelect[];
+    const page = pageProps.props.page as string;
     const [currentPage, setCurrentPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
     const [startDate, setStartDate] = React.useState<Date | null>(startOfDay(new Date()));
     const [endDate, setEndDate] = React.useState<Date | null>(endOfDay(new Date()));
     const [order, setOrder] = React.useState<Order>('desc');
-    const [orderBy, setOrderBy] = React.useState<keyof Consent>('id');
+    const [orderBy, setOrderBy] = React.useState<keyof Consent>('created_at');
     const [hnFilter, setHnFilter] = React.useState('');
+    const [typeFilter, setTypeFilter] = React.useState('');
 
     const getConsentStatus = (consent: Consent) => {
         if (consent.type == 'Telemedicine' && consent.telemedicine_consent == true) {
@@ -75,12 +91,14 @@ export default function View() {
             return { label: 'Approved', color: 'success' };
         } else if (consent.type == 'HIV') {
             if (consent.hiv_consent == 'self') {
-                return { label: 'Self', color: 'success' };
+                return { label: 'Approved : Self', color: 'success' };
             } else if (consent.hiv_consent == 'other') {
-                return { label: 'Other', color: 'warning' };
+                return { label: 'Approved : Other', color: 'success' };
             } else if (consent.hiv_consent == 'none') {
-                return { label: 'None', color: 'error' };
+                return { label: 'Approved : None', color: 'success' };
             }
+        } else if (consent.type == 'Sleep Check') {
+            return { label: 'SUCCESS', color: 'success' };
         }
 
         return { label: 'Rejected', color: 'error' };
@@ -88,9 +106,23 @@ export default function View() {
 
     const getConsentName = (consent: Consent) => {
         if (consent.type == 'Telemedicine') {
-            return consent.signature_name + ' (' + consent.signature_type + ')';
+            if (consent.signature_type == 'patient') {
+                return consent.signature_name;
+            } else {
+                return consent.signature_name + ' (' + consent.signature_relation + ')';
+            }
         } else if (consent.type == 'Telehealth' || consent.type == 'HIV') {
-            return consent.name + ' (' + consent.name_type + ')';
+            if (consent.name_type == 'patient') {
+                return consent.name;
+            } else {
+                return consent.name + ' (' + consent.name_relation + ')';
+            }
+        } else if (consent.type == 'Sleep Check') {
+            if (consent.patient_type == 'patient') {
+                return consent.name;
+            } else {
+                return consent.name + ' (' + consent.relative_relation + ')';
+            }
         }
     };
 
@@ -101,6 +133,8 @@ export default function View() {
             return url + '/admin/telehealth-consent/' + consent.pdf_id;
         } else if (consent.type == 'HIV') {
             return url + '/admin/hiv-consent/' + consent.pdf_id;
+        } else if (consent.type == 'Sleep Check') {
+            return url + '/admin/sleepness-consent/' + consent.pdf_id;
         }
     };
 
@@ -115,10 +149,11 @@ export default function View() {
 
     const handleDateRangeChange = () => {
         if (startDate && endDate) {
-            router.get(url + '/admin/all-consents', {
+            router.get(url + '/admin/' + page, {
                 start_date: format(startDate, 'yyyy-MM-dd'),
                 end_date: format(endDate, 'yyyy-MM-dd'),
                 hn: hnFilter.trim(),
+                type: typeFilter,
             }, {
                 preserveState: true,
                 preserveScroll: true,
@@ -128,9 +163,10 @@ export default function View() {
 
     const handleClearFilters = () => {
         setHnFilter('');
+        setTypeFilter('');
         setStartDate(startOfDay(new Date()));
         setEndDate(endOfDay(new Date()));
-        router.get(url + '/admin/all-consents', {}, {
+        router.get(url + '/admin/' + page, {}, {
             preserveState: true,
             preserveScroll: true,
         });
@@ -144,6 +180,10 @@ export default function View() {
         if (event.key === 'Enter') {
             handleDateRangeChange();
         }
+    };
+
+    const handleTypeFilterChange = (event: any) => {
+        setTypeFilter(event.target.value);
     };
 
     const handleRequestSort = (_event: React.MouseEvent<unknown>, property: keyof Consent) => {
@@ -183,7 +223,7 @@ export default function View() {
             </Head>
             <Box sx={{ p: 3 }}>
                 <Typography variant="h4" sx={{ mb: 3 }}>
-                    Consents
+                    Documents
                 </Typography>
                 <Paper sx={{ p: 2, mb: 3 }}>
                     <Stack direction="row" spacing={2} alignItems="center">
@@ -195,6 +235,18 @@ export default function View() {
                             size="small"
                             placeholder="Enter HN number"
                         />
+                        <FormControl size="small" sx={{ minWidth: 120 }}>
+                            <InputLabel>Type</InputLabel>
+                            <Select
+                                value={typeFilter}
+                                label="Type"
+                                onChange={handleTypeFilterChange}
+                            >
+                                {type_select.map((item, index) => (
+                                    <MenuItem key={index} value={item.value}>{item.label}</MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
                         <LocalizationProvider dateAdapter={AdapterDateFns}>
                             <DatePicker
                                 label="Start Date"
@@ -229,6 +281,7 @@ export default function View() {
                         <Table stickyHeader>
                             <TableHead>
                                 <TableRow>
+                                    <TableCell>#</TableCell>
                                     {headCells.map((headCell) => (
                                         <TableCell
                                             key={headCell.id}

@@ -36,12 +36,15 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/admin', [MainController::class, 'admin_search']);
 
     Route::get('/admin/all-consents', [MainController::class, 'allConsents'])->name('admin.all-consents');
+    Route::get('/admin/all-forms', [MainController::class, 'allForms'])->name('admin.all-forms');
 
     Route::get('/admin/telemedicine-consent/{id}', [MainController::class, 'viewTelemedicineConsent'])->name('admin.telemedicine-consent');
     Route::get('/admin/telehealth-consent/{id}', [MainController::class, 'viewTelehealthConsent'])->name('admin.telehealth-consent');
     Route::get('/admin/hiv-consent/{id}', [MainController::class, 'viewHivConsent'])->name('admin.hiv-consent');
+    Route::get('/admin/sleepness-consent/{id}', [MainController::class, 'viewSleepnessConsent'])->name('admin.sleepness-consent');
 
     Route::get('/admin/users', [MainController::class, 'manageUsers'])->name('admin.users');
     Route::post('/admin/users/{user}/set-witness', [MainController::class, 'setWitness'])->name('admin.users.set-witness');
+    Route::post('/admin/users/{user}/set-user', [MainController::class, 'setUser'])->name('admin.users.set-user');
     Route::post('/admin/users/add-witness', [MainController::class, 'addWitness'])->name('admin.users.add-witness');
 });

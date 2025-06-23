@@ -20,8 +20,8 @@ import Avatar from '@mui/material/Avatar';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
-import PersonSearchIcon from '@mui/icons-material/PersonSearch';
-import ContactPageIcon from '@mui/icons-material/ContactPage';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import PeopleIcon from '@mui/icons-material/People';
 import SessionCheck from "@/components/SessionCheck";
 import SignatureManager from "@/components/SignatureManager";
@@ -119,8 +119,13 @@ export default function AdminDashboard({ children }: { children: React.ReactNode
         },
         {
             text: 'Today Consents',
-            icon: <DashboardIcon />,
+            icon: <AssignmentTurnedInIcon />,
             path: 'admin/all-consents'
+        },
+        {
+            text: 'Today Forms',
+            icon: <AssignmentIcon />,
+            path: 'admin/all-forms'
         },
         {
             text: 'Witnesses',

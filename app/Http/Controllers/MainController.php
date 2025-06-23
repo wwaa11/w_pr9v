@@ -86,12 +86,13 @@ class MainController extends Controller
             if ($response['status'] == 1) {
                 $userData = User::where('user_id', $userid)->first();
                 if ($userData == null) {
-                    $userData             = new User();
-                    $userData->user_id    = $userid;
-                    $userData->name       = $response['user']['name'];
-                    $userData->department = $response['user']['department'];
-                    $userData->save();
+                    $userData          = new User();
+                    $userData->user_id = $userid;
+                    $userData->name    = $response['user']['name'];
                 }
+                $userData->department = $response['user']['department'];
+                $userData->position   = $response['user']['position'];
+                $userData->save();
 
                 Auth::login($userData);
                 session(['witness1' => $witness1, 'witness2' => $witness2]);
@@ -123,6 +124,7 @@ class MainController extends Controller
             }
             $userData->name       = $response['user']['name'];
             $userData->department = $response['user']['department'];
+            $userData->position   = $response['user']['position'];
             $userData->save();
 
             Auth::login($userData);
@@ -537,15 +539,15 @@ class MainController extends Controller
 
         $data = json_decode(Crypt::decryptString($request->data), true);
 
-        $new              = new SleepnessForm;
-        $new->hn          = $request->hn;
-        $new->type        = $request->type;
-        $new->vn          = $data['vn'];
-        $new->visit_date  = $data['visit'] == '' ? null : date('Y-m-d H:i:s', strtotime($data['visit']));
-        $new->doctor_name = $data['doctor_name'];
-
+        $new                    = new SleepnessForm;
+        $new->hn                = $request->hn;
+        $new->type              = $request->type;
+        $new->vn                = $data['vn'];
+        $new->visit_date        = $data['visit'] == '' ? null : date('Y-m-d H:i:s', strtotime($data['visit']));
+        $new->doctor_name       = $data['doctor_name'];
+        $patient                = Patient::where('hn', $request->hn)->first();
         $new->patient_type      = $request->patient_type;
-        $new->relative_name     = $request->relative_name;
+        $new->name              = ($request->patient_type == 'patient') ? $patient->name : $request->relative_name;
         $new->relative_relation = $request->relative_relation;
         $new->weight            = $request->weight;
         $new->height            = $request->height;
@@ -574,36 +576,133 @@ class MainController extends Controller
         $startDate = $request->start_date ?? now()->startOfDay()->format('Y-m-d');
         $endDate   = $request->end_date ?? now()->endOfDay()->format('Y-m-d');
         $hn        = $request->hn;
+        $type      = $request->type;
 
-        $telehealths = Telehealth::whereDate('created_at', '>=', $startDate)
-            ->whereDate('created_at', '<=', $endDate)
-            ->orderBy('created_at', 'desc');
+        if ($type == 'Telemedicine') {
+            $telemedicines = Telemedicine::whereDate('created_at', '>=', $startDate)
+                ->whereDate('created_at', '<=', $endDate)
+                ->orderBy('created_at', 'desc');
+        } else if ($type == 'Telehealth') {
+            $telehealths = Telehealth::whereDate('created_at', '>=', $startDate)
+                ->whereDate('created_at', '<=', $endDate)
+                ->orderBy('created_at', 'desc');
+        } else if ($type == 'HIV') {
+            $hivs = Hiv::whereDate('created_at', '>=', $startDate)
+                ->whereDate('created_at', '<=', $endDate)
+                ->orderBy('created_at', 'desc');
+        } else {
+            $telehealths = Telehealth::whereDate('created_at', '>=', $startDate)
+                ->whereDate('created_at', '<=', $endDate)
+                ->orderBy('created_at', 'desc');
 
-        $telemedicines = Telemedicine::whereDate('created_at', '>=', $startDate)
-            ->whereDate('created_at', '<=', $endDate)
-            ->orderBy('created_at', 'desc');
+            $telemedicines = Telemedicine::whereDate('created_at', '>=', $startDate)
+                ->whereDate('created_at', '<=', $endDate)
+                ->orderBy('created_at', 'desc');
 
-        $hivs = Hiv::whereDate('created_at', '>=', $startDate)
-            ->whereDate('created_at', '<=', $endDate)
-            ->orderBy('created_at', 'desc');
-
-        if ($hn) {
-            $telemedicines->where('hn', 'like', "%{$hn}%");
-            $telehealths->where('hn', 'like', "%{$hn}%");
-            $hivs->where('hn', 'like', "%{$hn}%");
+            $hivs = Hiv::whereDate('created_at', '>=', $startDate)
+                ->whereDate('created_at', '<=', $endDate)
+                ->orderBy('created_at', 'desc');
         }
 
-        $telemedicines = $telemedicines->get();
-        $telehealths   = $telehealths->get();
-        $hivs          = $hivs->get();
-        $consents      = array_merge($telemedicines->toArray(), $telehealths->toArray(), $hivs->toArray());
+        if ($hn) {
+            if ($type == 'Telemedicine') {
+                $telemedicines->where('hn', 'like', "%{$hn}%");
+            } else if ($type == 'Telehealth') {
+                $telehealths->where('hn', 'like', "%{$hn}%");
+            } else if ($type == 'HIV') {
+                $hivs->where('hn', 'like', "%{$hn}%");
+            } else {
+                $telemedicines->where('hn', 'like', "%{$hn}%");
+                $telehealths->where('hn', 'like', "%{$hn}%");
+                $hivs->where('hn', 'like', "%{$hn}%");
+            }
+        }
 
+        if ($type == 'Telemedicine') {
+            $telemedicines = $telemedicines->get();
+
+            $consents = $telemedicines->toArray();
+        } else if ($type == 'Telehealth') {
+            $telehealths = $telehealths->get();
+
+            $consents = $telehealths->toArray();
+        } else if ($type == 'HIV') {
+            $hivs = $hivs->get();
+
+            $consents = $hivs->toArray();
+        } else {
+            $telemedicines = $telemedicines->get();
+            $telehealths   = $telehealths->get();
+            $hivs          = $hivs->get();
+
+            $consents = array_merge($telemedicines->toArray(), $telehealths->toArray(), $hivs->toArray());
+        }
+
+        array_multisort(array_column($consents, 'created_at'), SORT_DESC, $consents);
         foreach ($consents as $index => $consent) {
             $consents[$index]['pdf_id'] = $consent['id'];
             $consents[$index]['id']     = $index + 1;
         }
 
-        return inertia::render('admin/view', compact('consents'));
+        $page        = 'all-consents';
+        $type_select = [
+            [
+                'label' => 'All Types',
+                'value' => '',
+            ],
+            [
+                'label' => 'Telemedicine',
+                'value' => 'Telemedicine',
+            ],
+            [
+                'label' => 'Telehealth',
+                'value' => 'Telehealth',
+            ],
+            [
+                'label' => 'HIV',
+                'value' => 'HIV',
+            ],
+        ];
+
+        return inertia::render('admin/view', compact('consents', 'type_select', 'page'));
+    }
+
+    public function allForms(Request $request)
+    {
+        $startDate = $request->start_date ?? now()->startOfDay()->format('Y-m-d');
+        $endDate   = $request->end_date ?? now()->endOfDay()->format('Y-m-d');
+        $hn        = $request->hn;
+
+        $sleepnesses = SleepnessForm::whereDate('created_at', '>=', $startDate)
+            ->whereDate('created_at', '<=', $endDate)
+            ->orderBy('created_at', 'desc');
+
+        if ($hn) {
+            $sleepnesses->where('hn', 'like', "%{$hn}%");
+        }
+
+        $sleepnesses = $sleepnesses->get();
+        $consents    = array_merge($sleepnesses->toArray());
+
+        array_multisort(array_column($consents, 'created_at'), SORT_DESC, $consents);
+        foreach ($consents as $index => $consent) {
+            $consents[$index]['pdf_id'] = $consent['id'];
+            $consents[$index]['id']     = $index + 1;
+        }
+
+        $page        = 'all-forms';
+        $type_select = [
+            [
+                'label' => 'All Types',
+                'value' => '',
+            ],
+            [
+                'label' => 'Sleep Check',
+                'value' => 'Sleep Check',
+            ],
+        ];
+
+        return inertia::render('admin/view', compact('consents', 'type_select', 'page'));
     }
 
     public function viewTelemedicineConsent($id)
@@ -711,16 +810,16 @@ class MainController extends Controller
 
         $allergyName    = '';
         $allergySymptom = '';
-        if ($response['patient']['allergy']) {
-            foreach ($response['patient']['allergy_list'] as $allergy) {
-                if (array_key_exists('name', $allergy)) {
-                    $allergyName .= $allergy['name'] . ', ';
-                }
-                if (array_key_exists('remark', $allergy)) {
-                    $allergySymptom .= $allergy['remark'] . ', ';
-                }
+        foreach ($response['patient']['allergy_list'] as $allergy) {
+            if (array_key_exists('name', $allergy)) {
+                $allergyName .= $allergy['name'] . ', ';
+            }
+            if (array_key_exists('remark', $allergy)) {
+                $allergySymptom .= $allergy['remark'] . ', ';
             }
         }
+        $allergyName    = rtrim($allergyName, ', ');
+        $allergySymptom = rtrim($allergySymptom, ', ');
 
         $consentData = [
             'hn'                   => $consent->hn,
@@ -744,8 +843,8 @@ class MainController extends Controller
                 'address'            => $response['patient']['address']['home']['full_address'],
                 'address_contact'    => $response['patient']['address']['contact']['full_address'],
                 'allergy'            => $response['patient']['allergy'],
-                'allergy_name'       => ($response['patient']['allergy']) ? $allergyName : '',
-                'allergy_symptom'    => ($response['patient']['allergy']) ? $allergySymptom : '',
+                'allergy_name'       => $allergyName,
+                'allergy_symptom'    => $allergySymptom,
                 'represent'          => isset($response['patient']['notify']) ? true : false,
                 'represent_name'     => $response['patient']['notify']['first_name'],
                 'represent_surname'  => $response['patient']['notify']['last_name'],
@@ -794,16 +893,16 @@ class MainController extends Controller
 
         $allergyName    = '';
         $allergySymptom = '';
-        if ($response['patient']['allergy']) {
-            foreach ($response['patient']['allergy_list'] as $allergy) {
-                if (array_key_exists('name', $allergy)) {
-                    $allergyName .= $allergy['name'] . ', ';
-                }
-                if (array_key_exists('remark', $allergy)) {
-                    $allergySymptom .= $allergy['remark'] . ', ';
-                }
+        foreach ($response['patient']['allergy_list'] as $allergy) {
+            if (array_key_exists('name', $allergy)) {
+                $allergyName .= $allergy['name'] . ', ';
+            }
+            if (array_key_exists('remark', $allergy)) {
+                $allergySymptom .= $allergy['remark'] . ', ';
             }
         }
+        $allergyName    = rtrim($allergyName, ', ');
+        $allergySymptom = rtrim($allergySymptom, ', ');
 
         $consentData = [
             'hn'            => $consent->hn,
@@ -827,8 +926,8 @@ class MainController extends Controller
                 'address'            => $response['patient']['address']['home']['full_address'],
                 'address_contact'    => $response['patient']['address']['contact']['full_address'],
                 'allergy'            => $response['patient']['allergy'],
-                'allergy_name'       => ($response['patient']['allergy']) ? $allergyName : '',
-                'allergy_symptom'    => ($response['patient']['allergy']) ? $allergySymptom : '',
+                'allergy_name'       => $allergyName,
+                'allergy_symptom'    => $allergySymptom,
                 'represent'          => isset($response['patient']['notify']) ? true : false,
                 'represent_name'     => $response['patient']['notify']['first_name'],
                 'represent_surname'  => $response['patient']['notify']['last_name'],
@@ -855,7 +954,108 @@ class MainController extends Controller
             'witness2_name' => $consent->witness2->name,
             'witness2_sign' => $consent->witness2->signature,
         ];
+
         return inertia::render('admin/pdf/hiv', [
+            'consent' => $consentData,
+        ]);
+    }
+
+    public function viewSleepnessConsent($id)
+    {
+        $consent = SleepnessForm::findOrFail($id);
+        $visit   = ($consent->visit_date == null) ? strtotime($consent->created_at) : strtotime($consent->visit_date);
+
+        $response = Http::withHeaders(['key' => env('API_PATIENT_KEY')])
+            ->post('http://172.20.1.22/w_phr/api/patient/info', [
+                'hn' => $consent->hn,
+            ])
+            ->json();
+
+        if ($response['status'] == 0) {
+            return back()->with('error', 'ไม่พบข้อมูลผู้ป่วย');
+        }
+
+        $allergyName    = '';
+        $allergySymptom = '';
+        foreach ($response['patient']['allergy_list'] as $allergy) {
+            if (array_key_exists('name', $allergy)) {
+                $allergyName .= $allergy['name'] . ', ';
+            }
+            if (array_key_exists('remark', $allergy)) {
+                $allergySymptom .= $allergy['remark'] . ', ';
+            }
+        }
+        $allergyName    = rtrim($allergyName, ', ');
+        $allergySymptom = rtrim($allergySymptom, ', ');
+
+        $consentData = [
+            'hn'                => $consent->hn,
+            'patient'           => [
+                'nameTH'             => $response['patient']['name']['first_th'],
+                'surnameTH'          => $response['patient']['name']['last_th'],
+                'nameEN'             => $response['patient']['name']['first_en'],
+                'surnameEN'          => $response['patient']['name']['last_en'],
+                'gender'             => $response['patient']['gender'],
+                'birthDate'          => $response['patient']['brithdate_text'],
+                'religion'           => $response['patient']['religion'],
+                'race'               => $response['patient']['race'],
+                'national'           => $response['patient']['national'],
+                'martial'            => $response['patient']['martial'],
+                'age'                => $response['patient']['age'],
+                'phone'              => $response['patient']['telephone'],
+                'mobile'             => $response['patient']['phone'],
+                'email'              => $response['patient']['email'],
+                'occupation'         => $response['patient']['ocupation'],
+                'education'          => $response['patient']['education'],
+                'address'            => $response['patient']['address']['home']['full_address'],
+                'address_contact'    => $response['patient']['address']['contact']['full_address'],
+                'allergy'            => $response['patient']['allergy'],
+                'allergy_name'       => $allergyName,
+                'allergy_symptom'    => $allergySymptom,
+                'represent'          => isset($response['patient']['notify']) ? true : false,
+                'represent_name'     => $response['patient']['notify']['first_name'],
+                'represent_surname'  => $response['patient']['notify']['last_name'],
+                'represent_relation' => $response['patient']['notify']['relation'],
+                'represent_phone'    => $response['patient']['notify']['phone'],
+                'blood_reaction'     => $response['patient']['blood_reaction'],
+            ],
+            'vn'                => $consent->vn,
+            'visit_date'        => $this->date_Full(date('Y-m-d', $visit)),
+            'visit_time'        => date('H:i', strtotime($consent->created_at)),
+            'doctor_name'       => $consent->doctor_name,
+            'patient_type'      => $consent->patient_type,
+            'name'              => $consent->name,
+            'relative_relation' => $consent->relative_relation,
+            'weight'            => $consent->weight,
+            'height'            => $consent->height,
+            'bmi'               => $consent->bmi,
+            'neck_size'         => $consent->neck_size,
+            'disease'           => $consent->disease,
+            'disease_text'      => $consent->disease_text,
+            'medicine'          => $consent->medicine,
+            'medicine_text'     => $consent->medicine_text,
+            'sleep_pill'        => $consent->sleep_pill,
+            'sleep_pill_text'   => $consent->sleep_pill_text,
+            'tobacco'           => $consent->tobacco,
+            'alcohol'           => $consent->alcohol,
+            'caffeine'          => $consent->caffeine,
+            'informer_name'     => $consent->informer->name,
+            'informer_position' => $consent->informer->position,
+        ];
+        $sleep_problem = json_decode($consent->sleep_problem);
+        foreach ($sleep_problem as $key => $problem) {
+            $consentData[$key] = $problem;
+        }
+        $sleep_situation = json_decode($consent->sleep_situation);
+        foreach ($sleep_situation as $key => $situation) {
+            $consentData[$key] = $situation;
+        }
+        $sleep_schedule = json_decode($consent->sleep_schedule);
+        foreach ($sleep_schedule as $key => $schedule) {
+            $consentData[$key] = $schedule;
+        }
+
+        return inertia::render('admin/pdf/sleepness', [
             'consent' => $consentData,
         ]);
     }
@@ -887,6 +1087,18 @@ class MainController extends Controller
         }
 
         $user->role = 'witness';
+        $user->save();
+
+        return back()->with('success', 'User role updated successfully');
+    }
+
+    public function setUser(User $user)
+    {
+        if (! auth()->check()) {
+            return redirect()->route('login');
+        }
+
+        $user->role = 'user';
         $user->save();
 
         return back()->with('success', 'User role updated successfully');
