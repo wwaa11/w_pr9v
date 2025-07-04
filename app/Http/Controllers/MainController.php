@@ -165,6 +165,7 @@ class MainController extends Controller
                     $userData          = new User();
                     $userData->user_id = $userid;
                     $userData->name    = $response['user']['name'];
+                    $userData->role    = 'staff';
                 }
                 $userData->department = $response['user']['department'];
                 $userData->position   = $response['user']['position'];
@@ -199,6 +200,7 @@ class MainController extends Controller
             $userData->name       = $response['user']['name'];
             $userData->department = $response['user']['department'];
             $userData->position   = $response['user']['position'];
+            $userData->role       = 'staff';
             $userData->save();
 
             Auth::login($userData);
@@ -284,6 +286,11 @@ class MainController extends Controller
 
     public function admin()
     {
+        if (auth()->user()->role == 'staff') {
+
+            return redirect()->route('user.index');
+        }
+
         if (! Auth::check()) {
 
             return redirect()->route('login');
@@ -306,7 +313,7 @@ class MainController extends Controller
             ])
             ->json();
 
-        if ($response['status'] == 'success') {
+        if ($response['status'] == 'success' && session('witness1') !== null) {
             $patient = Patient::where('hn', $hn)->first();
             if ($patient == null) {
                 $patient           = new Patient();
@@ -382,7 +389,7 @@ class MainController extends Controller
                 'doctor_name'      => '',
             ];
 
-            $telemedicinesURL = "";
+            $telemedicinesURL = "ไม่พบข้อมูลผู้ป่วย หรือ ข้อมูลการ Login ไม่ถูกต้องกรุณา Login ใหม่อีกครั้ง";
             $telehealthURL    = "";
             $hivURL           = "";
             $sleepCheckURL    = "";
@@ -700,6 +707,11 @@ class MainController extends Controller
 
     public function allConsents(Request $request)
     {
+        if (auth()->user()->role == 'staff') {
+
+            return redirect()->route('user.index');
+        }
+
         $startDate = $request->start_date ?? now()->startOfDay()->format('Y-m-d');
         $endDate   = $request->end_date ?? now()->endOfDay()->format('Y-m-d');
         $hn        = $request->hn;
@@ -796,6 +808,11 @@ class MainController extends Controller
 
     public function allForms(Request $request)
     {
+        if (auth()->user()->role == 'staff') {
+
+            return redirect()->route('user.index');
+        }
+
         $startDate = $request->start_date ?? now()->startOfDay()->format('Y-m-d');
         $endDate   = $request->end_date ?? now()->endOfDay()->format('Y-m-d');
         $hn        = $request->hn;
@@ -1192,6 +1209,11 @@ class MainController extends Controller
 
     public function manageUsers(Request $request)
     {
+        if (auth()->user()->role == 'staff') {
+
+            return redirect()->route('user.index');
+        }
+
         if (! auth()->check()) {
             return redirect()->route('login');
         }
@@ -1201,6 +1223,7 @@ class MainController extends Controller
         $perPage       = $request->input('per_page', 10);
 
         $users = User::query()
+            ->where('role', '!=', 'staff')
             ->orderBy($sortField, $sortDirection)
             ->paginate($perPage)
             ->withQueryString();
