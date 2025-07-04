@@ -60,6 +60,12 @@ class MainController extends Controller
         ]);
     }
 
+    public function loginUser()
+    {
+
+        return inertia('index');
+    }
+
     public function loginRequest(Request $request)
     {
         $userid   = $request->userid;
@@ -141,6 +147,72 @@ class MainController extends Controller
         ]);
     }
 
+    public function loginUserRequest(Request $request)
+    {
+        $userid   = $request->userid;
+        $password = $request->password;
+
+        if (env('APP_ENV') == 'dev' || env('APP_PASSWORD') == $password) {
+            $response = Http::withHeaders(['token' => env('API_AUTH_KEY')])
+                ->post('http://172.20.1.12/dbstaff/api/getuser', [
+                    'userid' => $userid,
+                ])
+                ->json();
+
+            if ($response['status'] == 1) {
+                $userData = User::where('user_id', $userid)->first();
+                if ($userData == null) {
+                    $userData          = new User();
+                    $userData->user_id = $userid;
+                    $userData->name    = $response['user']['name'];
+                }
+                $userData->department = $response['user']['department'];
+                $userData->position   = $response['user']['position'];
+                $userData->save();
+
+                Auth::login($userData);
+
+                return redirect()->route('user.index');
+            }
+
+            return inertia('index', [
+                'errors' => [
+                    'login' => 'Developer only : user_id not exist',
+                ],
+            ]);
+        }
+
+        $response = Http::withHeaders(['token' => env('API_AUTH_KEY')])
+            ->post('http://172.20.1.12/dbstaff/api/auth', [
+                'userid'   => $userid,
+                'password' => $password,
+
+            ])
+            ->json();
+
+        if ($response['status'] == 1) {
+            $userData = User::where('user_id', $userid)->first();
+            if (! $userData) {
+                $userData          = new User();
+                $userData->user_id = $userid;
+            }
+            $userData->name       = $response['user']['name'];
+            $userData->department = $response['user']['department'];
+            $userData->position   = $response['user']['position'];
+            $userData->save();
+
+            Auth::login($userData);
+
+            return redirect()->route('user.index');
+        }
+
+        return inertia('index', [
+            'errors' => [
+                'login' => 'รหัสพนักงาน หรือ รหัสผ่านผิดพลาด',
+            ],
+        ]);
+    }
+
     public function logout(Request $request)
     {
         Auth::logout();
@@ -153,6 +225,60 @@ class MainController extends Controller
             'errors' => [
                 'login' => 'ออกจากระบบสำเร็จ',
             ],
+        ]);
+    }
+
+    public function logoutUser(Request $request)
+    {
+        Auth::logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return inertia('index');
+    }
+
+    public function user(Request $request)
+    {
+        if (! Auth::check()) {
+            return redirect()->route('login.user');
+        }
+
+        $hn = $request->hn;
+
+        // Prepare queries
+        $telemedicines = Telemedicine::query();
+        $telehealths   = Telehealth::query();
+        $hivs          = Hiv::query();
+
+        // Apply HN filter
+        if ($hn) {
+            $telemedicines->where('hn', 'like', "%{$hn}%");
+            $telehealths->where('hn', 'like', "%{$hn}%");
+            $hivs->where('hn', 'like', "%{$hn}%");
+        } else {
+            $telemedicines->wheredate('created_at', date('Y-m-d'));
+            $telehealths->wheredate('created_at', date('Y-m-d'));
+            $hivs->wheredate('created_at', date('Y-m-d'));
+        }
+
+        $consents = array_merge(
+            $telemedicines->get()->toArray(),
+            $telehealths->get()->toArray(),
+            $hivs->get()->toArray()
+        );
+
+        // Sort by created_at descending
+        array_multisort(array_column($consents, 'created_at'), SORT_DESC, $consents);
+
+        // Add index/id for frontend
+        foreach ($consents as $index => $consent) {
+            $consents[$index]['id']       = $index + 1;
+            $consents[$index]['fulldate'] = $this->date_Full(substr($consent['created_at'], 0, 10)) . ' ' . date('H:i', strtotime($consent['created_at']));
+        }
+
+        return inertia('user/index', [
+            'consents' => $consents,
         ]);
     }
 

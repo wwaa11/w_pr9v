@@ -7,15 +7,18 @@ Route::fallback(function () {
     abort(404);
 });
 
-Route::get('/', function () {return inertia('index');})->name('home');
 Route::get('/api/check-session', [MainController::class, 'checkSession']);
-
 Route::get('/error', function () {return inertia('error');})->name('error');
 Route::get('/success', function () {return inertia('success');})->name('success');
 
+Route::get('/', [MainController::class, 'user'])->name('user.index');
+Route::get('/login-user', [MainController::class, 'loginUser'])->name('login.user');
+
 Route::get('/login', [MainController::class, 'login'])->name('login');
+Route::post('/login-user', [MainController::class, 'loginUserRequest'])->name('login.user');
 Route::post('/login-request', [MainController::class, 'loginRequest']);
 Route::post('/logout', [MainController::class, 'logout']);
+Route::post('/logout-user', [MainController::class, 'logoutUser'])->name('logout.user');
 
 Route::get('/telemedicine/{hn_token}', [MainController::class, 'telemedicine'])->name('telemedicine');
 Route::post('/telemedicine', [MainController::class, 'telemedicine_store']);
@@ -30,6 +33,7 @@ Route::get('/sleep-check/{token}', [MainController::class, 'sleep_check'])->name
 Route::post('/sleep-check', [MainController::class, 'sleep_check_store']);
 
 Route::middleware(['auth'])->group(function () {
+
     Route::post('/api/update-signature', [MainController::class, 'updateSignature'])->middleware('auth');
 
     Route::get('/admin', [MainController::class, 'admin'])->name('admin.index');
