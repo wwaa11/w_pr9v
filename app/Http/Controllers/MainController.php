@@ -286,7 +286,7 @@ class MainController extends Controller
 
     public function admin()
     {
-        if (auth()->user()->role == 'staff') {
+        if (auth()->user()->role == 'user') {
 
             return redirect()->route('user.index');
         }
@@ -707,7 +707,7 @@ class MainController extends Controller
 
     public function allConsents(Request $request)
     {
-        if (auth()->user()->role == 'staff') {
+        if (auth()->user()->role == 'user') {
 
             return redirect()->route('user.index');
         }
@@ -808,7 +808,7 @@ class MainController extends Controller
 
     public function allForms(Request $request)
     {
-        if (auth()->user()->role == 'staff') {
+        if (auth()->user()->role == 'user') {
 
             return redirect()->route('user.index');
         }
@@ -1209,7 +1209,7 @@ class MainController extends Controller
 
     public function manageUsers(Request $request)
     {
-        if (auth()->user()->role == 'staff') {
+        if (auth()->user()->role == 'user') {
 
             return redirect()->route('user.index');
         }
@@ -1223,7 +1223,7 @@ class MainController extends Controller
         $perPage       = $request->input('per_page', 10);
 
         $users = User::query()
-            ->where('role', '!=', 'staff')
+            ->where('role', '!=', 'user')
             ->orderBy($sortField, $sortDirection)
             ->paginate($perPage)
             ->withQueryString();
@@ -1250,8 +1250,7 @@ class MainController extends Controller
         if (! auth()->check()) {
             return redirect()->route('login');
         }
-
-        $user->role = 'user';
+        $user->role = 'staff';
         $user->save();
 
         return back()->with('success', 'User role updated successfully');

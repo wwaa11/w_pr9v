@@ -220,7 +220,7 @@ export default function Users({ users }: Props) {
                                                             size="small"
                                                             onClick={() => { handleSetUser(user.id); }}
                                                         >
-                                                            Change to User
+                                                            Change to Staff
                                                         </Button>
                                                     )}
                                                 </TableCell>
