@@ -32,6 +32,8 @@ Route::post('/hiv', [MainController::class, 'hiv_store']);
 Route::get('/sleep-check/{token}', [MainController::class, 'sleep_check'])->name('sleep-check');
 Route::post('/sleep-check', [MainController::class, 'sleep_check_store']);
 
+Route::get('/s/{code}', [MainController::class, 'redirectShortLink']);
+
 Route::middleware(['auth'])->group(function () {
 
     Route::post('/api/update-signature', [MainController::class, 'updateSignature'])->middleware('auth');

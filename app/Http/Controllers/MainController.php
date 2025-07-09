@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Hiv;
 use App\Models\Patient;
+use App\Models\ShortLink;
 use App\Models\SleepnessForm;
 use App\Models\Telehealth;
 use App\Models\Telemedicine;
@@ -358,10 +359,10 @@ class MainController extends Controller
             $header_params = Crypt::encryptString(json_encode($queryParams));
 
             $baseUrl          = env('APP_URL');
-            $telemedicinesURL = "{$baseUrl}/telemedicine/{$patient->token}?data={$header_params}";
-            $telehealthURL    = "{$baseUrl}/telehealth/{$patient->token}?data={$header_params}&doctor_name={$doctor_name}";
-            $hivURL           = "{$baseUrl}/hiv/{$patient->token}?data={$header_params}";
-            $sleepCheckURL    = "{$baseUrl}/sleep-check/{$patient->token}?data={$header_params}";
+            $telemedicinesURL = $this->getShortUrl("{$baseUrl}/telemedicine/{$patient->token}?data={$header_params}");
+            $telehealthURL    = $this->getShortUrl("{$baseUrl}/telehealth/{$patient->token}?data={$header_params}&doctor_name={$doctor_name}");
+            $hivURL           = $this->getShortUrl("{$baseUrl}/hiv/{$patient->token}?data={$header_params}");
+            $sleepCheckURL    = $this->getShortUrl("{$baseUrl}/sleep-check/{$patient->token}?data={$header_params}");
 
             $patientData = [
                 'hn'    => $patient->hn,
@@ -1306,5 +1307,33 @@ class MainController extends Controller
         $user->save();
 
         return response()->json(['message' => 'Signature updated successfully']);
+    }
+
+    private function getShortUrl($longUrl)
+    {
+        // Check if already exists
+        $existing = ShortLink::where('long_url', $longUrl)->first();
+        if ($existing) {
+            return url('/s/' . $existing->code);
+        }
+        // Generate unique code
+        do {
+            $code = substr(str_shuffle('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'), 0, 6);
+        } while (ShortLink::where('code', $code)->exists());
+        // Store
+        ShortLink::create([
+            'code'     => $code,
+            'long_url' => $longUrl,
+        ]);
+        return url('/s/' . $code);
+    }
+
+    public function redirectShortLink($code)
+    {
+        $shortLink = ShortLink::where('code', $code)->first();
+        if (! $shortLink) {
+            abort(404);
+        }
+        return redirect($shortLink->long_url);
     }
 }
