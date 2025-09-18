@@ -21,6 +21,7 @@ interface ConsentHivProps {
     patient: {
         hn: string;
         name: string;
+        lang: string;
     }
 }
 
@@ -29,8 +30,88 @@ export default function ConsentHiv({ patient }: ConsentHivProps) {
     const url = page.props.url as string;
     const params = new URLSearchParams(window.location.search);
 
+    const lang = patient.lang || 'th';
+
+    const translations = {
+        th: {
+            title: "หนังสือแสดงความยินยอม รับการตรวจการติดเชื้อเอชไอวี",
+            pageTitle: "ข้อกำหนดและการให้ความยินยอมรับบริการ",
+            iAm: "ข้าพเจ้า",
+            nameLabel: "ชื่อ-นามสกุล",
+            whoIs: "ผู้ซึ่งเป็น",
+            patient: "ตัวผู้ป่วย",
+            representative: "ผู้แทนผู้ป่วย",
+            representativeInfo: "ข้อมูลตัวแทนผู้ป่วย",
+            relationLabel: "โปรดระบุตวามสัมพันธ์กับผู้ป่วย",
+            phoneLabel: "โปรดระบุเบอร์โทรศัพท์ตัวแทนผู้ป่วย",
+            addressLabel: "โปรดระบุที่อยู่ตัวแทนผู้ป่วย",
+            explanation: "ได้รับคำอธิบายจากแพทย์ / ทันตแพทย์ เกี่ยวกับการตรวจการติดเชื้อ เอชไอวี และได้ซักถามข้อสงสัยเกี่ยวกับการตรวจการติดเชื้อเอชไอวี มีรายละเอียดดังต่อไปนี้",
+            point1: "1. เอชไอวี เป็นไวรัสที่เป็นสาเหตุของโรคเอดส์",
+            point2: "2. วิธีที่จะทราบว่ามีเชื้อ เอชไอวี ต้องตรวจหาเท่านั้น",
+            point3: "3. การตรวจการติดเชื้อ เอชไอวี มีความสำคัญต่อการดูแลสุขภาพ",
+            point4: "4. การตรวจการติดเชื้อ เอชไอวี จะกระทำโดยความสมัครใจของผู้ตรวจ",
+            point5: "5. ผลการตรวจจัดเก็บเป็นความลับ",
+            notifyResults: "ข้าพเจ้าขอให้แจ้งผลการตรวจแก่",
+            selfOnly: "ข้าพเจ้าเองเท่านั้น",
+            selfAndOthers: "ข้าพเจ้าและ/หรือผู้อื่น",
+            noNotification: "ไม่ต้องการให้แจ้งผลแก่ข้าพเจ้าและ/หรือผู้อื่น",
+            otherPersonLabel: "ชื่อผู้ที่ข้าพเจ้าให้แจ้งผลแก่ ( ชื่อ นามสกุล / บริษัท )",
+            confirmation: "ข้าพเจ้ายืนยันที่จะให้โรงพยาบาลทำตามความประสงค์ของข้าพเจ้า และรับทราบถึงผลกระทบอันอาจจะเกิดขึ้นเนื่องจากการตรวจ หรือไม่ยินยอมให้ตรวจในครั้งนี้ รวมถึงการแจ้งผล อนึ่ง กรณีที่ข้าพเจ้าให้บุคคลอื่นเป็นผู้รับทราบผลการตรวจแทนข้าพเจ้านั้น ให้ถือว่าหนังสือ ฉบับนี้เป็นหนังสือยินยอมของข้าพเจ้า เพื่อให้ผู้ที่ข้าพเจ้าระบุชื่อไว้ข้างต้นเป็นผู้รับทราบผลแทนข้าพเจ้าได้",
+            signature: "ลายมือชื่อผู้ลงนาม",
+            clearSignature: "ล้างลายมือชื่อ",
+            submitButton: "ยืนยันการแสดงความยินยอม",
+            submitting: "กำลังส่ง...",
+            pleaseEnterName: "กรุณาระบุชื่อ-นามสกุล",
+            pleaseEnterRepInfo: "กรุณาระบุข้อมูลตัวแทนผู้ป่วย",
+            pleaseSign: "กรุณาลงนาม",
+            confirmConsent: "ยืนยันการแสดงความยินยอม",
+            confirmSignText: "คุณต้องการลงนามหรือไม่?",
+            confirm: "ยืนยัน",
+            cancel: "ยกเลิก"
+        },
+        en: {
+            title: "HIV Testing Consent Form",
+            pageTitle: "Terms and Conditions for Service Consent",
+            iAm: "I am",
+            nameLabel: "Full Name",
+            whoIs: "Who is",
+            patient: "The patient",
+            representative: "Patient representative",
+            representativeInfo: "Representative Information",
+            relationLabel: "Please specify relationship with patient",
+            phoneLabel: "Please specify representative's phone number",
+            addressLabel: "Please specify representative's address",
+            explanation: "I have been informed about H.I.V. screening test from physician/dentist as detailed:",
+            point1: "1. HIV is a virus that causes AIDS",
+            point2: "2. Screening test is required to indicate the infection",
+            point3: "3. HIV screening test is essential for a proper health care",
+            point4: "4. HIV screening test is a voluntary test",
+            point5: "5. The result of the test will be kept confidential",
+            notifyResults: "I would like to have the result of the test informed to",
+            selfOnly: "Me only",
+            selfAndOthers: "Me and other",
+            noNotification: "No one",
+            otherPersonLabel: "Name of person I authorize to receive results (Full Name / Company)",
+            confirmation: "I insist to have the hospital acted as I wish. I fully realise the consequence of accepting or refusing to take the test including result notification. If I have a representative, this form is regarded as consent for my representative to have the result of the test informed",
+            signature: "Signature",
+            clearSignature: "Clear Signature",
+            submitButton: "Confirm Consent",
+            submitting: "Submitting...",
+            pleaseEnterName: "Please enter full name",
+            pleaseEnterRepInfo: "Please enter representative information",
+            pleaseSign: "Please sign",
+            confirmConsent: "Confirm Consent",
+            confirmSignText: "Do you want to sign?",
+            confirm: "Confirm",
+            cancel: "Cancel"
+        }
+    };
+
+    const t = translations[lang as keyof typeof translations] || translations.th;
+
     const { data, setData, post, processing, errors } = useForm({
         type: "HIV",
+        lang: lang,
         hn: patient.hn,
         data: params.get('data'),
         patient_name: patient.name,
@@ -67,7 +148,7 @@ export default function ConsentHiv({ patient }: ConsentHivProps) {
 
         if (data.patient_name === "") {
             Swal.fire({
-                title: "กรุณาระบุชื่อ-นามสกุล",
+                title: t.pleaseEnterName,
                 icon: "warning",
             });
             return;
@@ -75,7 +156,7 @@ export default function ConsentHiv({ patient }: ConsentHivProps) {
 
         if (data.patient_type === "representative" && data.patient_relation === "" && data.patient_phone === "" && data.patient_address === "") {
             Swal.fire({
-                title: "กรุณาระบุข้อมูลตัวแทนผู้ป่วย",
+                title: t.pleaseEnterRepInfo,
                 icon: "warning",
             });
             return;
@@ -83,19 +164,19 @@ export default function ConsentHiv({ patient }: ConsentHivProps) {
 
         if (sigPadRef.current.isEmpty()) {
             Swal.fire({
-                title: "กรุณาลงนาม",
+                title: t.pleaseSign,
                 icon: "warning",
             });
             return;
         }
 
         const result = await Swal.fire({
-            title: "ยืนยันการแสดงความยินยอม",
-            text: "คุณต้องการลงนามหรือไม่?",
+            title: t.confirmConsent,
+            text: t.confirmSignText,
             icon: "question",
             showCancelButton: true,
-            confirmButtonText: "ยืนยัน",
-            cancelButtonText: "ยกเลิก",
+            confirmButtonText: t.confirm,
+            cancelButtonText: t.cancel,
         });
 
         if (result.isConfirmed) {
@@ -107,8 +188,8 @@ export default function ConsentHiv({ patient }: ConsentHivProps) {
     return (
         <AppLayout>
             <Head>
-                <title>ข้อกำหนดและการให้ความยินยอมรับบริการ</title>
-                <meta name="description" content="ข้อกำหนดและการให้ความยินยอมรับบริการ" />
+                <title>{t.pageTitle}</title>
+                <meta name="description" content={t.pageTitle} />
             </Head>
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -125,43 +206,43 @@ export default function ConsentHiv({ patient }: ConsentHivProps) {
                         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 2, gap: 2 }}>
                             <img src={url + "/images/logo.png"} alt="logo" width={100} />
                             <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
-                                หนังสือแสดงความยินยอม รับการตรวจการติดเชื้อเอชไอวี
+                                {t.title}
                             </Typography>
                         </Box>
                         <Box sx={{ mt: 4 }}>
                             <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
-                                ข้าพเจ้า
+                                {t.iAm}
                             </Typography>
                             <TextField
                                 required
                                 fullWidth
-                                label="ชื่อ-นามสกุล"
+                                label={t.nameLabel}
                                 value={data.patient_name}
                                 onChange={(e) => setData('patient_name', e.target.value)}
                                 sx={{ mb: 2 }}
                             />
                             <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
-                                ผู้ซึ่งเป็น
+                                {t.whoIs}
                             </Typography>
                             <FormControl component="fieldset" sx={{ width: '100%' }}>
                                 <RadioGroup
                                     value={data.patient_type}
                                     onChange={(e) => setData('patient_type', e.target.value)}
                                 >
-                                    <FormControlLabel value="patient" control={<Radio />} label="ตัวผู้ป่วย" />
-                                    <FormControlLabel value="representative" control={<Radio />} label="ผู้แทนผู้ป่วย" />
+                                    <FormControlLabel value="patient" control={<Radio />} label={t.patient} />
+                                    <FormControlLabel value="representative" control={<Radio />} label={t.representative} />
                                 </RadioGroup>
                             </FormControl>
                             {data.patient_type === 'representative' && (
                                 <Grid size={12}>
                                     <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
-                                        ข้อมูลตัวแทนผู้ป่วย
+                                        {t.representativeInfo}
                                     </Typography>
                                     <TextField
                                         sx={{ mb: 2 }}
                                         required
                                         fullWidth
-                                        label="โปรดระบุตวามสัมพันธ์กับผู้ป่วย"
+                                        label={t.relationLabel}
                                         value={data.patient_relation}
                                         onChange={(e) => setData('patient_relation', e.target.value)}
                                         error={!!errors.patient_relation}
@@ -171,7 +252,7 @@ export default function ConsentHiv({ patient }: ConsentHivProps) {
                                         sx={{ mb: 2 }}
                                         required
                                         fullWidth
-                                        label="โปรดระบุเบอร์โทรศัพท์ตัวแทนผู้ป่วย"
+                                        label={t.phoneLabel}
                                         value={data.patient_phone}
                                         onChange={(e) => setData('patient_phone', e.target.value)}
                                         error={!!errors.patient_phone}
@@ -181,7 +262,7 @@ export default function ConsentHiv({ patient }: ConsentHivProps) {
                                         sx={{ mb: 2 }}
                                         required
                                         fullWidth
-                                        label="โปรดระบุที่อยู่ตัวแทนผู้ป่วย"
+                                        label={t.addressLabel}
                                         value={data.patient_address}
                                         onChange={(e) => setData('patient_address', e.target.value)}
                                         error={!!errors.patient_address}
@@ -190,50 +271,50 @@ export default function ConsentHiv({ patient }: ConsentHivProps) {
                                 </Grid>
                             )}
                             <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
-                                ได้รับคำอธิบายจากแพทย์ / ทันตแพทย์ เกี่ยวกับการตรวจการติดเชื้อ เอชไอวี และได้ซักถามข้อสงสัยเกี่ยวกับการตรวจการติดเชื้อเอชไอวี มีรายละเอียดดังต่อไปนี้
+                                {t.explanation}
                             </Typography>
                             <Typography variant="body1" gutterBottom sx={{ color: 'text.secondary' }} >
-                                &emsp;1. เอชไอวี เป็นไวรัสที่เป็นสาเหตุของโรคเอดส์
+                                &emsp;{t.point1}
                             </Typography>
                             <Typography variant="body1" gutterBottom sx={{ color: 'text.secondary' }} >
-                                &emsp;2. วิธีที่จะทราบว่ามีเชื้อ เอชไอวี ต้องตรวจหาเท่านั้น
+                                &emsp;{t.point2}
                             </Typography>
                             <Typography variant="body1" gutterBottom sx={{ color: 'text.secondary' }} >
-                                &emsp;3. การตรวจการติดเชื้อ เอชไอวี มีความสำคัญต่อการดูแลสุขภาพ
+                                &emsp;{t.point3}
                             </Typography>
                             <Typography variant="body1" gutterBottom sx={{ color: 'text.secondary' }} >
-                                &emsp;4. การตรวจการติดเชื้อ เอชไอวี จะกระทำโดยความสมัครใจของผู้ตรวจ
+                                &emsp;{t.point4}
                             </Typography>
                             <Typography variant="body1" gutterBottom sx={{ color: 'text.secondary' }} >
-                                &emsp;5. ผลการตรวจจัดเก็บเป็นความลับ
+                                &emsp;{t.point5}
                             </Typography>
                             <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }} >
-                                ข้าพเจ้าขอให้แจ้งผลการตรวจแก่
+                                {t.notifyResults}
                             </Typography>
                             <RadioGroup
                                 value={data.hiv_consent}
                                 onChange={(e) => setData('hiv_consent', e.target.value)}
                             >
-                                <FormControlLabel value="self" control={<Radio />} label="ข้าพเจ้าเองเท่านั้น" />
-                                <FormControlLabel value="other" control={<Radio />} label="ข้าพเจ้าและ/หรือผู้อื่น" />
-                                <FormControlLabel value="none" control={<Radio />} label="ไม่ต้องการให้แจ้งผลแก่ข้าพเจ้าและ/หรือผู้อื่น" />
+                                <FormControlLabel value="self" control={<Radio />} label={t.selfOnly} />
+                                <FormControlLabel value="other" control={<Radio />} label={t.selfAndOthers} />
+                                <FormControlLabel value="none" control={<Radio />} label={t.noNotification} />
                             </RadioGroup>
                             {data.hiv_consent === "other" && (
                                 <TextField
                                     sx={{ mb: 2 }}
                                     required
                                     fullWidth
-                                    label="ชื่อผู้ที่ข้าพเจ้าให้แจ้งผลแก่ ( ชื่อ นามสกุล / บริษัท )"
+                                    label={t.otherPersonLabel}
                                     value={data.hiv_name}
                                     onChange={(e) => setData('hiv_name', e.target.value)}
                                 />
                             )}
 
                             <Typography variant="body1" gutterBottom sx={{ color: 'text.secondary' }} >
-                                &emsp;ข้าพเจ้ายืนยันที่จะให้โรงพยาบาลทำตามความประสงค์ของข้าพเจ้า และรับทราบถึงผลกระทบอันอาจจะเกิดขึ้นเนื่องจากการตรวจ หรือไม่ยินยอมให้ตรวจในครั้งนี้ รวมถึงการแจ้งผล อนึ่ง กรณีที่ข้าพเจ้าให้บุคคลอื่นเป็นผู้รับทราบผลการตรวจแทนข้าพเจ้านั้น ให้ถือว่าหนังสือ ฉบับนี้เป็นหนังสือยินยอมของข้าพเจ้า เพื่อให้ผู้ที่ข้าพเจ้าระบุชื่อไว้ข้างต้นเป็นผู้รับทราบผลแทนข้าพเจ้าได้
+                                &emsp;{t.confirmation}
                             </Typography>
                             <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
-                                ลายมือชื่อผู้ลงนาม
+                                {t.signature}
                             </Typography>
                             <Box
                                 sx={{
@@ -269,7 +350,7 @@ export default function ConsentHiv({ patient }: ConsentHivProps) {
                                         onClick={handleClear}
                                         sx={{ mr: 2 }}
                                     >
-                                        ล้างลายมือชื่อ
+                                        {t.clearSignature}
                                     </Button>
                                 </Box>
                             </Box>
@@ -285,7 +366,7 @@ export default function ConsentHiv({ patient }: ConsentHivProps) {
                                         fontSize: '1.1rem'
                                     }}
                                 >
-                                    {processing ? 'กำลังส่ง...' : 'ยืนยันการแสดงความยินยอม'}
+                                    {processing ? t.submitting : t.submitButton}
                                 </Button>
                             </Box>
                         </Box>
@@ -294,4 +375,4 @@ export default function ConsentHiv({ patient }: ConsentHivProps) {
             </motion.div>
         </AppLayout>
     );
-} 
+}

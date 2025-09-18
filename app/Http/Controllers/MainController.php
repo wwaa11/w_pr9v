@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Hiv;
+use App\Models\Mind9q;
 use App\Models\Patient;
 use App\Models\ShortLink;
 use App\Models\SleepnessForm;
@@ -10,6 +11,7 @@ use App\Models\Telemedicine;
 use App\Models\User;
 use Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Http;
 use Inertia\Inertia;
@@ -302,11 +304,36 @@ class MainController extends Controller
 
     public function admin_search(Request $request)
     {
+        $deleteOldShortLink = ShortLink::whereDate('created_at', '<', Carbon::now()->subDays(7))->delete();
+
         $request->validate([
             'hn' => ['required', 'string', 'max:255'],
         ]);
 
-        $hn = $request->input('hn');
+        // Default values
+        $hn          = $request->input('hn');
+        $lang        = $request->input('language', 'th');
+        $patient     = null;
+        $patientData = [
+            'hn'    => $hn,
+            'name'  => 'N/A',
+            'phone' => 'N/A',
+        ];
+        $queryParams = [
+            'lang'             => $lang,
+            'witness1_user_id' => session('witness1'),
+            'witness2_user_id' => session('witness2'),
+            'informer_user_id' => auth()->user()->user_id,
+            'visit'            => '',
+            'visit_date'       => '',
+            'vn'               => '',
+            'doctor_name'      => '',
+        ];
+        $telemedicinesURL = "ไม่พบข้อมูลผู้ป่วย หรือ ข้อมูลการ Login ไม่ถูกต้องกรุณา Login ใหม่อีกครั้ง";
+        $telehealthURL    = "";
+        $hivURL           = "";
+        $sleepCheckURL    = "";
+        $mind9qURL        = "";
 
         $response = Http::withHeaders(['key' => env('API_PATIENT_KEY')])
             ->post('http://172.20.1.22/w_phr/api/patient/info', [
@@ -347,6 +374,7 @@ class MainController extends Controller
             }
 
             $queryParams = [
+                'lang'             => $lang,
                 'witness1_user_id' => session('witness1'),
                 'witness2_user_id' => session('witness2'),
                 'informer_user_id' => auth()->user()->user_id,
@@ -363,6 +391,7 @@ class MainController extends Controller
             $telehealthURL    = $this->getShortUrl("{$baseUrl}/telehealth/{$patient->token}?data={$header_params}&doctor_name={$doctor_name}");
             $hivURL           = $this->getShortUrl("{$baseUrl}/hiv/{$patient->token}?data={$header_params}");
             $sleepCheckURL    = $this->getShortUrl("{$baseUrl}/sleep-check/{$patient->token}?data={$header_params}");
+            $mind9qURL        = $this->getShortUrl("{$baseUrl}/mind9q/{$patient->token}?data={$header_params}");
 
             $patientData = [
                 'hn'    => $patient->hn,
@@ -370,43 +399,22 @@ class MainController extends Controller
                 'phone' => $response['patient']['phone'] ?? 'N/A',
             ];
 
-        } else {
-
-            $patient = null;
-
-            $patientData = [
-                'hn'    => $hn,
-                'name'  => $response['message'],
-                'phone' => 'N/A',
-            ];
-
-            $queryParams = [
-                'witness1_user_id' => session('witness1'),
-                'witness2_user_id' => session('witness2'),
-                'informer_user_id' => auth()->user()->user_id,
-                'visit'            => '',
-                'visit_date'       => '',
-                'vn'               => '',
-                'doctor_name'      => '',
-            ];
-
-            $telemedicinesURL = "ไม่พบข้อมูลผู้ป่วย หรือ ข้อมูลการ Login ไม่ถูกต้องกรุณา Login ใหม่อีกครั้ง";
-            $telehealthURL    = "";
-            $hivURL           = "";
-            $sleepCheckURL    = "";
         }
 
         return Inertia::render('admin/index', [
+            'lang'              => $lang,
             'patient'           => $patientData,
             'telemedicines'     => $patient ? $patient->telemedicines->take(1) : [],
             'telehealths'       => $patient ? $patient->telehealths->take(1) : [],
             'hivs'              => $patient ? $patient->hivs->take(1) : [],
             'sleepnesses'       => $patient ? $patient->sleepnesses->take(1) : [],
+            'mind9qs'           => $patient ? $patient->mind9qs->take(1) : [],
             'telemedicine_link' => $telemedicinesURL,
             'telehealth_link'   => $telehealthURL,
             'hiv_link'          => $hivURL,
             'sleep_check_link'  => $sleepCheckURL,
             'queryParams'       => $queryParams,
+            'mind9q_link'       => $mind9qURL,
             'informer'          => auth()->user(),
             'witness1'          => User::where('user_id', session('witness1'))->first(),
             'witness2'          => User::where('user_id', session('witness2'))->first(),
@@ -523,12 +531,15 @@ class MainController extends Controller
         return redirect()->route('success');
     }
 
-    public function hiv($token)
+    public function hiv($token, Request $request)
     {
+        $data = json_decode(Crypt::decryptString($request->data), true);
+
         $patient = Patient::where('token', $token)->first();
         if (! $patient || $patient->expires_at < now()) {
             return redirect()->route('error');
         }
+        $patient->lang = $data['lang'];
 
         return inertia::render('forms/hiv', compact('patient'));
     }
@@ -553,6 +564,7 @@ class MainController extends Controller
         $new->vn               = $data['vn'];
         $new->visit_date       = $data['visit'] == '' ? null : date('Y-m-d H:i:s', strtotime($data['visit']));
         $new->doctor_name      = $data['doctor_name'];
+        $new->lang             = $data['lang'];
         $new->name             = $request->patient_name;
         $new->name_type        = $request->patient_type;
         $new->name_relation    = $request->patient_relation;
@@ -706,6 +718,54 @@ class MainController extends Controller
         return redirect()->route('success');
     }
 
+    public function mind9q($token, Request $request)
+    {
+        $data = json_decode(Crypt::decryptString($request->data), true);
+
+        $patient = Patient::where('token', $token)->first();
+        if (! $patient || $patient->expires_at < now()) {
+            return redirect()->route('error');
+        }
+        $patient->lang = $data['lang'];
+
+        return inertia::render('forms/mind9q', compact('patient'));
+    }
+
+    public function mind9q_store(Request $request)
+    {
+        $validated = $request->validate([
+            'hn' => 'required|string|exists:patients,hn',
+            'q1' => 'required|string',
+            'q2' => 'required|string',
+            'q3' => 'required|string',
+            'q4' => 'required|string',
+            'q5' => 'required|string',
+            'q6' => 'required|string',
+            'q7' => 'required|string',
+            'q8' => 'required|string',
+            'q9' => 'required|string',
+
+        ]);
+
+        $data = json_decode(Crypt::decryptString($request->data), true);
+
+        $new           = new Mind9q;
+        $new->hn       = $request->hn;
+        $new->language = $data['lang'];
+        $new->answer1  = $request->q1;
+        $new->answer2  = $request->q2;
+        $new->answer3  = $request->q3;
+        $new->answer4  = $request->q4;
+        $new->answer5  = $request->q5;
+        $new->answer6  = $request->q6;
+        $new->answer7  = $request->q7;
+        $new->answer8  = $request->q8;
+        $new->answer9  = $request->q9;
+        $new->save();
+
+        return redirect()->route('success');
+    }
+
     public function allConsents(Request $request)
     {
         if (auth()->user()->role == 'user') {
@@ -730,6 +790,14 @@ class MainController extends Controller
             $hivs = Hiv::whereDate('created_at', '>=', $startDate)
                 ->whereDate('created_at', '<=', $endDate)
                 ->orderBy('created_at', 'desc');
+        } else if ($type == 'Sleep Check') {
+            $sleepnesses = SleepnessForm::whereDate('created_at', '>=', $startDate)
+                ->whereDate('created_at', '<=', $endDate)
+                ->orderBy('created_at', 'desc');
+        } else if ($type == 'Mind9q') {
+            $mind9qs = Mind9q::whereDate('created_at', '>=', $startDate)
+                ->whereDate('created_at', '<=', $endDate)
+                ->orderBy('created_at', 'desc');
         } else {
             $telehealths = Telehealth::whereDate('created_at', '>=', $startDate)
                 ->whereDate('created_at', '<=', $endDate)
@@ -742,6 +810,14 @@ class MainController extends Controller
             $hivs = Hiv::whereDate('created_at', '>=', $startDate)
                 ->whereDate('created_at', '<=', $endDate)
                 ->orderBy('created_at', 'desc');
+
+            $sleepnesses = SleepnessForm::whereDate('created_at', '>=', $startDate)
+                ->whereDate('created_at', '<=', $endDate)
+                ->orderBy('created_at', 'desc');
+
+            $mind9qs = Mind9q::whereDate('created_at', '>=', $startDate)
+                ->whereDate('created_at', '<=', $endDate)
+                ->orderBy('created_at', 'desc');
         }
 
         if ($hn) {
@@ -751,10 +827,16 @@ class MainController extends Controller
                 $telehealths->where('hn', 'like', "%{$hn}%");
             } else if ($type == 'HIV') {
                 $hivs->where('hn', 'like', "%{$hn}%");
+            } else if ($type == 'Sleep Check') {
+                $sleepnesses->where('hn', 'like', "%{$hn}%");
+            } else if ($type == 'Mind9q') {
+                $mind9qs->where('hn', 'like', "%{$hn}%");
             } else {
                 $telemedicines->where('hn', 'like', "%{$hn}%");
                 $telehealths->where('hn', 'like', "%{$hn}%");
                 $hivs->where('hn', 'like', "%{$hn}%");
+                $sleepnesses->where('hn', 'like', "%{$hn}%");
+                $mind9qs->where('hn', 'like', "%{$hn}%");
             }
         }
 
@@ -770,12 +852,22 @@ class MainController extends Controller
             $hivs = $hivs->get();
 
             $consents = $hivs->toArray();
+        } else if ($type == 'Sleep Check') {
+            $sleepnesses = $sleepnesses->get();
+
+            $consents = $sleepnesses->toArray();
+        } else if ($type == 'Mind9q') {
+            $mind9qs = $mind9qs->get();
+
+            $consents = $mind9qs->toArray();
         } else {
             $telemedicines = $telemedicines->get();
             $telehealths   = $telehealths->get();
             $hivs          = $hivs->get();
+            $sleepnesses   = $sleepnesses->get();
+            $mind9qs       = $mind9qs->get();
 
-            $consents = array_merge($telemedicines->toArray(), $telehealths->toArray(), $hivs->toArray());
+            $consents = array_merge($telemedicines->toArray(), $telehealths->toArray(), $hivs->toArray(), $sleepnesses->toArray(), $mind9qs->toArray());
         }
 
         array_multisort(array_column($consents, 'created_at'), SORT_DESC, $consents);
@@ -802,49 +894,15 @@ class MainController extends Controller
                 'label' => 'HIV',
                 'value' => 'HIV',
             ],
-        ];
-
-        return inertia::render('admin/view', compact('consents', 'type_select', 'page'));
-    }
-
-    public function allForms(Request $request)
-    {
-        if (auth()->user()->role == 'user') {
-
-            return redirect()->route('user.index');
-        }
-
-        $startDate = $request->start_date ?? now()->startOfDay()->format('Y-m-d');
-        $endDate   = $request->end_date ?? now()->endOfDay()->format('Y-m-d');
-        $hn        = $request->hn;
-
-        $sleepnesses = SleepnessForm::whereDate('created_at', '>=', $startDate)
-            ->whereDate('created_at', '<=', $endDate)
-            ->orderBy('created_at', 'desc');
-
-        if ($hn) {
-            $sleepnesses->where('hn', 'like', "%{$hn}%");
-        }
-
-        $sleepnesses = $sleepnesses->get();
-        $consents    = array_merge($sleepnesses->toArray());
-
-        array_multisort(array_column($consents, 'created_at'), SORT_DESC, $consents);
-        foreach ($consents as $index => $consent) {
-            $consents[$index]['pdf_id'] = $consent['id'];
-            $consents[$index]['id']     = $index + 1;
-        }
-
-        $page        = 'all-forms';
-        $type_select = [
-            [
-                'label' => 'All Types',
-                'value' => '',
-            ],
             [
                 'label' => 'Sleep Check',
                 'value' => 'Sleep Check',
             ],
+            [
+                'label' => 'Mind9q',
+                'value' => 'Mind9q',
+            ],
+
         ];
 
         return inertia::render('admin/view', compact('consents', 'type_select', 'page'));
@@ -956,11 +1014,16 @@ class MainController extends Controller
         $allergyName    = '';
         $allergySymptom = '';
         foreach ($response['patient']['allergy_list'] as $allergy) {
-            if (array_key_exists('name', $allergy)) {
-                $allergyName .= $allergy['name'] . ', ';
-            }
-            if (array_key_exists('remark', $allergy)) {
-                $allergySymptom .= $allergy['remark'] . ', ';
+            if ($allergy == 'ไม่เคยซักประวัติ/ไม่มีข้อมูล') {
+                $allergyName = 'ไม่เคยซักประวัติ/ไม่มีข้อมูล';
+                break;
+            } else {
+                if (array_key_exists('name', $allergy)) {
+                    $allergyName .= $allergy['name'] . ', ';
+                }
+                if (array_key_exists('remark', $allergy)) {
+                    $allergySymptom .= $allergy['remark'] . ', ';
+                }
             }
         }
         $allergyName    = rtrim($allergyName, ', ');
@@ -1039,11 +1102,16 @@ class MainController extends Controller
         $allergyName    = '';
         $allergySymptom = '';
         foreach ($response['patient']['allergy_list'] as $allergy) {
-            if (array_key_exists('name', $allergy)) {
-                $allergyName .= $allergy['name'] . ', ';
-            }
-            if (array_key_exists('remark', $allergy)) {
-                $allergySymptom .= $allergy['remark'] . ', ';
+            if ($allergy == 'ไม่เคยซักประวัติ/ไม่มีข้อมูล') {
+                $allergyName = 'ไม่เคยซักประวัติ/ไม่มีข้อมูล';
+                break;
+            } else {
+                if (array_key_exists('name', $allergy)) {
+                    $allergyName .= $allergy['name'] . ', ';
+                }
+                if (array_key_exists('remark', $allergy)) {
+                    $allergySymptom .= $allergy['remark'] . ', ';
+                }
             }
         }
         $allergyName    = rtrim($allergyName, ', ');
@@ -1100,7 +1168,9 @@ class MainController extends Controller
             'witness2_sign' => $consent->witness2->signature,
         ];
 
-        return inertia::render('admin/pdf/hiv', [
+        $view = $consent->lang == 'th' ? 'admin/pdf/hiv' : 'admin/pdf/hiv-en';
+
+        return inertia::render($view, [
             'consent' => $consentData,
         ]);
     }
@@ -1123,11 +1193,16 @@ class MainController extends Controller
         $allergyName    = '';
         $allergySymptom = '';
         foreach ($response['patient']['allergy_list'] as $allergy) {
-            if (array_key_exists('name', $allergy)) {
-                $allergyName .= $allergy['name'] . ', ';
-            }
-            if (array_key_exists('remark', $allergy)) {
-                $allergySymptom .= $allergy['remark'] . ', ';
+            if ($allergy == 'ไม่เคยซักประวัติ/ไม่มีข้อมูล') {
+                $allergyName = 'ไม่เคยซักประวัติ/ไม่มีข้อมูล';
+                break;
+            } else {
+                if (array_key_exists('name', $allergy)) {
+                    $allergyName .= $allergy['name'] . ', ';
+                }
+                if (array_key_exists('remark', $allergy)) {
+                    $allergySymptom .= $allergy['remark'] . ', ';
+                }
             }
         }
         $allergyName    = rtrim($allergyName, ', ');
@@ -1204,6 +1279,46 @@ class MainController extends Controller
         $consentData['total_situation'] = $total_situation;
 
         return inertia::render('admin/pdf/sleepness', [
+            'consent' => $consentData,
+        ]);
+    }
+
+    public function viewMind9qConsent($id)
+    {
+        $consent  = Mind9q::findOrFail($id);
+        $response = Http::withHeaders(['key' => env('API_PATIENT_KEY')])
+            ->post('http://172.20.1.22/w_phr/api/patient/info', [
+                'hn' => $consent->hn,
+            ])
+            ->json();
+
+        if ($response['status'] == 0) {
+            return back()->with('error', 'ไม่พบข้อมูลผู้ป่วย');
+        }
+
+        $consentData = [
+            'hn'      => $consent->hn,
+            'patient' => [
+                'nameTH'    => $response['patient']['name']['first_th'],
+                'surnameTH' => $response['patient']['name']['last_th'],
+                'nameEN'    => $response['patient']['name']['first_en'],
+                'surnameEN' => $response['patient']['name']['last_en'],
+                'gender'    => $response['patient']['gender'],
+                'birthDate' => $response['patient']['brithdate_text'],
+            ],
+            'answer1' => $consent->answer1,
+            'answer2' => $consent->answer2,
+            'answer3' => $consent->answer3,
+            'answer4' => $consent->answer4,
+            'answer5' => $consent->answer5,
+            'answer6' => $consent->answer6,
+            'answer7' => $consent->answer7,
+            'answer8' => $consent->answer8,
+            'answer9' => $consent->answer9,
+        ];
+        $view = $consent->lang == 'th' ? 'admin/pdf/mind9q' : 'admin/pdf/mind9q';
+
+        return inertia::render($view, [
             'consent' => $consentData,
         ]);
     }

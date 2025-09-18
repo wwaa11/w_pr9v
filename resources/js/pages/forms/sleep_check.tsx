@@ -272,7 +272,7 @@ export default function SleepCheck({ patient }: SleepCheckProps) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
             >
-                <Box sx={{ maxWidth: '800px', mx: 'auto', p: 3 }}>
+                <Box sx={{ maxWidth: '900px', mx: 'auto', p: { xs: 1, sm: 2, md: 3 } }}>
                     {/* Header */}
                     <Paper elevation={2} sx={{ p: 3, mb: 3, borderRadius: 2 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>

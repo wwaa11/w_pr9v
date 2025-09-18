@@ -99,6 +99,8 @@ export default function View() {
             }
         } else if (consent.type == 'Sleep Check') {
             return { label: 'SUCCESS', color: 'success' };
+        } else if (consent.type == 'Mind9Q') {
+            return { label: 'SUCCESS', color: 'success' };
         }
 
         return { label: 'Rejected', color: 'error' };
@@ -135,6 +137,8 @@ export default function View() {
             return url + '/admin/hiv-consent/' + consent.pdf_id;
         } else if (consent.type == 'Sleep Check') {
             return url + '/admin/sleepness-consent/' + consent.pdf_id;
+        } else if (consent.type == 'Mind9Q') {
+            return url + '/admin/mind9q-consent/' + consent.pdf_id;
         }
     };
 

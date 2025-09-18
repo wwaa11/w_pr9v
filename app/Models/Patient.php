@@ -30,4 +30,9 @@ class Patient extends Model
     {
         return $this->hasMany(SleepnessForm::class, 'hn', 'hn')->orderBy('created_at', 'desc');
     }
+
+    public function mind9qs(): HasMany
+    {
+        return $this->hasMany(Mind9Q::class, 'hn', 'hn')->orderBy('created_at', 'desc');
+    }
 }

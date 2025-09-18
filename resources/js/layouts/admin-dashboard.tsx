@@ -123,11 +123,6 @@ export default function AdminDashboard({ children }: { children: React.ReactNode
             path: 'admin/all-consents'
         },
         {
-            text: 'Today Forms',
-            icon: <AssignmentIcon />,
-            path: 'admin/all-forms'
-        },
-        {
             text: 'Witnesses',
             icon: <PeopleIcon />,
             path: 'admin/users'

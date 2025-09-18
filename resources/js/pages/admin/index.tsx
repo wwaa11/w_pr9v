@@ -1,7 +1,7 @@
 import AppLayout from '@/layouts/admin-dashboard';
 import React from 'react';
 import { Head, useForm, usePage, Link } from '@inertiajs/react';
-import { Box, Button, TextField, Stack, Typography, IconButton, InputAdornment, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, Grid, Card } from '@mui/material';
+import { Box, Button, TextField, Stack, Typography, IconButton, InputAdornment, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, Grid, Card, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import Swal from 'sweetalert2';
 import { format } from 'date-fns';
@@ -57,6 +57,7 @@ interface Hiv {
     name_relation: string;
     hiv_consent: string;
     created_at: string;
+    lang: string;
 }
 
 interface Sleepness {
@@ -68,12 +69,20 @@ interface Sleepness {
     created_at: string;
 }
 
+interface Mind9q {
+    id: number;
+    language: string;
+    type: string;
+    created_at: string;
+}
+
 export default function Index({
     patient: initialPatient = defaultPatient,
     telemedicine_link: initialTelemedicineLink = '',
     telehealth_link: initialTelehealthLink = '',
     hiv_link: initialHivLink = '',
     sleep_check_link: initialSleepCheckLink = '',
+    mind9q_link: initialMind9qLink = '',
     witness1,
     witness2,
     informer,
@@ -86,12 +95,15 @@ export default function Index({
     telehealths = [],
     hivs = [],
     sleepnesses = [],
+    mind9qs = [],
+
 }: {
     patient?: PatientInfo;
     telemedicine_link?: string;
     telehealth_link?: string;
     hiv_link?: string;
     sleep_check_link?: string;
+    mind9q_link?: string;
     witness1?: UserInfo;
     witness2?: UserInfo;
     informer?: UserInfo;
@@ -100,11 +112,12 @@ export default function Index({
     telehealths?: Telehealth[];
     hivs?: Hiv[];
     sleepnesses?: Sleepness[];
+    mind9qs?: Mind9q[];
 }) {
     const page = usePage();
     const url = page.props.url as string;
 
-    const { data, setData, post, processing, errors } = useForm({ hn: initialPatient.hn || '' });
+    const { data, setData, post, processing, errors } = useForm({ hn: initialPatient.hn || '', language: 'th' });
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -141,25 +154,35 @@ export default function Index({
             <Box maxWidth={1200} mx="auto" mt={6} p={3}>
                 <Typography variant="h5" mb={3} textAlign="center">Search Patient Information</Typography>
                 <Paper sx={{ p: 3, mb: 3 }}>
-                    <form onSubmit={handleSubmit}>
-                        <Stack direction="row" spacing={2} alignItems="center">
-                            <TextField
-                                label="HN"
-                                value={data.hn}
-                                onChange={(e) => setData('hn', e.target.value)}
-                                error={Boolean(errors.hn)}
-                                helperText={errors.hn}
-                                sx={{ width: '100%' }}
-                            />
-                            <Button
-                                type="submit"
-                                variant="contained"
-                                disabled={processing}
-                            >
-                                Search
-                            </Button>
-                        </Stack>
-                    </form>
+                    <Stack spacing={2}>
+                        <form onSubmit={handleSubmit}>
+                            <Stack direction="row" spacing={2} alignItems="center">
+                                <Select
+                                    value={data.language}
+                                    label="Language"
+                                    onChange={(e) => setData('language', e.target.value)}
+                                >
+                                    <MenuItem value="th">ไทย</MenuItem>
+                                    <MenuItem value="en">English</MenuItem>
+                                </Select>
+                                <TextField
+                                    label="HN"
+                                    value={data.hn}
+                                    onChange={(e) => setData('hn', e.target.value)}
+                                    error={Boolean(errors.hn)}
+                                    helperText={errors.hn}
+                                    sx={{ width: '100%' }}
+                                />
+                                <Button
+                                    type="submit"
+                                    variant="contained"
+                                    disabled={processing}
+                                >
+                                    Search
+                                </Button>
+                            </Stack>
+                        </form>
+                    </Stack>
                 </Paper>
 
                 {initialPatient.hn && (
@@ -203,7 +226,6 @@ export default function Index({
                                         />
                                     </Stack>
                                 </Paper>
-
                             </Grid>
                             <Grid size={6}>
                                 <Paper sx={{ p: 3 }}>
@@ -211,6 +233,8 @@ export default function Index({
                                         Consent Generated Link
                                     </Typography>
                                     <Typography variant="body1" mb={3} >
+                                        Consent Language : <span className='text-red-600 font-bold uppercase'>{data.language}</span>
+                                        <br />
                                         ผู้ให้ข้อมูล : {informer?.name} ({informer?.user_id})
                                         <br />
                                         พยานที่ 1 : {witness1?.name} ({witness1?.user_id})
@@ -324,9 +348,29 @@ export default function Index({
                                             multiline
                                             rows={2}
                                         />
+                                        <TextField
+                                            label="Mind9q Consent"
+                                            value={initialMind9qLink}
+                                            slotProps={{
+                                                htmlInput: {
+                                                    readOnly: true
+                                                },
+                                                input: {
+                                                    endAdornment: (
+                                                        <InputAdornment position="end">
+                                                            <IconButton onClick={() => handleCopy(initialMind9qLink)} edge="end" disabled={!initialMind9qLink}>
+                                                                <ContentCopyIcon />
+                                                            </IconButton>
+                                                        </InputAdornment>
+                                                    ),
+                                                },
+                                            }}
+                                            fullWidth
+                                            multiline
+                                            rows={2}
+                                        />
                                     </Stack>
                                 </Paper>
-
                             </Grid>
                         </Grid>
                         <Paper sx={{ p: 3, mb: 3, mt: 3 }}>
@@ -420,7 +464,7 @@ export default function Index({
                                                     <TableCell>
                                                         {format(new Date(hiv.created_at), 'HH:mm:ss')}
                                                     </TableCell>
-                                                    <TableCell>{hiv.type}</TableCell>
+                                                    <TableCell><span className='text-[10px] px-2 rounded-full uppercase text-white bg-blue-600'>{hiv.lang}</span> {hiv.type}</TableCell>
                                                     <TableCell>{hiv.name} {hiv.name_type == 'representative' ? '(' + hiv.name_relation + ')' : ''}</TableCell>
                                                     <TableCell>
                                                         <Chip
@@ -465,6 +509,38 @@ export default function Index({
                                                         <Button
                                                             component={Link}
                                                             href={route('admin.sleepness-consent', sleepness.id)}
+                                                            variant="contained"
+                                                            size="small"
+                                                            color="primary"
+                                                        >
+                                                            View Details
+                                                        </Button>
+                                                    </TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
+                                        {mind9qs.map((mind9q) => {
+                                            return (
+                                                <TableRow key={mind9q.id} hover>
+                                                    <TableCell>
+                                                        {format(new Date(mind9q.created_at), 'dd/MM/yyyy')}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {format(new Date(mind9q.created_at), 'HH:mm:ss')}
+                                                    </TableCell>
+                                                    <TableCell><span className='text-[10px] px-2 rounded-full uppercase text-white bg-blue-600'>{mind9q.language}</span> {mind9q.type}</TableCell>
+                                                    <TableCell></TableCell>
+                                                    <TableCell>
+                                                        <Chip
+                                                            label="SUCCESS"
+                                                            color='success'
+                                                            size="small"
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Button
+                                                            component={Link}
+                                                            href={route('admin.mind9q-consent', mind9q.id)}
                                                             variant="contained"
                                                             size="small"
                                                             color="primary"
