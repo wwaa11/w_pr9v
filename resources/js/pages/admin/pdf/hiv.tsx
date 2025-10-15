@@ -183,7 +183,7 @@ export default function HivConsent() {
                                 &#10003;
                             </Typography>
                         )}
-                        <img src={consent.informer_sign} alt="signature" style={{ aspectRatio: 0, height: '55px', position: 'absolute', top: '646px', left: '90px' }} />
+                        <img src={consent.informer_sign} alt="signature" style={{ aspectRatio: 0, height: '55px', position: 'absolute', top: '646px', left: '104px' }} />
                         <Typography sx={{ color: 'blue', position: 'absolute', top: '700px', left: '110px', fontSize: '12px' }}>
                             {consent.informer_name}
                         </Typography>
@@ -193,7 +193,7 @@ export default function HivConsent() {
                         <Typography sx={{ color: 'blue', position: 'absolute', top: '726px', left: '215px', fontSize: '10px' }}>
                             {consent.visit_time}
                         </Typography>
-                        <img src={consent.signature} alt="signature" style={{ aspectRatio: 0, height: '55px', position: 'absolute', top: '646px', left: '270px' }} />
+                        <img src={consent.signature} alt="signature" style={{ aspectRatio: 0, height: '55px', position: 'absolute', top: '646px', left: '287px' }} />
                         <Typography sx={{ color: 'blue', position: 'absolute', top: '700px', left: '290px', fontSize: '12px' }}>
                             {consent.name}
                         </Typography>
@@ -203,7 +203,7 @@ export default function HivConsent() {
                         <Typography sx={{ color: 'blue', position: 'absolute', top: '726px', left: '387px', fontSize: '10px' }}>
                             {consent.visit_time}
                         </Typography>
-                        <img src={consent.witness1_sign} alt="signature" style={{ aspectRatio: 0, height: '55px', position: 'absolute', top: '646px', left: '446px' }} />
+                        <img src={consent.witness1_sign} alt="signature" style={{ aspectRatio: 0, height: '55px', position: 'absolute', top: '646px', left: '457px' }} />
                         <Typography sx={{ color: 'blue', position: 'absolute', top: '700px', left: '470px', fontSize: '12px' }}>
                             {consent.witness1_name}
                         </Typography>
@@ -213,7 +213,7 @@ export default function HivConsent() {
                         <Typography sx={{ color: 'blue', position: 'absolute', top: '726px', left: '563px', fontSize: '10px' }}>
                             {consent.visit_time}
                         </Typography>
-                        <img src={consent.witness2_sign} alt="signature" style={{ aspectRatio: 0, height: '55px', position: 'absolute', top: '646px', left: '620px' }} />
+                        <img src={consent.witness2_sign} alt="signature" style={{ aspectRatio: 0, height: '55px', position: 'absolute', top: '646px', left: '626px' }} />
                         <Typography sx={{ color: 'blue', position: 'absolute', top: '700px', left: '635px', fontSize: '12px' }}>
                             {consent.witness2_name}
                         </Typography>

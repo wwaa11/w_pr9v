@@ -244,16 +244,16 @@ export default function HivConsent() {
             case 2:
                 return (
                     <>
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '17px', left: '70px', fontSize: '10px' }}>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '17px', left: '60px', fontSize: '10px' }}>
                             {consent.patient.nameTH}
                         </Typography>
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '17px', left: '150px', fontSize: '10px' }}>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '17px', left: '170px', fontSize: '10px' }}>
                             {consent.patient.surnameTH}
                         </Typography>
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '17px', left: '290px', fontSize: '10px' }}>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '17px', left: '305px', fontSize: '10px' }}>
                             {consent.patient.birthDate}
                         </Typography>
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '17px', left: '430px', fontSize: '10px' }}>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '17px', left: '440px', fontSize: '10px' }}>
                             {consent.hn}
                         </Typography>
                         <Typography sx={{ color: 'blue', position: 'absolute', top: '17px', left: '545px', fontSize: '10px' }}>

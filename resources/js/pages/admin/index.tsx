@@ -7,6 +7,7 @@ import Swal from 'sweetalert2';
 import { format } from 'date-fns';
 
 interface PatientInfo {
+    lang: string;
     hn: string;
     name: string;
     phone: string;
@@ -19,6 +20,7 @@ interface QueryParams {
 }
 
 const defaultPatient: PatientInfo = {
+    lang: '',
     hn: '',
     name: '',
     phone: '',
@@ -83,6 +85,7 @@ export default function Index({
     hiv_link: initialHivLink = '',
     sleep_check_link: initialSleepCheckLink = '',
     mind9q_link: initialMind9qLink = '',
+    lang,
     witness1,
     witness2,
     informer,
@@ -98,6 +101,7 @@ export default function Index({
     mind9qs = [],
 
 }: {
+    lang?: string;
     patient?: PatientInfo;
     telemedicine_link?: string;
     telehealth_link?: string;
@@ -117,7 +121,7 @@ export default function Index({
     const page = usePage();
     const url = page.props.url as string;
 
-    const { data, setData, post, processing, errors } = useForm({ hn: initialPatient.hn || '', language: 'th' });
+    const { data, setData, post, processing, errors } = useForm({ hn: initialPatient.hn || '', language: lang || 'th' });
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -233,7 +237,7 @@ export default function Index({
                                         Consent Generated Link
                                     </Typography>
                                     <Typography variant="body1" mb={3} >
-                                        Consent Language : <span className='text-red-600 font-bold uppercase'>{data.language}</span>
+                                        Consent Language : <span className='text-red-600 font-bold uppercase'>{lang}</span>
                                         <br />
                                         ผู้ให้ข้อมูล : {informer?.name} ({informer?.user_id})
                                         <br />

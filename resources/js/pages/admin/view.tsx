@@ -47,6 +47,7 @@ interface Consent {
     patient_type: string;
     name: string;
     relative_relation: string;
+    lang: string;
 }
 
 type Order = 'asc' | 'desc';
@@ -319,7 +320,16 @@ export default function View() {
                                                 </TableCell>
                                                 <TableCell>{consent.hn}</TableCell>
                                                 <TableCell>{consent.type}</TableCell>
-                                                <TableCell>{name}</TableCell>
+                                                <TableCell>
+                                                    {consent.lang == 'en' ? (
+                                                        <>
+                                                            <Chip color="primary" label="En" size="small" variant="outlined" sx={{ marginRight: 1 }} />
+                                                            {name}
+                                                        </>
+                                                    ) : (
+                                                        name
+                                                    )}
+                                                </TableCell>
                                                 <TableCell>
                                                     <Chip
                                                         label={status.label}

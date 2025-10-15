@@ -77,192 +77,192 @@ export default function TelemedicineConsent() {
             case 1:
                 return (
                     <>
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '122px', left: '175px', fontSize: '10px' }}>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '178px', left: '180px', fontSize: '15px' }}>
                             {consent.patient.nameTH}
                         </Typography>
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '122px', left: '310px', fontSize: '10px' }}>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '178px', left: '310px', fontSize: '15px' }}>
                             {consent.patient.surnameTH}
                         </Typography>
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '122px', left: '585px', fontSize: '10px' }}>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '178px', left: '625px', fontSize: '13px' }}>
                             {consent.patient.birthDate}
                         </Typography>
                         {consent.answer1 == 0 && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '267px', left: '442px', fontSize: '21px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '385px', left: '439px', fontSize: '21px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {consent.answer1 == 1 && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '267px', left: '515px', fontSize: '21px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '385px', left: '519px', fontSize: '21px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {consent.answer1 == 2 && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '267px', left: '589px', fontSize: '21px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '385px', left: '630px', fontSize: '21px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {consent.answer1 == 3 && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '267px', left: '658px', fontSize: '21px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '385px', left: '717px', fontSize: '21px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {consent.answer2 == 0 && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '293px', left: '442px', fontSize: '21px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '428px', left: '439px', fontSize: '21px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {consent.answer2 == 1 && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '293px', left: '515px', fontSize: '21px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '428px', left: '519px', fontSize: '21px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {consent.answer2 == 2 && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '293px', left: '589px', fontSize: '21px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '428px', left: '630px', fontSize: '21px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {consent.answer2 == 3 && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '293px', left: '658px', fontSize: '21px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '428px', left: '717px', fontSize: '21px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {consent.answer3 == 0 && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '319px', left: '442px', fontSize: '21px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '469px', left: '439px', fontSize: '21px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {consent.answer3 == 1 && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '319px', left: '515px', fontSize: '21px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '469px', left: '519px', fontSize: '21px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {consent.answer3 == 2 && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '319px', left: '589px', fontSize: '21px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '469px', left: '630px', fontSize: '21px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {consent.answer3 == 3 && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '319px', left: '658px', fontSize: '21px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '469px', left: '717px', fontSize: '21px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {consent.answer4 == 0 && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '344px', left: '442px', fontSize: '21px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '512px', left: '439px', fontSize: '21px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {consent.answer4 == 1 && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '344px', left: '515px', fontSize: '21px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '512px', left: '519px', fontSize: '21px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {consent.answer4 == 2 && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '344px', left: '589px', fontSize: '21px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '512px', left: '630px', fontSize: '21px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {consent.answer4 == 3 && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '344px', left: '658px', fontSize: '21px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '512px', left: '717px', fontSize: '21px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {consent.answer5 == 0 && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '371px', left: '442px', fontSize: '21px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '554px', left: '439px', fontSize: '21px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {consent.answer5 == 1 && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '371px', left: '515px', fontSize: '21px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '554px', left: '519px', fontSize: '21px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {consent.answer5 == 2 && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '371px', left: '589px', fontSize: '21px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '554px', left: '630px', fontSize: '21px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {consent.answer5 == 3 && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '371px', left: '658px', fontSize: '21px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '554px', left: '717px', fontSize: '21px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {consent.answer6 == 0 && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '408px', left: '442px', fontSize: '21px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '611px', left: '439px', fontSize: '21px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {consent.answer6 == 1 && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '408px', left: '515px', fontSize: '21px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '611px', left: '519px', fontSize: '21px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {consent.answer6 == 2 && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '408px', left: '589px', fontSize: '21px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '611px', left: '630px', fontSize: '21px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {consent.answer6 == 3 && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '408px', left: '658px', fontSize: '21px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '611px', left: '717px', fontSize: '21px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {consent.answer7 == 0 && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '459px', left: '442px', fontSize: '21px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '682px', left: '439px', fontSize: '21px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {consent.answer7 == 1 && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '459px', left: '515px', fontSize: '21px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '682px', left: '519px', fontSize: '21px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {consent.answer7 == 2 && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '459px', left: '589px', fontSize: '21px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '682px', left: '630px', fontSize: '21px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {consent.answer7 == 3 && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '459px', left: '658px', fontSize: '21px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '682px', left: '717px', fontSize: '21px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {consent.answer8 == 0 && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '508px', left: '442px', fontSize: '21px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '782px', left: '439px', fontSize: '21px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {consent.answer8 == 1 && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '508px', left: '515px', fontSize: '21px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '782px', left: '519px', fontSize: '21px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {consent.answer8 == 2 && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '508px', left: '589px', fontSize: '21px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '782px', left: '630px', fontSize: '21px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {consent.answer8 == 3 && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '508px', left: '658px', fontSize: '21px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '782px', left: '717px', fontSize: '21px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {consent.answer9 == 0 && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '548px', left: '442px', fontSize: '21px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '867px', left: '439px', fontSize: '21px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {consent.answer9 == 1 && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '548px', left: '515px', fontSize: '21px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '867px', left: '519px', fontSize: '21px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {consent.answer9 == 2 && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '548px', left: '589px', fontSize: '21px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '867px', left: '630px', fontSize: '21px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {consent.answer9 == 3 && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '548px', left: '658px', fontSize: '21px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '867px', left: '717px', fontSize: '21px' }}>
                                 &#10003;
                             </Typography>
                         )}
@@ -283,7 +283,7 @@ export default function TelemedicineConsent() {
                     <Grid size={{ sm: 12, md: 10 }}>
                         <div className="print-content">
                             <Document
-                                file={url + "/consent/Mind9Q.pdf"}
+                                file={url + "/consent/Mind9Q-new.pdf"}
                                 onLoadSuccess={onDocumentLoadSuccess}
                                 renderMode="canvas"
                             >

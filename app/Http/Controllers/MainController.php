@@ -355,7 +355,7 @@ class MainController extends Controller
             $patient->treatment_consent = $response['patient']['treatment_consent'];
             $patient->insurance_consent = $response['patient']['insurance_consent'];
             $patient->marketing_consent = $response['patient']['marketing_consent'];
-            $patient->expires_at        = now()->addMinutes(60);
+            $patient->expires_at        = now()->addDay();
             $patient->save();
 
             $visit_response = Http::withHeaders(['key' => env('API_PATIENT_KEY')])
@@ -421,12 +421,15 @@ class MainController extends Controller
         ]);
     }
 
-    public function telemedicine($token)
+    public function telemedicine($token, Request $request)
     {
+        $data = json_decode(Crypt::decryptString($request->data), true);
+
         $patient = Patient::where('token', $token)->first();
         if (! $patient || $patient->expires_at < now()) {
             return redirect()->route('error');
         }
+        $patient->lang = $data['lang'];
 
         return inertia::render('forms/telemedicine', compact('patient'));
     }
@@ -458,6 +461,7 @@ class MainController extends Controller
         $new->marketing_consent    = ($request->marketing_consent === 'yes') ? true : false;
         $new->informer_user_id     = $data['informer_user_id'];
         $new->witness_user_id      = $data['witness1_user_id'];
+        $new->lang                 = $data['lang'];
         $new->save();
 
         $patient = Patient::where('hn', $request->hn)->first();
@@ -986,8 +990,9 @@ class MainController extends Controller
             'witness_name'         => $consent->witness->name,
             'witness_sign'         => $consent->witness->signature,
         ];
+        $view = $consent->lang == 'th' ? 'admin/pdf/telemedicine' : 'admin/pdf/telemedicine-en';
 
-        return Inertia::render('admin/pdf/telemedicine', [
+        return Inertia::render($view, [
             'consent' => $consentData,
         ]);
     }
