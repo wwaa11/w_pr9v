@@ -45,6 +45,7 @@ interface Consent {
     treatment_consent: boolean;
     insurance_consent: boolean;
     marketing_consent: boolean;
+    video_consent: boolean;
     informer_name: string;
     informer_sign: string;
     witness_name: string;
@@ -53,6 +54,8 @@ interface Consent {
     signature_type: string;
     signature_name: string;
     signature_relation: string;
+    translate_lang: string;
+    translate_name: string;
 }
 
 
@@ -226,19 +229,19 @@ export default function TelemedicineConsent() {
                 return (
                     <>
                         {/* Data for Page 2 */}
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '28px', left: '79px', fontSize: '10px' }}>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '14px', left: '79px', fontSize: '10px' }}>
                             {consent.patient.nameTH} {consent.patient.surnameTH}
                         </Typography>
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '29px', left: '299px', fontSize: '8px' }}>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '15px', left: '299px', fontSize: '8px' }}>
                             {consent.patient.birthDate}
                         </Typography>
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '28px', left: '390px', fontSize: '10px' }}>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '14px', left: '390px', fontSize: '10px' }}>
                             {consent.hn}
                         </Typography>
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '29px', left: '536px', fontSize: '8px' }}>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '15px', left: '531px', fontSize: '8px' }}>
                             {consent.visit_date}
                         </Typography>
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '28px', left: '630px', fontSize: '10px' }}>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '14px', left: '630px', fontSize: '10px' }}>
                             {consent.visit_time}
                         </Typography>
                     </>
@@ -247,28 +250,28 @@ export default function TelemedicineConsent() {
                 return (
                     <>
                         {/* Data for Page 3 */}
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '28px', left: '79px', fontSize: '10px' }}>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '14px', left: '79px', fontSize: '10px' }}>
                             {consent.patient.nameTH} {consent.patient.surnameTH}
                         </Typography>
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '29px', left: '304px', fontSize: '8px' }}>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '16px', left: '304px', fontSize: '8px' }}>
                             {consent.patient.birthDate}
                         </Typography>
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '28px', left: '390px', fontSize: '10px' }}>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '14px', left: '390px', fontSize: '10px' }}>
                             {consent.hn}
                         </Typography>
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '29px', left: '536px', fontSize: '8px' }}>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '16px', left: '536px', fontSize: '8px' }}>
                             {consent.visit_date}
                         </Typography>
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '28px', left: '635px', fontSize: '10px' }}>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '14px', left: '635px', fontSize: '10px' }}>
                             {consent.visit_time}
                         </Typography>
                         {consent.treatment_consent && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '791px', left: '372px', fontSize: '12px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '810px', left: '386px', fontSize: '12px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {!consent.treatment_consent && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '791px', left: '477px', fontSize: '12px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '810px', left: '498px', fontSize: '12px' }}>
                                 &#10003;
                             </Typography>
                         )}
@@ -278,83 +281,106 @@ export default function TelemedicineConsent() {
                 return (
                     <>
                         {/* Data for Page 4 */}
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '26px', left: '65px', fontSize: '10px' }}>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '14px', left: '83px', fontSize: '10px' }}>
                             {consent.patient.nameTH} {consent.patient.surnameTH}
                         </Typography>
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '29px', left: '297px', fontSize: '8px' }}>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '16px', left: '297px', fontSize: '8px' }}>
                             {consent.patient.birthDate}
                         </Typography>
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '26px', left: '390px', fontSize: '10px' }}>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '14px', left: '390px', fontSize: '10px' }}>
                             {consent.hn}
                         </Typography>
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '29px', left: '532px', fontSize: '8px' }}>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '16px', left: '532px', fontSize: '8px' }}>
                             {consent.visit_date}
                         </Typography>
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '28px', left: '627px', fontSize: '10px' }}>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '14px', left: '627px', fontSize: '10px' }}>
                             {consent.visit_time}
                         </Typography>
                         {consent.insurance_consent && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '260px', left: '266px', fontSize: '12px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '215px', left: '266px', fontSize: '12px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {!consent.insurance_consent && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '260px', left: '372px', fontSize: '12px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '215px', left: '372px', fontSize: '12px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {consent.marketing_consent && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '450px', left: '228px', fontSize: '12px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '406px', left: '228px', fontSize: '12px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {!consent.marketing_consent && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '450px', left: '332px', fontSize: '12px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '406px', left: '332px', fontSize: '12px' }}>
+                                &#10003;
+                            </Typography>
+                        )}
+                        {consent.video_consent && (
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '512px', left: '232px', fontSize: '12px' }}>
+                                &#10003;
+                            </Typography>
+                        )}
+                        {!consent.video_consent && (
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '512px', left: '344px', fontSize: '12px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {consent.telemedicine_consent && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '602px', left: '163px', fontSize: '12px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '656px', left: '190px', fontSize: '12px' }}>
                                 &#10003;
                             </Typography>
                         )}
                         {!consent.telemedicine_consent && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '602px', left: '222px', fontSize: '12px' }}>
+                            <Typography sx={{ color: 'red', position: 'absolute', top: '656px', left: '270px', fontSize: '12px' }}>
                                 &#10003;
                             </Typography>
                         )}
-                        <img src={consent.informer_sign} alt="signature" style={{ aspectRatio: 0, height: '55px', position: 'absolute', top: '650px', left: '110px' }} />
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '704px', left: '115px', fontSize: '12px' }}>
+                        <img src={consent.informer_sign} alt="signature" style={{ aspectRatio: 0, height: '55px', position: 'absolute', top: '704px', left: '103px' }} />
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '755px', left: '107px', fontSize: '12px' }}>
                             {consent.informer_name}
                         </Typography>
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '728px', left: '113px', fontSize: '10px' }}>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '782px', left: '100px', fontSize: '10px' }}>
                             {consent.visit_date}
                         </Typography>
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '728px', left: '225px', fontSize: '10px' }}>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '782px', left: '224px', fontSize: '10px' }}>
                             {consent.visit_time}
                         </Typography>
-                        <img src={consent.signature} alt="signature" style={{ aspectRatio: 0, height: '55px', position: 'absolute', top: '650px', left: '315px' }} />
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '704px', left: '330px', fontSize: '12px' }}>
+                        <img src={consent.signature} alt="signature" style={{ aspectRatio: 0, height: '55px', position: 'absolute', top: '704px', left: '307px' }} />
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '755px', left: '324px', fontSize: '12px' }}>
                             {consent.signature_name}
                         </Typography>
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '728px', left: '327px', fontSize: '10px' }}>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '782px', left: '314px', fontSize: '10px' }}>
                             {consent.visit_date}
                         </Typography>
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '728px', left: '433px', fontSize: '10px' }}>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '782px', left: '433px', fontSize: '10px' }}>
                             {consent.visit_time}
                         </Typography>
-                        <img src={consent.witness_sign} alt="signature" style={{ aspectRatio: 0, height: '55px', position: 'absolute', top: '650px', left: '532px' }} />
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '704px', left: '540px', fontSize: '12px' }}>
+                        <img src={consent.witness_sign} alt="signature" style={{ aspectRatio: 0, height: '55px', position: 'absolute', top: '704px', left: '524px' }} />
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '755px', left: '530px', fontSize: '12px' }}>
                             {consent.witness_name}
                         </Typography>
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '728px', left: '540px', fontSize: '10px' }}>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '782px', left: '517px', fontSize: '10px' }}>
                             {consent.visit_date}
                         </Typography>
-                        <Typography sx={{ color: 'blue', position: 'absolute', top: '728px', left: '650px', fontSize: '10px' }}>
+                        <Typography sx={{ color: 'blue', position: 'absolute', top: '782px', left: '650px', fontSize: '10px' }}>
                             {consent.visit_time}
                         </Typography>
+                        {consent.translate_lang !== null && (
+                            <>
+                                <Typography sx={{ color: 'blue', position: 'absolute', top: '847px', left: '183px', fontSize: '10px' }}>
+                                    {consent.translate_lang}
+                                </Typography>\
+                                <Typography sx={{ color: 'blue', position: 'absolute', top: '847px', left: '379px', fontSize: '10px' }}>
+                                    {consent.translate_name}
+                                </Typography>
+                                <Typography sx={{ color: 'blue', position: 'absolute', top: '847px', left: '571px', fontSize: '10px' }}>
+                                    {consent.visit_date}
+                                </Typography>
+                            </>
+                        )}
                         {consent.signature_type !== 'patient' && (
-                            <Typography sx={{ color: 'blue', position: 'absolute', top: '783px', left: '590px', fontSize: '10px' }}>
+                            <Typography sx={{ color: 'blue', position: 'absolute', top: '909px', left: '90px', fontSize: '10px' }}>
                                 {consent.signature_name}
                             </Typography>
                         )}
@@ -373,7 +399,7 @@ export default function TelemedicineConsent() {
                     <Grid size={{ sm: 12, md: 10 }}>
                         <div className="print-content">
                             <Document
-                                file={url + "/consent/Telemedicine-new.pdf"}
+                                file={url + "/consent/Telemedicine-new-2.pdf"}
                                 onLoadSuccess={onDocumentLoadSuccess}
                                 renderMode="canvas"
                             >

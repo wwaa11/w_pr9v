@@ -382,6 +382,8 @@ class MainController extends Controller
                 'visit_date'       => $visit !== '' ? date('d/m/Y', strtotime($visit)) : '',
                 'vn'               => $vn,
                 'doctor_name'      => $doctor_name,
+                'translate_lang'   => $request->input('translate_lang', null),
+                'translate_name'   => $request->input('translate_name', null),
             ];
 
             $header_params = Crypt::encryptString(json_encode($queryParams));
@@ -444,6 +446,7 @@ class MainController extends Controller
             'signature_type'       => 'required|string',
             'signature'            => 'required|string',
             'telemedicine_consent' => 'required|string',
+            'video_consent'        => 'required|string',
         ]);
 
         $data = json_decode(Crypt::decryptString($request->data), true);
@@ -459,9 +462,12 @@ class MainController extends Controller
         $new->treatment_consent    = true;
         $new->insurance_consent    = ($request->insurance_consent === 'yes') ? true : false;
         $new->marketing_consent    = ($request->marketing_consent === 'yes') ? true : false;
+        $new->video_consent        = ($request->video_consent === 'yes') ? true : false;
         $new->informer_user_id     = $data['informer_user_id'];
         $new->witness_user_id      = $data['witness1_user_id'];
         $new->lang                 = $data['lang'];
+        $new->translate_lang       = $data['translate_lang'];
+        $new->translate_name       = $data['translate_name'];
         $new->save();
 
         $patient = Patient::where('hn', $request->hn)->first();
@@ -989,8 +995,12 @@ class MainController extends Controller
             'informer_sign'        => $consent->informer->signature,
             'witness_name'         => $consent->witness->name,
             'witness_sign'         => $consent->witness->signature,
+            'translate_lang'       => $consent->translate_lang,
+            'translate_name'       => $consent->translate_name,
         ];
-        $view = $consent->lang == 'th' ? 'admin/pdf/telemedicine' : 'admin/pdf/telemedicine-en';
+        // $view = $consent->lang == 'th' ? 'admin/pdf/telemedicine' : 'admin/pdf/telemedicine-en';
+        // Use same view for both lang
+        $view = 'admin/pdf/telemedicine';
 
         return Inertia::render($view, [
             'consent' => $consentData,

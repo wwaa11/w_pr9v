@@ -17,6 +17,8 @@ interface QueryParams {
     visit_date: string;
     vn: string;
     doctor_name: string;
+    translate_lang: string;
+    translate_name: string;
 }
 
 const defaultPatient: PatientInfo = {
@@ -93,6 +95,8 @@ export default function Index({
         visit_date: '',
         vn: '',
         doctor_name: '',
+        translate_lang: '',
+        translate_name: '',
     },
     telemedicines = [],
     telehealths = [],
@@ -121,7 +125,7 @@ export default function Index({
     const page = usePage();
     const url = page.props.url as string;
 
-    const { data, setData, post, processing, errors } = useForm({ hn: initialPatient.hn || '', language: lang || 'th' });
+    const { data, setData, post, processing, errors } = useForm({ hn: initialPatient.hn || '', language: lang || 'th', translate_lang: '', translate_name: '' });
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -169,6 +173,26 @@ export default function Index({
                                     <MenuItem value="th">ไทย</MenuItem>
                                     <MenuItem value="en">English</MenuItem>
                                 </Select>
+                                {data.language !== 'th' && (
+                                    <>
+                                        <TextField
+                                            label="Inform in language"
+                                            value={data.translate_lang}
+                                            onChange={(e) => setData('translate_lang', e.target.value)}
+                                            error={Boolean(errors.translate_lang)}
+                                            helperText={errors.translate_lang}
+                                            sx={{ width: '100%' }}
+                                        />
+                                        <TextField
+                                            label="Translater Name"
+                                            value={data.translate_name}
+                                            onChange={(e) => setData('translate_name', e.target.value)}
+                                            error={Boolean(errors.translate_name)}
+                                            helperText={errors.translate_name}
+                                            sx={{ width: '100%' }}
+                                        />
+                                    </>
+                                )}
                                 <TextField
                                     label="HN"
                                     value={data.hn}
@@ -238,6 +262,10 @@ export default function Index({
                                     </Typography>
                                     <Typography variant="body1" mb={3} >
                                         Consent Language : <span className='text-red-600 font-bold uppercase'>{lang}</span>
+                                        <br />
+                                        Translate Language : <span className='text-red-600 font-bold uppercase'>{data.translate_lang}</span>
+                                        <br />
+                                        Translate Name : <span className='text-red-600 font-bold'>{data.translate_name}</span>
                                         <br />
                                         ผู้ให้ข้อมูล : {informer?.name} ({informer?.user_id})
                                         <br />

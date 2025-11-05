@@ -24,6 +24,7 @@ interface ConsentTelemedicineProps {
         treatment_consent: string;
         insurance_consent: string;
         marketing_consent: string;
+        video_consent: string;
         lang?: string;
     }
 }
@@ -46,6 +47,7 @@ export default function ConsentTelemedicine({ patient }: ConsentTelemedicineProp
         treatment_consent: patient.treatment_consent,
         insurance_consent: patient.insurance_consent,
         marketing_consent: patient.marketing_consent,
+        video_consent: "",
     });
 
     const sigPadRef = useRef<any>(null);
@@ -83,6 +85,15 @@ export default function ConsentTelemedicine({ patient }: ConsentTelemedicineProp
                 icon: "warning",
                 title: t.alert_consent_required_title,
                 html: t.alert_consent_required_html,
+            });
+            return;
+        }
+
+        if (data.video_consent === "") {
+            Swal.fire({
+                icon: "warning",
+                title: t.alert_video_consent_title,
+                text: t.alert_video_consent_text,
             });
             return;
         }
@@ -214,6 +225,7 @@ export default function ConsentTelemedicine({ patient }: ConsentTelemedicineProp
             consent_102_2_html: '&emsp; (2) ปฏิบัติให้เป็นไปตามบทบัญญัติของกฎหมายที่เกี่ยวข้อง รวมถึงเพื่อเวชศาสตร์ป้องกันหรืออาชีวเวชศาสตร์ การประเมินความสามารถในการทำงาน ของลูกจ้าง การวินิจฉัยโรคทางการแพทย์ การให้บริการด้านสุขภาพ หรือด้านสังคม การรักษาทางการแพทย์การจัดการด้านสุขภาพ หรือระบบและการให้บริการด้านสังคม สงเคราะห์ ประโยชน์สาธารณะด้านการสาธารณสุข เช่น การป้องกันด้านสุขภาพจากโรคติดต่ออันตรายหรือ การควบคุมมาตรฐานหรือคุณภาพของยา เวชภัณฑ์ หรือเครื่องมือแพทย์ การคุ้มครองแรงงาน การ ประกันสังคม หลักประกันสุขภาพแห่งชาติ สวัสดิการเกี่ยวกับการรักษาพยาบาลของผู้มีสิทธิตามกฎหมาย การคุ้มครองผู้ประสบภัยจากรถ หรือการคุ้มครองทางสังคม การศึกษาวิจัยทางวิทยาศาสตร์ประวัติศาสตร์ หรือสถิติ ประโยชน์สาธารณะที่สำคัญอื่น ๆ',
             consent_103_html: '&emsp; 10.3 การเก็บรวมรวมข้อมูลส่วนบุคคลเพื่อนำส่งบริษัทประกันภัย บริษัทคู่สัญญา หรือบริษัทต้นสังกัดเพื่อประโยชน์ผู้ป่วย(หากมี) ข้าพเจ้า ...... ให้โรงพยาบาลพระรามเก้ารวบรวม ใช้ เปิดเผยข้อมูลส่วน บุคคล ในการเข้ารับการตรวจ การวินิจฉัย การรักษาพยาบาลหรือการให้บริการสุขภาพ รวมถึงรายละเอียดค่า รักษาพยาบาล ค่าใช้จ่ายที่เกิดขึ้น ของข้าพเจ้าทั้งหมดได้ตามความเป็นจริง เพื่อการพิจารณาการจ่ายค่าสินไหม ทดแทน ค่าชดเชย ค่าตรวจวินิจฉัยและรักษาพยาบาล ค่าใช้จ่ายใด ๆ ที่เกิดขึ้นจากการเข้ารับการรักษาพยาบาลของ ข้าพเจ้าทั้งหมด (รวมเรียกว่า "ค่ารักษาพยาบาล") ให้แก่ บริษัทประกันภัย/บริษัทคู่สัญญา/บริษัทต้นสังกัด/บุคคลหรือ นิติบุคคลที่ต้องชำระค่ารักษาพยาบาลของข้าพเจ้า และในกรณีที่บริษัทประกันภัย/บริษัทคู่สัญญา/บริษัทต้นสังกัด/ บุคคลหรือนิติบุคคลที่ต้องชำระค่ารักษาพยาบาลฯ ปฏิเสธการจ่ายชดเชยค่ารักษาพยาบาลของข้าพเจ้า ข้าพเจ้าเป็น ผู้รับผิดชอบชำระค่าใช้จ่ายที่เกิดขึ้นให้กับโรงพยาบาลพระรามเก้า โดยไม่มีเงื่อนไข',
             consent_104_html: '&emsp; 10.4 การเก็บรวมรวมข้อมูลส่วนบุคคลเพื่อการแจ้งสิทธิประโยชน์ทางการแพทย์ ข้าพเจ้า ...... ให้โรงพยาบาลพระรามเก้าใช้ข้อมูลส่วนบุคคล เพื่อแจ้งสิทธิ ประโยชน์ทางการแพทย์และส่งเสริม การขายการตลาด รายการผลิตภัณฑ์และบริการ รวมถึงสามารถส่งข้อมูล ข่าวสารดังกล่าว หรือส่งแบบสอบถามเพื่อการประเมินผลการให้บริการของบริษัท ให้กับข้าพเจ้าได้ ซึ่งข้าพเจ้า สามารถยกเลิกความยินยอมในการรับแจ้งข้อมูลข่าวสารได้ตามช่องทางที่โรงพยาบาลพระรามเก้ากำหนด',
+            consent_105_html: '&emsp; 10.5 การเก็บรวมรวมข้อมูลส่วนบุคคลเพื่อการแจ้งสิทธิประโยชน์ทางการแพทย์ ข้าพเจ้า ...... ให้โรงพยาบาลพระรามเก้า บันทึกเสียง, ภาพ หรือวีดีโอ ขณะรับบริการ เพื่อปฏิบัติตาม ประกาศสำนักงานปลัดกระทรวงสาธารณสุข เรื่อง “มาตรฐานการให้บริการของหน่วยบริการในการบริการ การแพทย์และสาธารณสุขทางไกล พ.ศ.2567',
             yes_voluntary_label: 'ยินยอมโดยสมัครใจ',
             yes_label: 'ยินยอม',
             no_label: 'ไม่ยินยอม',
@@ -234,6 +246,8 @@ export default function ConsentTelemedicine({ patient }: ConsentTelemedicineProp
             alert_consent_required_html: 'ข้อ 10.1 โปรดระบุความยินยอมรับการรักษาก่อนดำเนินการต่อ',
             alert_signature_title: 'โปรดลงลายมือชื่อ',
             alert_signature_text: 'โปรดลงลายมือชื่อก่อนให้ความยินยอม.',
+            alert_video_consent_title: 'โปรดระบุความยินยอมในการบันทึกวิดีโอ',
+            alert_video_consent_text: 'โปรดระบุความยินยอมในการบันทึกวิดีโอ.',
             confirm_sign_title: 'ยืนยันการลงนาม',
             confirm_sign_text: 'คุณต้องการลงนามหรือไม่?',
             confirm_button_text: 'ยืนยัน',
@@ -332,6 +346,7 @@ export default function ConsentTelemedicine({ patient }: ConsentTelemedicineProp
             consent_102_2_html: '&emsp;(2) Compliance with applicable laws, including but not limited to preventive medicine, occupational health, healthcare provision, medical diagnosis, communicable disease control, drug and device regulation, social security, public health, and matters of public interest. ',
             consent_103_html: '&emsp;10.3 <b>Consent for Insurance and Contractual Processing</b><br> ... To Praram 9 Hospital using and disclosing my personal data (including medical records, diagnosis, treatment, and expenses) to insurance providers, contractual partners, or employers for the purposes of claims, reimbursements, or settlement of medical expenses. I acknowledge that, should such parties deny payment, I shall remain personally responsible for all expenses incurred. ',
             consent_104_html: '&emsp;10.4. <b>Consent for Marketing and Communications</b><br> ... To Praram 9 Hospital contacting me regarding medical benefits, promotions, product or service offerings, or surveys related to hospital services. I understand that I may withdraw this consent at any time via the hospital\'s designated communication channels. ',
+            consent_105_html: '&emsp;10.5. <b>Consent for Marketing and Communications</b><br> ... To Praram 9 Hospital to record audio, images, or video during the service provision , n compliance with the Notification of the Office of the Permanent Secretary, Ministry of Public Health Re: "Service Standard for Service Units in Telemedicine and Public Health Services B.E. 2567 (2024)"',
             yes_voluntary_label: 'I voluntarily consent.',
             yes_label: 'I consent.',
             no_label: ' I do not consent ',
@@ -352,6 +367,8 @@ export default function ConsentTelemedicine({ patient }: ConsentTelemedicineProp
             alert_consent_required_html: 'Please read and consent to the terms and conditions.',
             alert_signature_title: 'Signature Required',
             alert_signature_text: 'Please sign the document to confirm your consent.',
+            alert_video_consent_title: 'Please consent to the video recording.',
+            alert_video_consent_text: 'Please read and consent to the video recording.',
             confirm_sign_title: 'Confirm Signature',
             confirm_sign_text: 'Are you sure you want to confirm the signature?',
             confirm_button_text: 'Confirm',
@@ -491,6 +508,21 @@ export default function ConsentTelemedicine({ patient }: ConsentTelemedicineProp
                                     >
                                         <FormControlLabel value="yes" control={<Radio />} label={t.yes_voluntary_label} disabled={!!patient.marketing_consent} />
                                         <FormControlLabel value="no" control={<Radio />} label={t.no_label} disabled={!!patient.marketing_consent} />
+                                    </RadioGroup>
+                                </FormControl>
+
+                                <Divider sx={{ my: 2 }} />
+
+                                <FormControl component="fieldset" sx={{ width: '100%' }}>
+                                    <FormLabel component="legend">
+                                        <span dangerouslySetInnerHTML={{ __html: t.consent_105_html }} />
+                                    </FormLabel>
+                                    <RadioGroup
+                                        value={data.video_consent}
+                                        onChange={(e) => setData('video_consent', e.target.value)}
+                                    >
+                                        <FormControlLabel value="yes" control={<Radio />} label={t.yes_voluntary_label} disabled={!!patient.video_consent} />
+                                        <FormControlLabel value="no" control={<Radio />} label={t.no_label} disabled={!!patient.video_consent} />
                                     </RadioGroup>
                                 </FormControl>
                             </Box>
