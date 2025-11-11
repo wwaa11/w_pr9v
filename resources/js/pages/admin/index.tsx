@@ -173,7 +173,7 @@ export default function Index({
                                     <MenuItem value="th">ไทย</MenuItem>
                                     <MenuItem value="en">English</MenuItem>
                                 </Select>
-                                {data.language !== 'th' && (
+                                {data.language !== 'thai' && (
                                     <>
                                         <TextField
                                             label="Inform in language"

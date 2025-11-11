@@ -987,6 +987,7 @@ class MainController extends Controller
             'treatment_consent'    => $consent->treatment_consent,
             'insurance_consent'    => $consent->insurance_consent,
             'marketing_consent'    => $consent->marketing_consent,
+            'video_consent'        => $consent->video_consent,
             'signature'            => $consent->signature,
             'signature_type'       => $consent->signature_type,
             'signature_relation'   => $consent->signature_relation,
