@@ -342,13 +342,22 @@ class MainController extends Controller
             ->json();
 
         if ($response['status'] == 'success' && session('witness1') !== null) {
+
+            if (empty($response['patient']['ref'])) {
+                return Inertia::render('admin/index', [
+                    'errors' => [
+                        'hn' => 'ข้อมูลผู้ป่วยในระบบไม่สมบูรณ์ : ไม่พบหมายเลขบัตรประชาชน,Passport',
+                    ],
+                ]);
+            }
+
             $patient = Patient::where('hn', $hn)->first();
             if ($patient == null) {
                 $patient           = new Patient();
                 $patient->hn       = $hn;
                 $patient->name     = $response['patient']['name']['first_th'] . ' ' . $response['patient']['name']['last_th'];
                 $patient->token    = Crypt::encryptString($hn);
-                $patient->ref      = $response['patient']['ref'][0]['ref'];
+                $patient->ref      = $response['patient']['ref'][0]['ref'] ?? '-';
                 $patient->passport = $response['patient']['ref'][0]['card'] == "1" ? false : true;
             }
             $patient->photo_consent     = $response['patient']['photo_consent'];
