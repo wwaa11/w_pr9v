@@ -335,40 +335,37 @@ class MainController extends Controller
         $sleepCheckURL    = "";
         $mind9qURL        = "";
 
-        $response = Http::withHeaders(['key' => env('API_PATIENT_KEY')])
-            ->post('http://172.20.1.22/w_phr/api/patient/info', [
+        $response = Http::withHeaders(['Authorization' => 'Bearer ' . env('API_PATIENT_KEY')])
+            ->post(env('API_PATIENT_INFO'), [
                 'hn' => $hn,
             ])
             ->json();
-
         if ($response['status'] == 'success' && session('witness1') !== null) {
-
-            if (empty($response['patient']['ref'])) {
+            if (!$response['patient']['nationalid'] && !$response['patient']['passport']) {
                 return Inertia::render('admin/index', [
                     'errors' => [
                         'hn' => 'ข้อมูลผู้ป่วยในระบบไม่สมบูรณ์ : ไม่พบหมายเลขบัตรประชาชน,Passport',
                     ],
                 ]);
             }
-
             $patient = Patient::where('hn', $hn)->first();
             if ($patient == null) {
                 $patient           = new Patient();
                 $patient->hn       = $hn;
-                $patient->name     = $response['patient']['name']['first_th'] . ' ' . $response['patient']['name']['last_th'];
                 $patient->token    = Crypt::encryptString($hn);
-                $patient->ref      = $response['patient']['ref'][0]['ref'] ?? '-';
-                $patient->passport = $response['patient']['ref'][0]['card'] == "1" ? false : true;
             }
-            $patient->photo_consent     = $response['patient']['photo_consent'];
-            $patient->treatment_consent = $response['patient']['treatment_consent'];
-            $patient->insurance_consent = $response['patient']['insurance_consent'];
-            $patient->marketing_consent = $response['patient']['marketing_consent'];
+            $patient->name     = $response['patient']['firstname'] . ' ' . $response['patient']['lastname'];
+            $patient->ref      = $response['patient']['nationalid'] ?? $response['patient']['passport'];
+            $patient->passport = $response['patient']['nationalid'] ? false : true;
+            $patient->photo_consent     = $response['patient']['consent']['allow_pic'];
+            $patient->treatment_consent = $response['patient']['consent']['pdpa_2'];
+            $patient->insurance_consent = $response['patient']['consent']['pdpa_3'];
+            $patient->marketing_consent = $response['patient']['consent']['pdpa_4'];
             $patient->expires_at        = now()->addDay();
             $patient->save();
 
-            $visit_response = Http::withHeaders(['key' => env('API_PATIENT_KEY')])
-                ->post('http://172.20.1.22/w_phr/api/patient/visit', [
+            $visit_response = Http::withHeaders(['Authorization' => 'Bearer ' . env('API_PATIENT_KEY')])
+                ->post(env('API_PATIENT_VISIT'), [
                     'hn' => $hn,
                 ])
                 ->json();
@@ -406,8 +403,8 @@ class MainController extends Controller
 
             $patientData = [
                 'hn'    => $patient->hn,
-                'name'  => $response['patient']['name']['first_th'] . ' ' . $response['patient']['name']['last_th'] ?? 'N/A',
-                'phone' => $response['patient']['phone'] ?? 'N/A',
+                'name'  => $response['patient']['firstname'] . ' ' . $response['patient']['lastname'] ?? 'ไม่พบข้อมูลชื่อผู้ป่วย',
+                'phone' => $response['patient']['phoneno'] ?? 'ไม่พบข้อมูลหมายเลขโทรศัพท์',
             ];
 
         }
@@ -487,18 +484,11 @@ class MainController extends Controller
 
             $body = [
                 'hn'         => $request->hn,
-                "idCard"     => $patient->ref,
-                "isPassport" => $patient->passport ? "true" : "false",
-                "consent"    => [
-                    "insurance" => ($request->insurance_consent === 'yes') ? "true" : "false",
-                    "marketing" => ($request->marketing_consent === 'yes') ? "true" : "false",
-                ],
+                "consentinsurance" => $request->insurance_consent === 'yes' ? "Y" : "N",
+                "consentmarketing" => $request->marketing_consent === 'yes' ? "Y" : "N"
             ];
 
-            $response = Http::withHeaders(['API_KEY' => env('HIS_PATIENT_KEY')])
-                ->put('http://172.20.1.12:8086/api/patient/patientInformation', $body)
-                ->json();
-
+            $response = Http::post(env('HIS_API_UPDATE_CONSENT'), $body)->json();
         }
 
         return redirect()->route('success');
@@ -927,6 +917,65 @@ class MainController extends Controller
         return inertia::render('admin/view', compact('consents', 'type_select', 'page'));
     }
 
+    private function definePatientData($response)
+    {
+        $isAllergy = false;
+        if ($response['patient']['allergy'] != []) {
+            $isAllergy = true;
+        }
+        $allergyName    = '';
+        $allergySymptom = '';
+        if ($isAllergy) {
+            $allergyName = implode(', ', array_column($response['patient']['allergy'], 'allergicto'));
+            $allergySymptom = implode(', ', array_column($response['patient']['allergy'], 'allergydescription'));
+        }
+
+        $contactPerson = false;
+        $contactPersonName = '';
+        $contactPersonSurname = '';
+        $contactPersonRelation = '';
+        $contactPersonPhone = '';
+        if($response['patient']['contact_persons'] != []) {
+            $contactPerson = true;
+            $contactPersonName = $response['patient']['contact_persons'][0]['firstname'];
+            $contactPersonSurname = $response['patient']['contact_persons'][0]['lastname'];
+            $contactPersonRelation = $response['patient']['contact_persons'][0]['relative'];
+            $contactPersonPhone = $response['patient']['contact_persons'][0]['phoneno'];
+        }
+
+        $patientData = [
+            'nameTH'             => $response['patient']['firstname'],
+            'surnameTH'          => $response['patient']['lastname'],
+            'nameEN'             => null,
+            'surnameEN'          => null,
+            'birthDate'          => $response['patient']['birthdate_full'],
+            'religion'           => $response['patient']['religion'],
+            'race'               => $response['patient']['race'],
+            'national'           => $response['patient']['nationality'],
+            'martial'            => $response['patient']['maritalstatus'],
+            'age'                => $response['patient']['age'],
+            'phone'              => null,
+            'mobile'             => $response['patient']['phoneno'],
+            'email'              => $response['patient']['email'],
+            'occupation'         => $response['patient']['occupation'],
+            'education'          => null,
+            'education_code'     => null,
+            'address'            => $response['patient']['address'],
+            'address_contact'    => $response['patient']['other_address'],
+            'allergy'            => $isAllergy,
+            'allergy_name'       => $allergyName,
+            'allergy_symptom'    => $allergySymptom,
+            'represent'          => $contactPerson,
+            'represent_name'     => $contactPersonName,
+            'represent_surname'  => $contactPersonSurname,
+            'represent_relation' => $contactPersonRelation,
+            'represent_phone'    => $contactPersonPhone,
+            'photo'              => $response['patient']['consent']['allow_pic'],
+        ];
+
+        return $patientData;
+    }
+
     public function viewTelemedicineConsent($id)
     {
         if (! auth()->check()) {
@@ -936,60 +985,21 @@ class MainController extends Controller
         $consent = Telemedicine::findOrFail($id);
 
         // Fetch patient data from API
-        $response = Http::withHeaders(['key' => env('API_PATIENT_KEY')])
-            ->post('http://172.20.1.22/w_phr/api/patient/info', [
+        $response = Http::withHeaders(['Authorization' => 'Bearer ' . env('API_PATIENT_KEY')])
+            ->post(env('API_PATIENT_INFO'), [
                 'hn' => $consent->hn,
             ])
             ->json();
 
-        if ($response['status'] == 0) {
+        if ($response['status'] == 'error') {
             return back()->with('error', 'ไม่พบข้อมูลผู้ป่วย');
         }
 
-        $allergyName    = '';
-        $allergySymptom = '';
-        if ($response['patient']['allergy']) {
-            foreach ($response['patient']['allergy_list'] as $allergy) {
-                if (array_key_exists('name', $allergy)) {
-                    $allergyName .= $allergy['name'] . ', ';
-                }
-                if (array_key_exists('remark', $allergy)) {
-                    $allergySymptom .= $allergy['remark'] . ', ';
-                }
-            }
-        }
+        $patientData = $this->definePatientData($response);
 
         $consentData = [
             'hn'                   => $consent->hn,
-            'patient'              => [
-                'nameTH'             => $response['patient']['name']['first_th'],
-                'surnameTH'          => $response['patient']['name']['last_th'],
-                'nameEN'             => $response['patient']['name']['first_en'],
-                'surnameEN'          => $response['patient']['name']['last_en'],
-                'birthDate'          => $response['patient']['brithdate_text'],
-                'religion'           => $response['patient']['religion'],
-                'race'               => $response['patient']['race'],
-                'national'           => $response['patient']['national'],
-                'martial'            => $response['patient']['martial'],
-                'age'                => $response['patient']['age'],
-                'phone'              => $response['patient']['phone'],
-                'mobile'             => $response['patient']['mobile'],
-                'email'              => $response['patient']['email'],
-                'occupation'         => $response['patient']['ocupation'],
-                'education'          => $response['patient']['education'],
-                'education_code'     => $response['patient']['education_code'],
-                'address'            => $response['patient']['address']['home']['full_address'],
-                'address_contact'    => $response['patient']['address']['contact']['full_address'],
-                'allergy'            => $response['patient']['allergy'],
-                'allergy_name'       => ($response['patient']['allergy']) ? $allergyName : '',
-                'allergy_symptom'    => ($response['patient']['allergy']) ? $allergySymptom : '',
-                'represent'          => isset($response['patient']['notify']) ? true : false,
-                'represent_name'     => $response['patient']['notify']['first_name'],
-                'represent_surname'  => $response['patient']['notify']['last_name'],
-                'represent_relation' => $response['patient']['notify']['relation'],
-                'represent_phone'    => $response['patient']['notify']['phone'],
-                'photo'              => true,
-            ],
+            'patient'              => $patientData,
             'visit_date'           => $this->date_Full($consent->created_at->format('Y-m-d')),
             'visit_time'           => $consent->created_at->format('H:i'),
             'telemedicine_consent' => $consent->telemedicine_consent,
@@ -1026,8 +1036,8 @@ class MainController extends Controller
         $consent = Telehealth::findOrFail($id);
         $visit   = ($consent->visit_date == null) ? strtotime($consent->created_at) : strtotime($consent->visit_date);
 
-        $response = Http::withHeaders(['key' => env('API_PATIENT_KEY')])
-            ->post('http://172.20.1.22/w_phr/api/patient/info', [
+        $response = Http::withHeaders(['Authorization' => 'Bearer ' . env('API_PATIENT_KEY')])
+            ->post(env('API_PATIENT_INFO'), [
                 'hn' => $consent->hn,
             ])
             ->json();
@@ -1036,55 +1046,11 @@ class MainController extends Controller
             return back()->with('error', 'ไม่พบข้อมูลผู้ป่วย');
         }
 
-        $allergyName    = '';
-        $allergySymptom = '';
-        foreach ($response['patient']['allergy_list'] as $allergy) {
-            if ($allergy == 'ไม่เคยซักประวัติ/ไม่มีข้อมูล') {
-                $allergyName = 'ไม่เคยซักประวัติ/ไม่มีข้อมูล';
-                break;
-            } else {
-                if (array_key_exists('name', $allergy)) {
-                    $allergyName .= $allergy['name'] . ', ';
-                }
-                if (array_key_exists('remark', $allergy)) {
-                    $allergySymptom .= $allergy['remark'] . ', ';
-                }
-            }
-        }
-        $allergyName    = rtrim($allergyName, ', ');
-        $allergySymptom = rtrim($allergySymptom, ', ');
+        $patientData = $this->definePatientData($response);
 
         $consentData = [
             'hn'                   => $consent->hn,
-            'patient'              => [
-                'nameTH'             => $response['patient']['name']['first_th'],
-                'surnameTH'          => $response['patient']['name']['last_th'],
-                'nameEN'             => $response['patient']['name']['first_en'],
-                'surnameEN'          => $response['patient']['name']['last_en'],
-                'gender'             => $response['patient']['gender'],
-                'birthDate'          => $response['patient']['brithdate_text'],
-                'religion'           => $response['patient']['religion'],
-                'race'               => $response['patient']['race'],
-                'national'           => $response['patient']['national'],
-                'martial'            => $response['patient']['martial'],
-                'age'                => $response['patient']['age'],
-                'phone'              => $response['patient']['phone'],
-                'mobile'             => $response['patient']['mobile'],
-                'email'              => $response['patient']['email'],
-                'occupation'         => $response['patient']['ocupation'],
-                'education'          => $response['patient']['education'],
-                'address'            => $response['patient']['address']['home']['full_address'],
-                'address_contact'    => $response['patient']['address']['contact']['full_address'],
-                'allergy'            => $response['patient']['allergy'],
-                'allergy_name'       => $allergyName,
-                'allergy_symptom'    => $allergySymptom,
-                'represent'          => isset($response['patient']['notify']) ? true : false,
-                'represent_name'     => $response['patient']['notify']['first_name'],
-                'represent_surname'  => $response['patient']['notify']['last_name'],
-                'represent_relation' => $response['patient']['notify']['relation'],
-                'represent_phone'    => $response['patient']['notify']['phone'],
-                'blood_reaction'     => $response['patient']['blood_reaction'],
-            ],
+            'patient'              => $patientData,
             'vn'                   => $consent->vn,
             'name'                 => $consent->name,
             'name_type'            => $consent->name_type,
@@ -1114,8 +1080,8 @@ class MainController extends Controller
         $consent = Hiv::findOrFail($id);
         $visit   = ($consent->visit_date == null) ? strtotime($consent->created_at) : strtotime($consent->visit_date);
 
-        $response = Http::withHeaders(['key' => env('API_PATIENT_KEY')])
-            ->post('http://172.20.1.22/w_phr/api/patient/info', [
+        $response = Http::withHeaders(['Authorization' => 'Bearer ' . env('API_PATIENT_KEY')])
+            ->post(env('API_PATIENT_INFO'), [
                 'hn' => $consent->hn,
             ])
             ->json();
@@ -1124,55 +1090,11 @@ class MainController extends Controller
             return back()->with('error', 'ไม่พบข้อมูลผู้ป่วย');
         }
 
-        $allergyName    = '';
-        $allergySymptom = '';
-        foreach ($response['patient']['allergy_list'] as $allergy) {
-            if ($allergy == 'ไม่เคยซักประวัติ/ไม่มีข้อมูล') {
-                $allergyName = 'ไม่เคยซักประวัติ/ไม่มีข้อมูล';
-                break;
-            } else {
-                if (array_key_exists('name', $allergy)) {
-                    $allergyName .= $allergy['name'] . ', ';
-                }
-                if (array_key_exists('remark', $allergy)) {
-                    $allergySymptom .= $allergy['remark'] . ', ';
-                }
-            }
-        }
-        $allergyName    = rtrim($allergyName, ', ');
-        $allergySymptom = rtrim($allergySymptom, ', ');
+        $patientData = $this->definePatientData($response);
 
         $consentData = [
             'hn'            => $consent->hn,
-            'patient'       => [
-                'nameTH'             => $response['patient']['name']['first_th'],
-                'surnameTH'          => $response['patient']['name']['last_th'],
-                'nameEN'             => $response['patient']['name']['first_en'],
-                'surnameEN'          => $response['patient']['name']['last_en'],
-                'gender'             => $response['patient']['gender'],
-                'birthDate'          => $response['patient']['brithdate_text'],
-                'religion'           => $response['patient']['religion'],
-                'race'               => $response['patient']['race'],
-                'national'           => $response['patient']['national'],
-                'martial'            => $response['patient']['martial'],
-                'age'                => $response['patient']['age'],
-                'phone'              => $response['patient']['phone'],
-                'mobile'             => $response['patient']['mobile'],
-                'email'              => $response['patient']['email'],
-                'occupation'         => $response['patient']['ocupation'],
-                'education'          => $response['patient']['education'],
-                'address'            => $response['patient']['address']['home']['full_address'],
-                'address_contact'    => $response['patient']['address']['contact']['full_address'],
-                'allergy'            => $response['patient']['allergy'],
-                'allergy_name'       => $allergyName,
-                'allergy_symptom'    => $allergySymptom,
-                'represent'          => isset($response['patient']['notify']) ? true : false,
-                'represent_name'     => $response['patient']['notify']['first_name'],
-                'represent_surname'  => $response['patient']['notify']['last_name'],
-                'represent_relation' => $response['patient']['notify']['relation'],
-                'represent_phone'    => $response['patient']['notify']['phone'],
-                'blood_reaction'     => $response['patient']['blood_reaction'],
-            ],
+            'patient'       => $patientData,
             'vn'            => $consent->vn,
             'name'          => $consent->name,
             'name_type'     => $consent->name_type,
@@ -1205,8 +1127,8 @@ class MainController extends Controller
         $consent = SleepnessForm::findOrFail($id);
         $visit   = ($consent->visit_date == null) ? strtotime($consent->created_at) : strtotime($consent->visit_date);
 
-        $response = Http::withHeaders(['key' => env('API_PATIENT_KEY')])
-            ->post('http://172.20.1.22/w_phr/api/patient/info', [
+        $response = Http::withHeaders(['Authorization' => 'Bearer ' . env('API_PATIENT_KEY')])
+            ->post(env('API_PATIENT_INFO'), [
                 'hn' => $consent->hn,
             ])
             ->json();
@@ -1215,55 +1137,11 @@ class MainController extends Controller
             return back()->with('error', 'ไม่พบข้อมูลผู้ป่วย');
         }
 
-        $allergyName    = '';
-        $allergySymptom = '';
-        foreach ($response['patient']['allergy_list'] as $allergy) {
-            if ($allergy == 'ไม่เคยซักประวัติ/ไม่มีข้อมูล') {
-                $allergyName = 'ไม่เคยซักประวัติ/ไม่มีข้อมูล';
-                break;
-            } else {
-                if (array_key_exists('name', $allergy)) {
-                    $allergyName .= $allergy['name'] . ', ';
-                }
-                if (array_key_exists('remark', $allergy)) {
-                    $allergySymptom .= $allergy['remark'] . ', ';
-                }
-            }
-        }
-        $allergyName    = rtrim($allergyName, ', ');
-        $allergySymptom = rtrim($allergySymptom, ', ');
+        $patientData = $this->definePatientData($response);
 
         $consentData = [
             'hn'                => $consent->hn,
-            'patient'           => [
-                'nameTH'             => $response['patient']['name']['first_th'],
-                'surnameTH'          => $response['patient']['name']['last_th'],
-                'nameEN'             => $response['patient']['name']['first_en'],
-                'surnameEN'          => $response['patient']['name']['last_en'],
-                'gender'             => $response['patient']['gender'],
-                'birthDate'          => $response['patient']['brithdate_text'],
-                'religion'           => $response['patient']['religion'],
-                'race'               => $response['patient']['race'],
-                'national'           => $response['patient']['national'],
-                'martial'            => $response['patient']['martial'],
-                'age'                => $response['patient']['age'],
-                'phone'              => $response['patient']['phone'],
-                'mobile'             => $response['patient']['mobile'],
-                'email'              => $response['patient']['email'],
-                'occupation'         => $response['patient']['ocupation'],
-                'education'          => $response['patient']['education'],
-                'address'            => $response['patient']['address']['home']['full_address'],
-                'address_contact'    => $response['patient']['address']['contact']['full_address'],
-                'allergy'            => $response['patient']['allergy'],
-                'allergy_name'       => $allergyName,
-                'allergy_symptom'    => $allergySymptom,
-                'represent'          => isset($response['patient']['notify']) ? true : false,
-                'represent_name'     => $response['patient']['notify']['first_name'],
-                'represent_surname'  => $response['patient']['notify']['last_name'],
-                'represent_relation' => $response['patient']['notify']['relation'],
-                'represent_phone'    => $response['patient']['notify']['phone'],
-                'blood_reaction'     => $response['patient']['blood_reaction'],
-            ],
+            'patient'           => $patientData,
             'vn'                => $consent->vn,
             'visit_date'        => $this->date_Full(date('Y-m-d', $visit)),
             'visit_time'        => date('H:i', strtotime($consent->created_at)),
@@ -1311,8 +1189,8 @@ class MainController extends Controller
     public function viewMind9qConsent($id)
     {
         $consent  = Mind9q::findOrFail($id);
-        $response = Http::withHeaders(['key' => env('API_PATIENT_KEY')])
-            ->post('http://172.20.1.22/w_phr/api/patient/info', [
+        $response = Http::withHeaders(['Authorization' => 'Bearer ' . env('API_PATIENT_KEY')])
+            ->post(env('API_PATIENT_INFO'), [
                 'hn' => $consent->hn,
             ])
             ->json();
@@ -1321,16 +1199,11 @@ class MainController extends Controller
             return back()->with('error', 'ไม่พบข้อมูลผู้ป่วย');
         }
 
+        $patientData = $this->definePatientData($response);
+
         $consentData = [
             'hn'      => $consent->hn,
-            'patient' => [
-                'nameTH'    => $response['patient']['name']['first_th'],
-                'surnameTH' => $response['patient']['name']['last_th'],
-                'nameEN'    => $response['patient']['name']['first_en'],
-                'surnameEN' => $response['patient']['name']['last_en'],
-                'gender'    => $response['patient']['gender'],
-                'birthDate' => $response['patient']['brithdate_text'],
-            ],
+            'patient' => $patientData,
             'answer1' => $consent->answer1,
             'answer2' => $consent->answer2,
             'answer3' => $consent->answer3,
