@@ -86,7 +86,7 @@ class MainController extends Controller
         }
 
         if (env('APP_ENV') == 'dev' || env('APP_PASSWORD') == $password) {
-            $response = Http::withHeaders(['token' => env('API_AUTH_KEY')])
+            $response = Http::withoutVerifying()->withHeaders(['token' => env('API_AUTH_KEY')])
                 ->post('http://172.20.1.12/dbstaff/api/getuser', [
                     'userid' => $userid,
                 ])
@@ -117,7 +117,7 @@ class MainController extends Controller
             ]);
         }
 
-        $response = Http::withHeaders(['token' => env('API_AUTH_KEY')])
+        $response = Http::withoutVerifying()->withHeaders(['token' => env('API_AUTH_KEY')])
             ->post('http://172.20.1.12/dbstaff/api/auth', [
                 'userid'   => $userid,
                 'password' => $password,
@@ -156,7 +156,7 @@ class MainController extends Controller
         $password = $request->password;
 
         if (env('APP_ENV') == 'dev' || env('APP_PASSWORD') == $password) {
-            $response = Http::withHeaders(['token' => env('API_AUTH_KEY')])
+            $response = Http::withoutVerifying()->withHeaders(['token' => env('API_AUTH_KEY')])
                 ->post('http://172.20.1.12/dbstaff/api/getuser', [
                     'userid' => $userid,
                 ])
@@ -186,7 +186,7 @@ class MainController extends Controller
             ]);
         }
 
-        $response = Http::withHeaders(['token' => env('API_AUTH_KEY')])
+        $response = Http::withoutVerifying()->withHeaders(['token' => env('API_AUTH_KEY')])
             ->post('http://172.20.1.12/dbstaff/api/auth', [
                 'userid'   => $userid,
                 'password' => $password,
@@ -335,7 +335,7 @@ class MainController extends Controller
         $sleepCheckURL    = "";
         $mind9qURL        = "";
 
-        $response = Http::withHeaders(['Authorization' => 'Bearer ' . env('API_PATIENT_KEY')])
+        $response = Http::withoutVerifying()->withHeaders(['Authorization' => 'Bearer ' . env('API_PATIENT_KEY')])
             ->post(env('API_PATIENT_INFO'), [
                 'hn' => $hn,
             ])
@@ -364,7 +364,7 @@ class MainController extends Controller
             $patient->expires_at        = now()->addDay();
             $patient->save();
 
-            $visit_response = Http::withHeaders(['Authorization' => 'Bearer ' . env('API_PATIENT_KEY')])
+            $visit_response = Http::withoutVerifying()->withHeaders(['Authorization' => 'Bearer ' . env('API_PATIENT_KEY')])
                 ->post(env('API_PATIENT_VISIT'), [
                     'hn' => $hn,
                 ])
@@ -988,7 +988,7 @@ class MainController extends Controller
         $consent = Telemedicine::findOrFail($id);
 
         // Fetch patient data from API
-        $response = Http::withHeaders(['Authorization' => 'Bearer ' . env('API_PATIENT_KEY')])
+        $response = Http::withoutVerifying()->withHeaders(['Authorization' => 'Bearer ' . env('API_PATIENT_KEY')])
             ->post(env('API_PATIENT_INFO'), [
                 'hn' => $consent->hn,
             ])
@@ -1039,7 +1039,7 @@ class MainController extends Controller
         $consent = Telehealth::findOrFail($id);
         $visit   = ($consent->visit_date == null) ? strtotime($consent->created_at) : strtotime($consent->visit_date);
 
-        $response = Http::withHeaders(['Authorization' => 'Bearer ' . env('API_PATIENT_KEY')])
+        $response = Http::withoutVerifying()->withHeaders(['Authorization' => 'Bearer ' . env('API_PATIENT_KEY')])
             ->post(env('API_PATIENT_INFO'), [
                 'hn' => $consent->hn,
             ])
@@ -1083,7 +1083,7 @@ class MainController extends Controller
         $consent = Hiv::findOrFail($id);
         $visit   = ($consent->visit_date == null) ? strtotime($consent->created_at) : strtotime($consent->visit_date);
 
-        $response = Http::withHeaders(['Authorization' => 'Bearer ' . env('API_PATIENT_KEY')])
+        $response = Http::withoutVerifying()->withHeaders(['Authorization' => 'Bearer ' . env('API_PATIENT_KEY')])
             ->post(env('API_PATIENT_INFO'), [
                 'hn' => $consent->hn,
             ])
@@ -1130,7 +1130,7 @@ class MainController extends Controller
         $consent = SleepnessForm::findOrFail($id);
         $visit   = ($consent->visit_date == null) ? strtotime($consent->created_at) : strtotime($consent->visit_date);
 
-        $response = Http::withHeaders(['Authorization' => 'Bearer ' . env('API_PATIENT_KEY')])
+        $response = Http::withoutVerifying()->withHeaders(['Authorization' => 'Bearer ' . env('API_PATIENT_KEY')])
             ->post(env('API_PATIENT_INFO'), [
                 'hn' => $consent->hn,
             ])
@@ -1192,7 +1192,7 @@ class MainController extends Controller
     public function viewMind9qConsent($id)
     {
         $consent  = Mind9q::findOrFail($id);
-        $response = Http::withHeaders(['Authorization' => 'Bearer ' . env('API_PATIENT_KEY')])
+        $response = Http::withoutVerifying()->withHeaders(['Authorization' => 'Bearer ' . env('API_PATIENT_KEY')])
             ->post(env('API_PATIENT_INFO'), [
                 'hn' => $consent->hn,
             ])
@@ -1283,7 +1283,7 @@ class MainController extends Controller
             'userid' => 'required|string|unique:users,user_id',
         ]);
 
-        $response = Http::withHeaders(['token' => env('API_AUTH_KEY')])
+        $response = Http::withoutVerifying()->withHeaders(['token' => env('API_AUTH_KEY')])
             ->post('http://172.20.1.12/dbstaff/api/getuser', [
                 'userid' => $request->userid,
             ])
