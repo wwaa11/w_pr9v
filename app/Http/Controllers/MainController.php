@@ -488,7 +488,10 @@ class MainController extends Controller
                 "consentmarketing" => $request->marketing_consent === 'yes' ? "Y" : "N"
             ];
 
-            $response = Http::post(env('HIS_API_UPDATE_CONSENT'), $body)->json();
+            $response = Http::withoutVerifying()
+                ->withHeaders(['x-api-key' => env('HIS_API_TOKEN')])
+                ->post(env('HIS_API_UPDATE_CONSENT'), $body)
+                ->json();
         }
 
         return redirect()->route('success');
